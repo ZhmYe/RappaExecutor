@@ -1,6 +1,18 @@
 from model.loader import ModelLoader
-def test_loader(model_path):
-    loader = ModelLoader(model_path)
-    instance = loader.load("ctgan", "ctgan_model.pth")
-    output = instance.generate_output(1000)
-    print(output.format_json())
+import unittest
+import os
+from utils.function.func import get_project_root, get_model_root
+
+
+class TestLoader(unittest.TestCase):
+    def test_loader(self):
+        try:
+            model_path = get_model_root()
+            print("===========================UNIT TEST LOADER===========================")
+            loader = ModelLoader(model_path)
+            instance = loader.load("ctgan", "ctgan_model.pth")
+            output = instance.generate_output(1000)
+            print(output.format_json())
+        except Exception as e:
+            raise RuntimeError("Unit Test Loader Failed.") from e
+        print("===========================UNIT TEST LOADER END===========================")

@@ -22,14 +22,14 @@ class CTGAN_Model_Instance(ABC):
         self.model_path = model_path
         self.model = None
 
-    def load_model_from_pth_file_path(self, dir_path, model_name="model.pth", params=None):
+    def load_model_from_pth_file_path(self, params:dict):
         """
         从 .pth 文件加载 CTGAN 模型。
 
         Args:
             dir_path (str): 模型文件存放文件夹路径。
-            model_name (str): 模型文件名（默认 "model.pth"）。
             params (dict): 参数字典，包括以下键：
+                - "model_name"(str): 模型文件
                 - "sampler_file_name" (str): DataSampler 的文件名（默认 "sampler"）。
 
         Returns:
@@ -38,6 +38,8 @@ class CTGAN_Model_Instance(ABC):
         try:
             # 设置默认参数
             default_params = {
+                "dir_path": "",
+                "model_name": "model.pth",
                 "sampler_file_name": "sampler"
             }
             if params is None:
@@ -47,7 +49,8 @@ class CTGAN_Model_Instance(ABC):
                 params = {**default_params, **params}
 
             # 加载保存的内容
-            checkpoint_path = os.path.join(self.model_path, dir_path, model_name)
+            dir_path = params["dir_path"]
+            checkpoint_path = os.path.join(self.model_path, dir_path, params["model_name"])
             checkpoint = torch.load(checkpoint_path)
             generator_state = checkpoint['generator_state']
             transformer_config = pickle.loads(checkpoint['transformer_config'])
@@ -85,7 +88,7 @@ class CTGAN_Model_Instance(ABC):
             # 加载生成器权重
             ctgan._generator.load_state_dict(generator_state)
 
-            log.write_log("INFO", "Model successfully loaded from: {}".format(dir_path))
+            log.write_log("INFO", "Model successfully loaded from: {}".format(os.path.join(self.model_path, dir_path)))
 
             # 保存到实例属性
             self.model = ctgan

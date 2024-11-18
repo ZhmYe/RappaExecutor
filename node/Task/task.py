@@ -6,27 +6,25 @@
 # 3. 为了方便上链，一些元数据会被带着params里传过来，比如开始时间，用户id等等，这些要不要放在这里待定；反正params一定有一个sign
 from .slot import Slot
 from .processor import Processor
+from ..format import TaskPoolItem, SlotItem
+
+
 class Task:
-    def __init__(self, params):
-        # params: todo
-            # sign: 任务标识
-            # model: dict
-                # model.name: 模型
-                # model.params: 模型的一些相关参数
+    def __init__(self, params: TaskPoolItem):
         self.sign = params.sign
         self.slots = [] # 这里记录每个slot
         self.finish = False # 标记任务是否已经完成
         self.slot_index = -1 # 标记目前处理到哪些slot了，可能没什么用，因为可能Layer2Node的逻辑是等大家一个slot全做完了才会分发任务，因此每次只会有一个slot
-        self.processor = self.init_processor(params=params) # 具体处理slot的实例，包含当前任务使用什么模型等
-    def init_processor(self, params):
-         self.processor = Processor(params) # todo
+        self.processor = self.init_processor(params=params.slot) # 具体处理slot的实例，包含当前任务使用什么模型等
+    def init_processor(self, params: SlotItem)->Processor:
+         return Processor(params) # todo
         # self.processor = None
-    def update_slot(self, params):
+    def update_slot(self, params:SlotItem):
         # params: todo 这里就是slot需要的params,可以修改成在这里进行处理后再传入
         slot = Slot(params)
-        self.process(slot)
+        self.process_slot(slot)
         self.slots.append(slot)
-    def process(self, slot):
+    def process_slot(self, slot: Slot):
         # 进行某个slot的运行
         self.processor.process(slot)
 

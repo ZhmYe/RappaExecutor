@@ -25,7 +25,7 @@ class ModelFormatOutput:
 # 4. load_model_from_pth_file_path 这个函数就是为了加载模型
 # dir_path是模型文件保存的文件夹, model_name是模型的格式化文件名比如{}.pth params是用来给不同模型的特殊文件名的
 # 比如ctgan需要sampler
-class ModelInstace:
+class ModelInstance:
     @abstractmethod
     def generate_input(self, params=None):
         pass
@@ -36,5 +36,5 @@ class ModelInstace:
     def name(self):
         return "Default_Model_Instance"
     @abstractmethod
-    def load_model_from_pth_file_path(self, dir_path, model_name="model.pth", params=None):
+    def load_model_from_pth_file_path(self, params:dict):
         pass

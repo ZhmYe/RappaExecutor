@@ -1,6 +1,7 @@
 import os
 from model.ctgan.instance import CTGAN_Model_Instance
-from model.format import ModelInstace
+from model.format import ModelInstance
+from utils.function.func import get_model_params_dict
 
 
 class ModelLoader:
@@ -13,7 +14,7 @@ class ModelLoader:
         """
         self.path = path  # 模型文件路径
 
-    def load(self, model_type, model_pth_name) -> ModelInstace:
+    def load(self, model_type) -> ModelInstance:
         """
         加载指定类型的模型实例。
 
@@ -35,7 +36,7 @@ class ModelLoader:
         assert model_type in config, f"Unsupported model type: {model_type}. Supported types: {config}"
 
         # 校验文件名格式
-        assert model_pth_name.endswith(".pth"), f"Invalid model file name: {model_pth_name}. Only '.pth' files are supported."
+        # assert model_pth_name.endswith(".pth"), f"Invalid model file name: {model_pth_name}. Only '.pth' files are supported."
 
         # 模型文件完整路径
         model_path = os.path.join(self.path, model_type)
@@ -43,11 +44,11 @@ class ModelLoader:
         # 检查模型文件是否存在
         if not os.path.exists(model_path):
             raise FileNotFoundError(f"Model file '{model_path}' not found.")
-
+        # todo 这里需要写的规范一点，放到utils/function/func.py去
         # 根据模型类型加载实例
         if model_type == "ctgan":
             instance = CTGAN_Model_Instance(model_path)
-            instance.load_model_from_pth_file_path("test", "ctgan_model.pth")
+            instance.load_model_from_pth_file_path(get_model_params_dict("ctgan"))
             return instance
 
         else:
