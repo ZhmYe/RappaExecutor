@@ -12,7 +12,7 @@ class TestBHExecutionNode(unittest.TestCase):
         BHExecutionNodeGlobalConfig.set_debug(True)
         self.node = BHExecutionNode()
 
-    def test_task_processing(self):
+    def test_task_processing_with_fake_grpc_engine(self):
         """
         测试节点是否能正确处理由 FakeGrpcEngine 生成的任务
         """
