@@ -7,7 +7,7 @@ from config.config import BHExecutionNodeGlobalConfig
 from network.Grpc.FakeGrpc import FakeGrpcEngine
 from queue import Queue
 from logger.logger import logWriter as log
-from node.node import BHExecutionNode
+from execution.node import BHExecutionNode
 from storage.storager import Storager
 
 
@@ -58,7 +58,7 @@ if __name__ == '__main__':
     node.set_grpc_engine(grpc_engine)
     node.set_storager(storager)
 
-    grpc_thread = threading.Thread(target=grpc_engine.start_server)
+    grpc_thread = threading.Thread(target=grpc_engine.start)
     grpc_thread.start() # 启动grpc
     log.write_log("INFO", "Grpc Engine Start, Grpc server listened at {}".format(grpc_engine.address.get_address()))
     node.start()

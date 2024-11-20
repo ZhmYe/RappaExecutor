@@ -45,7 +45,7 @@ class BHExecutionNode:
 
         # Version_0.1 首先我们先不考虑来自Layer2Node的内容，先把格式定好
         """
-       Start the node to process tasks from the task pool.
+       Start the execution to process tasks from the task pool.
        """
         # Start gRPC server in a separate thread
         # # start前要先把load_config运行了

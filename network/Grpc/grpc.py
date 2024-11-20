@@ -13,7 +13,7 @@
 #
 #     def send_request(self, target, message) -> None:
 #         """
-#         Client logic to send a request to another node.
+#         Client logic to send a request to another execution.
 #         """
 #         # Example: gRPC client logic to send `message` to `target`
 #         pass

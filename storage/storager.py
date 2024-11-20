@@ -5,7 +5,7 @@ import config.config
 from logger.logger import logWriter as log
 from model.format import ModelFormatOutput
 from network.Grpc.FakeGrpc import FakeGrpcEngine
-from node.format import PackedTaskOutput
+from execution.format import PackedTaskOutput
 from storage.encoder.SimpleECHandler import ECHandler
 from storage.format import ChunksPoolItem
 from utils.function.func import  get_project_root
@@ -51,7 +51,7 @@ class Storager:
         return commitment
     def store_local(self, node_id, sign, slot, chunk, index, padding_size):
         # todo 这里写文件
-        log.write_log("STORAGE", "storage a file to local, from node {} task {} slot {}, chunk data: {}, chunk index: {}, padding_size:{}".format(node_id, sign, slot, chunk, index, padding_size))
+        log.write_log("STORAGE", "storage a file to local, from execution {} task {} slot {}, chunk data: {}, chunk index: {}, padding_size:{}".format(node_id, sign, slot, chunk, index, padding_size))
     def start(self):
         pass
 

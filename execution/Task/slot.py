@@ -1,4 +1,4 @@
-from node.format import SlotItem
+from execution.format import SlotItem
 
 
 class Slot:

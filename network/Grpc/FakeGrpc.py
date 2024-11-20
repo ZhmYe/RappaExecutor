@@ -7,8 +7,8 @@ from network.format import BHExecutionGrpcAddress
 # 仅供测试使用
 # 模拟GRPC接收到请求或者假装发起请求
 
-from node.Task.task import  Task
-from node.format import PendingTaskPoolItem
+from execution.Task.task import  Task
+from execution.format import PendingTaskPoolItem
 from logger.logger import logWriter as log
 from config.config import BHExecutionNodeGlobalConfig
 
@@ -23,7 +23,6 @@ class FakeGrpcEngine:
         self.max_task_nb_slot = 10
         self.ips = [] # 这里要存储所有其它节点的address，表示为BHExecutionNodeGrpcAddress
         self.layer2node_ip = "" # 这里存储layer2node的ip
-
 
         self.sign = random.randint(1, 100)
         self.slot = 0
@@ -58,12 +57,12 @@ class FakeGrpcEngine:
         log.write_log("DEBUG", "receive new task slot: \n{}".format(fake_task.format()))
         # print(f"Received request: {request}. Task added: {task}")
 
-    def start_server(self, port=50051) -> None:
+    def start(self) -> None:
         """
         模拟启动 GRPC 服务器，定期向任务队列中添加任务。
         """
         # 这里正式的可以用NETWORK
-        log.write_log("DEBUG", "Fake GRPC server started on port {}".format(port))
+        log.write_log("DEBUG", "Fake GRPC server started on port {}".format(self.address.get_port()))
         for tid in range(5):
             while self.slot <= self.max_task_nb_slot:
                 self.handle_request()
@@ -89,6 +88,7 @@ class FakeGrpcEngine:
                 "slot": slot,
                 "index": index,
                 "data": chunk,
+                "padding": padding_size
             }
             self.send_request(self.ips[index], message)
         pass
