@@ -7,29 +7,39 @@
 import threading
 from queue import Queue
 from logger.logger import logWriter as log
+from model.format import ModelFormatOutput
 from network.Grpc.FakeGrpc import FakeGrpcEngine
-from network.Grpc.grpc import GrpcEngine
+from storage.storager import Storager
+# from network.Grpc.grpc import GrpcEngine
 
 from .Task.task import Task
-from .format import TaskPoolItem
+from .format import PackedTaskOutput, FinishTaskPoolItem, PendingTaskPoolItem
 from config.config import BHExecutionNodeGlobalConfig
 
 class BHExecutionNode:
-    def __init__(self)->None:
+    def __init__(self, pending_task_pool=Queue(), finish_task_pool=Queue())->None:
         self.id = -1 # 节点的唯一标识
-        self.task_pool = Queue()
-        self.debug = BHExecutionNodeGlobalConfig.get_debug()  # 从全局配置获取调试模式
-        self.grpc_engine = (
-            FakeGrpcEngine(self.task_pool) if self.debug else GrpcEngine(self.task_pool)
-        )
-        self.http_engine = None # http
+
+        self.pending_task_pool = pending_task_pool # 等待处理的任务slot
+        self.finish_task_pool = finish_task_pool # 已经完成的任务slot，用于grpc发送心跳
+        self.grpc_engine = None
+        # self.http_engine = None # http
         self.tasks = [] # 所有的任务
         self.task_map = {} # 这里可以用于记录task_sign和task_index的关系
-    def load_config(self, config_name):
-        # 这里用来加载节点的配置，比如grpc address等
-        log.write_log("INFO", "load config from {}".format(config_name))
-        self.info()
-        pass
+        self.storager = None
+
+    def load_config(self):
+        # todo
+        log.write_log("INFO", "BHExecutionNode load config...")
+        self.id = BHExecutionNodeGlobalConfig.NODE_ID
+
+
+    def set_grpc_engine(self, grpc_engine):
+        self.grpc_engine = grpc_engine
+
+    def set_storager(self, storager: Storager):
+        self.storager = storager
+
     def start(self):
         # 节点运行逻辑
 
@@ -38,24 +48,33 @@ class BHExecutionNode:
        Start the node to process tasks from the task pool.
        """
         # Start gRPC server in a separate thread
-        # start前要先把load_config运行了
-        grpc_thread = threading.Thread(target=self.grpc_engine.start_server)
-        grpc_thread.start()
+        # # start前要先把load_config运行了
+        # grpc_thread = threading.Thread(target=self.grpc_engine.start_server)
+        # grpc_thread.start()
 
         # Start processing tasks
         log.write_log("INFO", "BHExecution Node Start...")
         while True:
             try:
                 # Get a task from the task pool (blocking)
-                if self.task_pool.empty():
+                if self.pending_task_pool.empty():
                     continue
-                task_data = self.task_pool.get(timeout=1)  # Wait for a task
-                self.process_task(task_data)
+                task_data: PendingTaskPoolItem = self.pending_task_pool.get(timeout=1)  # Wait for a task
+                output = self.process_task(task_data) # 这里得到了一个输出，我们要将它放到grpc client里，以及要把输出放到storage里
+                # 接下来要做的事情
+                # todo 这里其实还需要机器在发送心跳前down了，那么数据可恢复但是平台不知道，可以在节点的心跳里加入收到了哪些数据块？
+                # 1. 将output用纠删码进行冗余块生成，并计算output的哈希值（用于完整性验证）
+                # 2. 将output用纠删码进行冗余块生成，然后分发到其它节点，当有超过k个节点反应说自己已经收到并存储了冗余块的时候（可以保证容错）
+                # 3. 向Layer2Node发送心跳，说明自己已经做完了
+                # 处理输出，得到数据块并分发
+                commitment = self.storager.handle_model_output(PackedTaskOutput(task_data.get_sign(), task_data.slot, output))
+                # 数据块已经备份，可恢复,将当前slot放入finish
+                self.finish_task_pool.put(FinishTaskPoolItem(commitment, task_data))
             except Exception as e:
                 raise RuntimeError(e)
 
         pass
-    def process_task(self, params: TaskPoolItem):
+    def process_task(self, params: PendingTaskPoolItem)->ModelFormatOutput:
         if params.sign is None:
             raise ValueError("TaskPoolItem.sign should not be None")
         # 取出对应的task，这样写可能不太好，先这样
@@ -68,15 +87,11 @@ class BHExecutionNode:
         else:
             task = self.tasks[self.task_map[params.sign]]
         # 运行task的slot
-        task.update_slot(params.slot) # todo,这里的params()是slot内部的参数
-        log.write_log("TRACK", "process Task Slot finished: \n {}".format(params.format()))
+        output = task.update_slot(params.slot) # todo,这里的params()是slot内部的参数
+        log.write_log("EXECUTION", "process Task {} Slot {}finished".format(params.sign, params.slot.id))
+        return output
 
 
-
-
-    def info(self):
-        # 这里是节点的配置信息输出，暂时可以不管
-        pass
 
 
     def checkpoint(self)->None:

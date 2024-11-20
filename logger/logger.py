@@ -2,10 +2,13 @@ import logging
 import os
 from datetime import datetime
 
+from config.config import BHExecutionNodeGlobalConfig
+
 
 class LogWriter:
-    TRACK_LEVEL_NUM = 25  # 自定义日志级别，介于 INFO 和 WARNING 之间
-
+    NETWORK_LEVEL_NUM = 25  # 自定义日志级别，介于 INFO 和 WARNING 之间
+    EXECUTION_LEVEL_NUM = 26
+    STORAGE_LEVEL_NUM = 27
     def __init__(self, log_path):
         """
         初始化 LogWriter
@@ -15,11 +18,10 @@ class LogWriter:
             debug (bool): 是否处于调试模式（调试模式下只输出到控制台）。
         """
         self.log_path = log_path
-        self.debug = True
+        self.debug = False
         self.logger = None
-        # self.logger = self.setup_logger()
-    def init(self, debug):
-        self.debug = debug
+    def init(self):
+        self.debug = BHExecutionNodeGlobalConfig.DEBUG
         self.logger = self.setup_logger()
     def setup_logger(self):
         # 创建 logger 对象
@@ -49,14 +51,24 @@ class LogWriter:
             logger.addHandler(file_handler)
 
         # 添加 TRACK 日志级别
-        logging.addLevelName(self.TRACK_LEVEL_NUM, "TRACK")
+        logging.addLevelName(self.NETWORK_LEVEL_NUM, "NETWORK")
+        logging.addLevelName(self.EXECUTION_LEVEL_NUM, "EXECUTION")
+        logging.addLevelName(self.STORAGE_LEVEL_NUM, "STORAGE")
 
-        # 定义 logger 的 TRACK 方法
-        def track(message, *args, **kwargs):
-            if logger.isEnabledFor(self.TRACK_LEVEL_NUM):
-                logger._log(self.TRACK_LEVEL_NUM, message, args, **kwargs)
 
-        logger.track = track
+    # 定义 logger 的 TRACK 方法
+        def network(message, *args, **kwargs):
+            if logger.isEnabledFor(self.NETWORK_LEVEL_NUM):
+                logger._log(self.NETWORK_LEVEL_NUM, message, args, **kwargs)
+        def storage(message, *args, **kwargs):
+            if logger.isEnabledFor(self.STORAGE_LEVEL_NUM):
+                logger._log(self.STORAGE_LEVEL_NUM,message, args, **kwargs)
+        def execution(message, *args, **kwargs):
+            if logger.isEnabledFor(self.EXECUTION_LEVEL_NUM):
+                logger._log(self.EXECUTION_LEVEL_NUM,message, args, **kwargs)
+        logger.network = network
+        logger.execution = execution
+        logger.storage = storage
         return logger
 
     def write_log(self, level, message):
@@ -80,8 +92,12 @@ class LogWriter:
             self.logger.error(message)
         elif level == "CRITICAL":
             self.logger.critical(message)
-        elif level == "TRACK":
-            self.logger.track(message)
+        elif level == "NETWORK":
+            self.logger.network(message)
+        elif level == "EXECUTION":
+            self.logger.execution(message)
+        elif level == "STORAGE":
+            self.logger.storage(message)
         else:
             raise ValueError(f"Unsupported log level: {level}")
 

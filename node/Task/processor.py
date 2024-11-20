@@ -21,7 +21,7 @@ class Processor:
     def process(self, slot: Slot)->ModelFormatOutput:
 
         output = self.instance.generate_output(slot.size, slot.params)
-        log.write_log("TRACK", "Generate output with model {}, sample size: {}, output size: {}".format(self.model_name, slot.size, len(output.output)))
+        log.write_log("EXECUTION", "Generate output with model {}, sample size: {}, output size: {}".format(self.model_name, slot.size, len(output.output)))
         return output
 
 

@@ -1,4 +1,6 @@
 # Grpc或者http解析完来自Layer2Node的任务，将其解析为如下内容
+from model.format import ModelFormatOutput
+
 
 # Version 1.0
 # id: 节点标识，没什么太多的用
@@ -32,9 +34,9 @@ class SlotItem:
             "data_size": self.size,
             "model": self.model
         }
-class TaskPoolItem:
-    def __init__(self, tid, sign, slot, size, model_name, model_params: dict=None):
-        self.id = tid
+class PendingTaskPoolItem:
+    def __init__(self, sign, slot, size, model_name, model_params: dict=None):
+        # self.id = tid
         self.sign = sign
         self.slot = SlotItem(slot, size, model_name, model_params)
     def model(self):
@@ -43,7 +45,27 @@ class TaskPoolItem:
         return self.slot.get_model_params()
     def format(self):
         return {
-            "id": self.id,
+            # "id": self.id,
             "sign": self.sign,
             "slot": self.slot.format()
+        }
+    def get_sign(self):
+        return self.sign
+    def get_slot_id(self):
+        return self.slot.id
+
+class PackedTaskOutput:
+    def __init__(self, sign, slot, output: ModelFormatOutput):
+        self.sign = sign
+        self.slot = slot
+        self.output = output
+
+class FinishTaskPoolItem:
+    def __init__(self, pending_task: PendingTaskPoolItem, commitment):
+        self.commitment = commitment
+        self.task = pending_task
+    def format(self):
+        return {
+            "task": self.task.format(),
+            "commitment": self.commitment
         }

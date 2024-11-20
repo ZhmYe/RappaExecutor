@@ -1,0 +1,10 @@
+[2024-11-20 10:07:47] [INFO] [BHExecutionNode] Init Storager from config, storage_path: /root/zkml_test/BHExecutionNode/meta
+[2024-11-20 10:07:47] [INFO] [BHExecutionNode] BHExecutionNode load config...
+[2024-11-20 10:07:47] [INFO] [BHExecutionNode] Grpc Engine Start, Grpc server listened at grpc://127.0.0.1:1234
+[2024-11-20 10:07:47] [INFO] [BHExecutionNode] BHExecution Node Start...
+[2024-11-20 10:07:47] [INFO] [BHExecutionNode] Init Processor with model ctgan from /root/zkml_test/BHExecutionNode/model
+[2024-11-20 10:07:48] [INFO] [BHExecutionNode] Model successfully loaded from: /root/zkml_test/BHExecutionNode/model/ctgan/test
+[2024-11-20 10:07:48] [INFO] [BHExecutionNode] CTGAN_Model_Instance generated output, size: 741
+[2024-11-20 10:07:48] [EXECUTION] [BHExecutionNode] Generate output with model ctgan, sample size: 741, output size: 741
+[2024-11-20 10:07:48] [EXECUTION] [BHExecutionNode] process Task 0x64 Slot 0finished
+[2024-11-20 10:07:48] [INFO] [BHExecutionNode] EC Encoder encode dataframe to encoded chunks, len(dataframe)=741, len(data_chunks)=6, len(encoded_chunks)=9, padding_size=5

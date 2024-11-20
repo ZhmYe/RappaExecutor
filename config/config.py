@@ -1,12 +1,18 @@
-from logger.logger import logWriter as log
-
+from config.default import DEFAULT_NODE_ID, DEFAULT_RS_CODE_N, DEFAULT_RS_CODE_K, DEFAULT_GRPC_PORT, DEFAULT_NODE_IP, \
+    DEFAULT_LAYER2NODE_IP, DEFAULT_LAYER2NODE_PORT, DEFAULT_STORAGE_PATH
+def load_config(config_file_path):
+    pass
 class BHExecutionNodeGlobalConfig:
-    debug = False  # 全局调试模式，默认关闭
+    DEBUG = False  # 全局调试模式，默认关闭
+    NODE_ID = DEFAULT_NODE_ID
+    # EC
+    EC_PARAMS_N = DEFAULT_RS_CODE_N
+    EC_PARAMS_K = DEFAULT_RS_CODE_K
 
-    @staticmethod
-    def set_debug(value: bool):
-        BHExecutionNodeGlobalConfig.debug = value
-        log.init(value)
-    @staticmethod
-    def get_debug() -> bool:
-        return BHExecutionNodeGlobalConfig.debug
+    NODE_IP = DEFAULT_NODE_IP
+    GRPC_PORT = DEFAULT_GRPC_PORT
+
+    LAYER2_ADDRESS_IP = DEFAULT_LAYER2NODE_IP
+    LAYER_ADDRESS_PORT = DEFAULT_LAYER2NODE_PORT
+
+    STORAGE_PATH = DEFAULT_STORAGE_PATH
