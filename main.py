@@ -1,14 +1,10 @@
 import argparse
-import os
 import threading
-
-# from uni_test.test_loader import test_loader
-from config.config import BHExecutionNodeGlobalConfig
-from network.Grpc.FakeGrpc import FakeGrpcEngine
+from network.Grpc.FakeGrpc import FakeGrpcEngine as GrpcEngine
 from queue import Queue
 from logger.logger import logWriter as log
 from execution.node import BHExecutionNode
-from storage.storager import Storager
+from storage.SimpleStorager import SimpleStorager as Storager
 
 
 def parse_args():
@@ -27,8 +23,8 @@ def load_config(config_path):
     pass
 def init_pool()->Queue:
     return Queue()
-def init_grpc_engine(pending, finish, chunks)->FakeGrpcEngine:
-    grpc_engine = FakeGrpcEngine(pending, finish, chunks)
+def init_grpc_engine(pending, finish, chunks)->GrpcEngine:
+    grpc_engine = GrpcEngine(pending, finish, chunks)
     grpc_engine.load_config()
     return grpc_engine
 def init_storager(chunks)->Storager:
@@ -60,5 +56,4 @@ if __name__ == '__main__':
 
     grpc_thread = threading.Thread(target=grpc_engine.start)
     grpc_thread.start() # 启动grpc
-    log.write_log("INFO", "Grpc Engine Start, Grpc server listened at {}".format(grpc_engine.address.get_address()))
     node.start()

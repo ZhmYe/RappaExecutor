@@ -1,5 +1,6 @@
 from config.default import DEFAULT_NODE_ID, DEFAULT_RS_CODE_N, DEFAULT_RS_CODE_K, DEFAULT_GRPC_PORT, DEFAULT_NODE_IP, \
     DEFAULT_LAYER2NODE_IP, DEFAULT_LAYER2NODE_PORT, DEFAULT_STORAGE_PATH
+
 def load_config(config_file_path):
     pass
 class BHExecutionNodeGlobalConfig:

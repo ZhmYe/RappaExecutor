@@ -19,14 +19,22 @@ class MockConfig:
 
 def random_dataframe(rows: int, cols: int) -> pd.DataFrame:
     """
-    Generate a random DataFrame with random column names and float data.
+    生成一个随机 DataFrame，列名唯一且随机字符串，数据为随机浮点数，索引递增。
     """
-    column_names = [
-        ''.join(random.choices(string.ascii_letters, k=random.randint(3, 8)))
-        for _ in range(cols)
-    ]
+    # 确保列名唯一
+    column_names = set()
+    while len(column_names) < cols:
+        column_names.add(
+            ''.join(random.choices(string.ascii_letters, k=random.randint(3, 8)))
+        )
+    column_names = list(column_names)
+
+    # 随机生成数据
     data = np.random.rand(rows, cols)
-    index = np.random.randint(100, 1000, size=rows)
+
+    # 生成递增索引
+    index = sorted(random.sample(range(100, 1000), rows))
+
     return pd.DataFrame(data, columns=column_names, index=index)
 class TestECEncoder(unittest.TestCase):
     def test_process_dataframe(self):

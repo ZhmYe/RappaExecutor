@@ -9,7 +9,7 @@ from queue import Queue
 from logger.logger import logWriter as log
 from model.format import ModelFormatOutput
 from network.Grpc.FakeGrpc import FakeGrpcEngine
-from storage.storager import Storager
+from storage.SimpleStorager import SimpleStorager as Storager
 # from network.Grpc.grpc import GrpcEngine
 
 from .Task.task import Task
@@ -88,7 +88,7 @@ class BHExecutionNode:
             task = self.tasks[self.task_map[params.sign]]
         # 运行task的slot
         output = task.update_slot(params.slot) # todo,这里的params()是slot内部的参数
-        log.write_log("EXECUTION", "process Task {} Slot {}finished".format(params.sign, params.slot.id))
+        log.write_log("EXECUTION", "process Task {} Slot {} finished".format(params.sign, params.slot.id))
         return output
 
 

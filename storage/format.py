@@ -23,3 +23,25 @@ class ChunksPoolItem:
         self.slot = slot
         self.chunk_index = chunk_index
         self.chunk = chunk
+
+class LoadChunkItem:
+    def __init__(self, node_id, sign, slot, chunk_index, data, padding_size, commitment):
+        self.node_id = node_id
+        self.slot = slot
+        self.sign = sign
+        self.index = chunk_index
+        self.data = data
+        self.padding = padding_size
+        self.commitment = commitment
+    def format(self):
+        return {
+            "id": self.node_id,
+            "sign": self.sign,
+            "slot": self.slot,
+            "index": self.index,
+            "chunk": {
+                "data": self.data,
+                "commitment": self.commitment
+            },
+            "padding": self.padding
+        }

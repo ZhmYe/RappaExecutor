@@ -5,80 +5,96 @@ from datetime import datetime
 from config.config import BHExecutionNodeGlobalConfig
 
 
+class LogColors:
+    RESET = "\033[0m"
+    RED = "\033[31m"
+    GREEN = "\033[32m"
+    YELLOW = "\033[33m"
+    BLUE = "\033[34m"
+    MAGENTA = "\033[35m"
+    CYAN = "\033[36m"
+    WHITE = "\033[37m"
+
+
+class ColoredFormatter(logging.Formatter):
+    COLORS = {
+        "DEBUG": LogColors.CYAN,
+        "INFO": LogColors.GREEN,
+        "WARNING": LogColors.YELLOW,
+        "ERROR": LogColors.RED,
+        "CRITICAL": LogColors.MAGENTA,
+        "NETWORK": LogColors.GREEN,
+        "EXECUTION": LogColors.GREEN,
+        "STORAGE": LogColors.GREEN,
+    }
+
+    def format(self, record):
+        level_color = self.COLORS.get(record.levelname, LogColors.WHITE)
+        message = super().format(record)
+        return f"{level_color}{message}{LogColors.RESET}"
+
+
 class LogWriter:
-    NETWORK_LEVEL_NUM = 25  # 自定义日志级别，介于 INFO 和 WARNING 之间
+    NETWORK_LEVEL_NUM = 25
     EXECUTION_LEVEL_NUM = 26
     STORAGE_LEVEL_NUM = 27
-    def __init__(self, log_path):
-        """
-        初始化 LogWriter
 
-        Args:
-            log_path (str): 日志文件的存储路径。
-            debug (bool): 是否处于调试模式（调试模式下只输出到控制台）。
-        """
+    def __init__(self, log_path):
         self.log_path = log_path
         self.debug = False
         self.logger = None
+
     def init(self):
         self.debug = BHExecutionNodeGlobalConfig.DEBUG
         self.logger = self.setup_logger()
-    def setup_logger(self):
-        # 创建 logger 对象
-        logger = logging.getLogger("BHExecutionNode")
-        logger.setLevel(logging.DEBUG)  # 设置最低日志级别
 
-        # 创建控制台输出的 Handler
+    def setup_logger(self):
+        logger = logging.getLogger("BHExecutionNode")
+        logger.setLevel(logging.DEBUG)
+
         console_handler = logging.StreamHandler()
         console_handler.setLevel(logging.DEBUG)
 
-        # 定义日志格式
-        formatter = logging.Formatter(
+        color_formatter = ColoredFormatter(
             "[%(asctime)s] [%(levelname)s] [%(name)s] %(message)s", "%Y-%m-%d %H:%M:%S"
         )
-        console_handler.setFormatter(formatter)
-
-        # 将控制台 Handler 添加到 logger
+        console_handler.setFormatter(color_formatter)
         logger.addHandler(console_handler)
 
-        # 如果不是调试模式，添加文件输出 Handler
         if not self.debug:
             current_time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
             log_file = os.path.join(self.log_path, f"{current_time}.log")
             file_handler = logging.FileHandler(log_file, mode="a", encoding="utf-8")
             file_handler.setLevel(logging.INFO)
-            file_handler.setFormatter(formatter)
+
+            file_formatter = logging.Formatter(
+                "[%(asctime)s] [%(levelname)s] [%(name)s] %(message)s", "%Y-%m-%d %H:%M:%S"
+            )
+            file_handler.setFormatter(file_formatter)
             logger.addHandler(file_handler)
 
-        # 添加 TRACK 日志级别
         logging.addLevelName(self.NETWORK_LEVEL_NUM, "NETWORK")
         logging.addLevelName(self.EXECUTION_LEVEL_NUM, "EXECUTION")
         logging.addLevelName(self.STORAGE_LEVEL_NUM, "STORAGE")
 
-
-    # 定义 logger 的 TRACK 方法
         def network(message, *args, **kwargs):
             if logger.isEnabledFor(self.NETWORK_LEVEL_NUM):
                 logger._log(self.NETWORK_LEVEL_NUM, message, args, **kwargs)
+
         def storage(message, *args, **kwargs):
             if logger.isEnabledFor(self.STORAGE_LEVEL_NUM):
-                logger._log(self.STORAGE_LEVEL_NUM,message, args, **kwargs)
+                logger._log(self.STORAGE_LEVEL_NUM, message, args, **kwargs)
+
         def execution(message, *args, **kwargs):
             if logger.isEnabledFor(self.EXECUTION_LEVEL_NUM):
-                logger._log(self.EXECUTION_LEVEL_NUM,message, args, **kwargs)
+                logger._log(self.EXECUTION_LEVEL_NUM, message, args, **kwargs)
+
         logger.network = network
         logger.execution = execution
         logger.storage = storage
         return logger
 
     def write_log(self, level, message):
-        """
-        记录日志消息
-
-        Args:
-            level (str): 日志级别，例如 "DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL", "TRACK"
-            message (str): 日志消息
-        """
         if self.logger is None:
             return
         level = level.upper()
@@ -100,5 +116,6 @@ class LogWriter:
             self.logger.storage(message)
         else:
             raise ValueError(f"Unsupported log level: {level}")
+
 
 logWriter = LogWriter("/root/zkml_test/BHExecutionNode/logs")

@@ -1,8 +1,11 @@
+import base64
 import random
 import time
 from queue import Queue
 from typing import NamedTuple, Union
 from config.config import BHExecutionNodeGlobalConfig
+from mocker.layer2node import MockerLayer2nNode
+from mocker.exection_node import MockerNode
 from network.format import BHExecutionGrpcAddress
 # 仅供测试使用
 # 模拟GRPC接收到请求或者假装发起请求
@@ -21,26 +24,34 @@ class FakeGrpcEngine:
         self.finish_task_pool = finish_task_pool
         self.receive_chunks_pool = receive_chunks_pool
         self.max_task_nb_slot = 10
-        self.ips = [] # 这里要存储所有其它节点的address，表示为BHExecutionNodeGrpcAddress
-        self.layer2node_ip = "" # 这里存储layer2node的ip
 
         self.sign = random.randint(1, 100)
         self.slot = 0
+
+        self.fake_other_nodes = {}
+        self.fake_layer2_node: MockerLayer2nNode = None
     def load_config(self):
         self.address = BHExecutionGrpcAddress(BHExecutionNodeGlobalConfig.NODE_IP, BHExecutionNodeGlobalConfig.GRPC_PORT)
         log.write_log("DEBUG", "FakeGrpcEngine load config")
         # 这里就简单的随机生成几个ip和port
-        for i in range(10):
-            # 10台机器，每台端口累加，ip本地
-            self.ips.append(BHExecutionGrpcAddress("127.0.0.1", port=self.address.get_port() + 1))
+        self.fake_layer2_node = MockerLayer2nNode()
+        for i in range(BHExecutionNodeGlobalConfig.EC_PARAMS_N - 1):
+            # self.ips.append(BHExecutionGrpcAddress("127.0.0.1", port=self.address.get_port() + 1))
+            node_id = BHExecutionNodeGlobalConfig.NODE_ID + i + 1
+            self.fake_other_nodes[node_id] = MockerNode(node_id, BHExecutionGrpcAddress("127.0.0.1", port=self.address.get_port() + 1 + i), self.fake_layer2_node)
+
+
     def send_heartbeat(self, message)->None:
         pass
-    def send_request(self, target: BHExecutionGrpcAddress, message) -> None:
+    def send_request(self, node_id, message) -> None:
         """
         模拟发送请求
         """
         # NETWORK
-        log.write_log("DEBUG", "fake request is sent to {}".format(target.get_address()))
+        fake_node:MockerNode = self.fake_other_nodes[node_id]
+        fake_node.fake_store_chunk(message)
+        log.write_log("DEBUG", "fake request is sent to {}".format(fake_node.ip.get_address()))
+
     def generate_fake_request(self, sign ,slot)->PendingTaskPoolItem:
         return PendingTaskPoolItem(sign, slot, random.randint(100, 1000), "ctgan")
     def handle_request(self) -> None:
@@ -62,7 +73,7 @@ class FakeGrpcEngine:
         模拟启动 GRPC 服务器，定期向任务队列中添加任务。
         """
         # 这里正式的可以用NETWORK
-        log.write_log("DEBUG", "Fake GRPC server started on port {}".format(self.address.get_port()))
+        log.write_log("DEBUG", "Grpc Engine Start, Grpc server listened at {}".format(self.address.get_address()))
         for tid in range(5):
             while self.slot <= self.max_task_nb_slot:
                 self.handle_request()
@@ -71,6 +82,7 @@ class FakeGrpcEngine:
             self.slot = 0
 
 
+    # 下面的函数仅供模拟
 
     def replicate_encoded_chunks(self, sign, slot, chunks, indices, padding_size, redundancy=False):
         # 发送数据块，redundancy表示是否需要额外冗余存储（纠删码一般不需要，多副本需要）
@@ -79,7 +91,8 @@ class FakeGrpcEngine:
         # todo 这里是否批量并发，以及是否能提前返回
         if len(chunks) != len(indices):
             raise ValueError("len(chunks) and len(indices) does not match.")
-        for i in range(len(chunks)):
+        i = 0
+        for node_id in self.fake_other_nodes:
             chunk = chunks[i]
             index = indices[i]
             message = {
@@ -90,7 +103,25 @@ class FakeGrpcEngine:
                 "data": chunk,
                 "padding": padding_size
             }
-            self.send_request(self.ips[index], message)
+            self.send_request(node_id, message)
+            i += 1
         pass
 
 
+
+
+    def start_test_collect_process(self, node_id, sign, slot):
+        # 这里的chunk就是本地的一个，拿出来算作拿到了
+        request = self.fake_layer2_node.collect(sign, slot, node_id)
+        chunks = []
+        indices = []
+        for item in request:
+            store_node_id, index = item[0], item[1]
+            fake_node: MockerNode = self.fake_other_nodes[store_node_id]
+            store_chunk = fake_node.load_store_chunk(sign, slot, node_id, index)
+            chunks.append(store_chunk["data"])
+            indices.append(index)
+        return chunks, indices
+
+    def send_store_message(self, node_id, sign, slot, _id, index, padding_size):
+        self.fake_layer2_node.update_index(node_id, sign, slot, _id, index)
