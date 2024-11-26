@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package coordinator;
 import "google/protobuf/struct.proto";
-option go_package = "/service";
+
 service Coordinator {
   // Heartbeat 向follower同步slot状态，同时监控节点状态
   rpc Heartbeat (HeartbeatRequest) returns (HeartbeatResponse);
@@ -10,8 +10,11 @@ service Coordinator {
   // Schedule 用于向节点发送调度
   rpc Schedule(ScheduleRequest) returns (ScheduleResponse);
 
-  // SlotVote 投票slot，用于上链
-  rpc SlotVote (SlotVoteRequest) returns (SlotVoteResponse);
+  // EpochVote 投票epoch，用于上链
+  rpc EpochVote (EpochVoteRequest) returns (EpochVoteResponse);
+
+  // Commit 节点向Coordinator返回自己已经完成的Task Slot
+  rpc CommitSlot (SlotCommitRequest) returns (SlotCommitResponse);
 }
 
 // Heartbeat request message
@@ -26,28 +29,43 @@ message HeartbeatResponse {
   repeated string newSlots = 3;       // New slots if any
 }
 
-// SlotVote request message
-message SlotVoteRequest {
+// EpochVote request message
+message EpochVoteRequest {
   repeated string slots = 1; // Slots to be voted on
 }
 
-// SlotVote response message
-message SlotVoteResponse {
+// EpochVote response message
+message EpochVoteResponse {
   string nodeId = 1;           // Node ID of the sender
   bytes voteBitmap = 2;        // Bitmap of the vote
 }
 
 message ScheduleRequest {
   string sign = 1; // 任务标记
-  string size = 2; // 数据总量
-  map<string, string> schedule = 3; // 分配，节点id: 数据量
-  string model = 4; // 模型名称
+  string slot = 2;
+  string size = 3; // 数据总量
+  map<string, string> schedule = 4; // 分配，节点id: 数据量
+  string model = 5; // 模型名称
   // 用于得到model params
-  google.protobuf.Struct params = 5;       // Dynamic details, accepts JSON-like structures
+  google.protobuf.Struct params = 6;       // Dynamic details, accepts JSON-like structures
 }
+
 message ScheduleResponse {
   bool accept = 1; // 是否同意该调度
   string nodeId = 2;
   string sign = 3;
   string errorMessage = 4; // 拒绝的理由
+}
+
+message SlotCommitRequest {
+  string nodeId = 1;
+  string sign = 2;
+  string slot = 3;
+  string size = 4;
+  string errorMessage = 5;// 可能有一些说明，比如没有完全完成
+}
+message SlotCommitResponse {
+  string valid = 1; // 你的提交是否合法，给个枚举
+  string sign = 2; //
+  string slot = 3; // 合法的slot
 }

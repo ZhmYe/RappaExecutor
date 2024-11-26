@@ -44,7 +44,6 @@ if __name__ == '__main__':
     receive_chunks_pool = init_pool()
     grpc_engine = init_grpc_engine(pending_task_pool, finish_task_pool, receive_chunks_pool)
     # 初始化存储模块
-
     storager = init_storager(receive_chunks_pool)
     storager.set_grpc(grpc_engine)
 

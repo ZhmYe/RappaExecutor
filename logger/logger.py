@@ -118,4 +118,4 @@ class LogWriter:
             raise ValueError(f"Unsupported log level: {level}")
 
 
-logWriter = LogWriter("/root/zkml_test/BHExecutionNode/logs")
+logWriter = LogWriter("./logs")

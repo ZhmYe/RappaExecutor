@@ -3,7 +3,7 @@
 import grpc
 import warnings
 
-import service_pb2 as service__pb2
+import services_pb2 as services__pb2
 
 GRPC_GENERATED_VERSION = '1.68.0'
 GRPC_VERSION = grpc.__version__
@@ -18,7 +18,7 @@ except ImportError:
 if _version_not_supported:
     raise RuntimeError(
         f'The grpc package installed is at version {GRPC_VERSION},'
-        + f' but the generated code in service_pb2_grpc.py depends on'
+        + f' but the generated code in services_pb2_grpc.py depends on'
         + f' grpcio>={GRPC_GENERATED_VERSION}.'
         + f' Please upgrade your grpc module to grpcio>={GRPC_GENERATED_VERSION}'
         + f' or downgrade your generated code using grpcio-tools<={GRPC_VERSION}.'
@@ -36,18 +36,23 @@ class CoordinatorStub(object):
         """
         self.Heartbeat = channel.unary_unary(
                 '/coordinator.Coordinator/Heartbeat',
-                request_serializer=service__pb2.HeartbeatRequest.SerializeToString,
-                response_deserializer=service__pb2.HeartbeatResponse.FromString,
+                request_serializer=services__pb2.HeartbeatRequest.SerializeToString,
+                response_deserializer=services__pb2.HeartbeatResponse.FromString,
                 _registered_method=True)
         self.Schedule = channel.unary_unary(
                 '/coordinator.Coordinator/Schedule',
-                request_serializer=service__pb2.ScheduleRequest.SerializeToString,
-                response_deserializer=service__pb2.ScheduleResponse.FromString,
+                request_serializer=services__pb2.ScheduleRequest.SerializeToString,
+                response_deserializer=services__pb2.ScheduleResponse.FromString,
                 _registered_method=True)
-        self.SlotVote = channel.unary_unary(
-                '/coordinator.Coordinator/SlotVote',
-                request_serializer=service__pb2.SlotVoteRequest.SerializeToString,
-                response_deserializer=service__pb2.SlotVoteResponse.FromString,
+        self.EpochVote = channel.unary_unary(
+                '/coordinator.Coordinator/EpochVote',
+                request_serializer=services__pb2.EpochVoteRequest.SerializeToString,
+                response_deserializer=services__pb2.EpochVoteResponse.FromString,
+                _registered_method=True)
+        self.CommitSlot = channel.unary_unary(
+                '/coordinator.Coordinator/CommitSlot',
+                request_serializer=services__pb2.SlotCommitRequest.SerializeToString,
+                response_deserializer=services__pb2.SlotCommitResponse.FromString,
                 _registered_method=True)
 
 
@@ -68,8 +73,15 @@ class CoordinatorServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def SlotVote(self, request, context):
-        """SlotVote 投票slot，用于上链
+    def EpochVote(self, request, context):
+        """EpochVote 投票epoch，用于上链
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def CommitSlot(self, request, context):
+        """Commit 节点向Coordinator返回自己已经完成的Task Slot
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -80,18 +92,23 @@ def add_CoordinatorServicer_to_server(servicer, server):
     rpc_method_handlers = {
             'Heartbeat': grpc.unary_unary_rpc_method_handler(
                     servicer.Heartbeat,
-                    request_deserializer=service__pb2.HeartbeatRequest.FromString,
-                    response_serializer=service__pb2.HeartbeatResponse.SerializeToString,
+                    request_deserializer=services__pb2.HeartbeatRequest.FromString,
+                    response_serializer=services__pb2.HeartbeatResponse.SerializeToString,
             ),
             'Schedule': grpc.unary_unary_rpc_method_handler(
                     servicer.Schedule,
-                    request_deserializer=service__pb2.ScheduleRequest.FromString,
-                    response_serializer=service__pb2.ScheduleResponse.SerializeToString,
+                    request_deserializer=services__pb2.ScheduleRequest.FromString,
+                    response_serializer=services__pb2.ScheduleResponse.SerializeToString,
             ),
-            'SlotVote': grpc.unary_unary_rpc_method_handler(
-                    servicer.SlotVote,
-                    request_deserializer=service__pb2.SlotVoteRequest.FromString,
-                    response_serializer=service__pb2.SlotVoteResponse.SerializeToString,
+            'EpochVote': grpc.unary_unary_rpc_method_handler(
+                    servicer.EpochVote,
+                    request_deserializer=services__pb2.EpochVoteRequest.FromString,
+                    response_serializer=services__pb2.EpochVoteResponse.SerializeToString,
+            ),
+            'CommitSlot': grpc.unary_unary_rpc_method_handler(
+                    servicer.CommitSlot,
+                    request_deserializer=services__pb2.SlotCommitRequest.FromString,
+                    response_serializer=services__pb2.SlotCommitResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -119,8 +136,8 @@ class Coordinator(object):
             request,
             target,
             '/coordinator.Coordinator/Heartbeat',
-            service__pb2.HeartbeatRequest.SerializeToString,
-            service__pb2.HeartbeatResponse.FromString,
+            services__pb2.HeartbeatRequest.SerializeToString,
+            services__pb2.HeartbeatResponse.FromString,
             options,
             channel_credentials,
             insecure,
@@ -146,8 +163,8 @@ class Coordinator(object):
             request,
             target,
             '/coordinator.Coordinator/Schedule',
-            service__pb2.ScheduleRequest.SerializeToString,
-            service__pb2.ScheduleResponse.FromString,
+            services__pb2.ScheduleRequest.SerializeToString,
+            services__pb2.ScheduleResponse.FromString,
             options,
             channel_credentials,
             insecure,
@@ -159,7 +176,7 @@ class Coordinator(object):
             _registered_method=True)
 
     @staticmethod
-    def SlotVote(request,
+    def EpochVote(request,
             target,
             options=(),
             channel_credentials=None,
@@ -172,9 +189,36 @@ class Coordinator(object):
         return grpc.experimental.unary_unary(
             request,
             target,
-            '/coordinator.Coordinator/SlotVote',
-            service__pb2.SlotVoteRequest.SerializeToString,
-            service__pb2.SlotVoteResponse.FromString,
+            '/coordinator.Coordinator/EpochVote',
+            services__pb2.EpochVoteRequest.SerializeToString,
+            services__pb2.EpochVoteResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def CommitSlot(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/coordinator.Coordinator/CommitSlot',
+            services__pb2.SlotCommitRequest.SerializeToString,
+            services__pb2.SlotCommitResponse.FromString,
             options,
             channel_credentials,
             insecure,
