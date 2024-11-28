@@ -1,6 +1,6 @@
 import argparse
 import threading
-from network.Grpc.FakeGrpc import FakeGrpcEngine as GrpcEngine
+from network.Grpc.Grpc import GrpcEngine
 from queue import Queue
 from logger.logger import logWriter as log
 from execution.node import BHExecutionNode
@@ -53,6 +53,6 @@ if __name__ == '__main__':
     node.set_grpc_engine(grpc_engine)
     node.set_storager(storager)
 
-    grpc_thread = threading.Thread(target=grpc_engine.start)
+    grpc_thread = threading.Thread(target=grpc_engine.start_server)
     grpc_thread.start() # 启动grpc
     node.start()
