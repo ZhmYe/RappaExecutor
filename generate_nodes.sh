@@ -1,6 +1,6 @@
 #!/bin/bash
 
-"""!!! 在BHExecutionNode目录之外运行该脚本 !!!"""
+# !!! 在BHExecutionNode目录之外运行该脚本 !!!
 # 1. CODE_DIRECTORY 需改为BHExecutionNode代码的绝对路径
 # 2. 运行命令：./generate_nodes.sh 100 output
 #   num_nodes: 生成的节点个数
@@ -62,6 +62,22 @@ for ((i=0; i<NUM_NODES; i++)); do
   "STORAGE_PATH": "meta"
 }
 EOF
+    # 创建 start.sh 启动脚本
+    cat <<EOF > $NODE_DIR/start.sh
+#!/bin/bash
+echo "Starting node${i}..."
+
+SCRIPT_DIR=\$(dirname "\$(realpath \$0)")  # 使用 realpath 获取绝对路径
+MAIN_SCRIPT="\${SCRIPT_DIR}/BHExecutionNode/main.py"
+
+# 运行 main.py，传递配置文件路径
+python3 \$MAIN_SCRIPT
+
+echo \$! > node.pid
+echo "Node${i} started, PID: \$(cat node.pid)"
+
+EOF
+    chmod +x $NODE_DIR/start.sh
 
 done
 echo "Generated $NUM_NODES nodes."
