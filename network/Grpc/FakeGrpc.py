@@ -1,16 +1,12 @@
-import base64
 import random
 import time
 from queue import Queue
-from typing import NamedTuple, Union
-from config.config import BHExecutionNodeGlobalConfig
 from mocker.layer2node import MockerLayer2nNode
 from mocker.exection_node import MockerNode
 from network.format import BHExecutionGrpcAddress
 # 仅供测试使用
 # 模拟GRPC接收到请求或者假装发起请求
 
-from execution.Task.task import  Task
 from execution.format import PendingTaskPoolItem
 from logger.logger import logWriter as log
 from config.config import BHExecutionNodeGlobalConfig

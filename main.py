@@ -1,6 +1,6 @@
 import argparse
 import threading
-from network.Grpc.FakeGrpc import FakeGrpcEngine as GrpcEngine
+from network.Grpc.Grpc import GrpcEngine
 from queue import Queue
 from logger.logger import logWriter as log
 from execution.node import BHExecutionNode
@@ -44,7 +44,6 @@ if __name__ == '__main__':
     receive_chunks_pool = init_pool()
     grpc_engine = init_grpc_engine(pending_task_pool, finish_task_pool, receive_chunks_pool)
     # 初始化存储模块
-
     storager = init_storager(receive_chunks_pool)
     storager.set_grpc(grpc_engine)
 
@@ -54,6 +53,6 @@ if __name__ == '__main__':
     node.set_grpc_engine(grpc_engine)
     node.set_storager(storager)
 
-    grpc_thread = threading.Thread(target=grpc_engine.start)
+    grpc_thread = threading.Thread(target=grpc_engine.start_server)
     grpc_thread.start() # 启动grpc
     node.start()
