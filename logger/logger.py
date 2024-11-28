@@ -1,8 +1,9 @@
 import logging
 import os
 from datetime import datetime
-
+from utils.function.func import  get_project_root
 from config.config import BHExecutionNodeGlobalConfig
+from pathlib import Path
 
 
 class LogColors:
@@ -39,12 +40,16 @@ class LogWriter:
     EXECUTION_LEVEL_NUM = 26
     STORAGE_LEVEL_NUM = 27
 
-    def __init__(self, log_path):
-        self.log_path = log_path
+    def __init__(self):
+        self.log_path =  Path(get_project_root()) / BHExecutionNodeGlobalConfig.LOG_PATH
         self.debug = False
         self.logger = None
 
     def init(self):
+        # # 如果日志目录不存在，创建目录
+        if not self.log_path.exists():
+            self.log_path.mkdir(parents=True, exist_ok=True)  # 创建目录（包括父目录）
+            
         self.debug = BHExecutionNodeGlobalConfig.DEBUG
         self.logger = self.setup_logger()
 
@@ -117,5 +122,4 @@ class LogWriter:
         else:
             raise ValueError(f"Unsupported log level: {level}")
 
-
-logWriter = LogWriter("/root/zkml_test/BHExecutionNode/logs")
+logWriter = LogWriter()
