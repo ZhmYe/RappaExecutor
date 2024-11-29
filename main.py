@@ -5,7 +5,7 @@ from queue import Queue
 from logger.logger import logWriter as log
 from execution.node import BHExecutionNode
 from storage.SimpleStorager import SimpleStorager as Storager
-
+from config.config import BHExecutionNodeGlobalConfig
 
 def parse_args():
     """
@@ -19,8 +19,9 @@ def parse_args():
     )
     return parser.parse_args()
 def load_config(config_path):
+    BHExecutionNodeGlobalConfig.load_config(config_path)
     log.init()
-    pass
+
 def init_pool()->Queue:
     return Queue()
 def init_grpc_engine(pending, finish, chunks)->GrpcEngine:
@@ -34,9 +35,9 @@ def init_storager(chunks)->Storager:
 if __name__ == '__main__':
     # 解析命令行参数
     args = parse_args()
-    load_config("") # 解析参数
+    load_config("config.json") # 解析参数
     # 根据命令行参数设置全局调试模式
-    # BHExecutionNodeGlobalConfig.set_debug(args.debug)
+    BHExecutionNodeGlobalConfig.set_debug(args.debug)
 
     # 初始化grpc，所有公用
     pending_task_pool = init_pool()
