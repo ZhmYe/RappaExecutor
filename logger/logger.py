@@ -122,4 +122,4 @@ class LogWriter:
         else:
             raise ValueError(f"Unsupported log level: {level}")
 
-logWriter = LogWriter()
+logWriter = LogWriter("./logs")
