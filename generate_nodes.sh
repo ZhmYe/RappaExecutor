@@ -58,7 +58,7 @@ for ((i=0; i<NUM_NODES; i++)); do
   "NODE_IP": "127.0.0.1",
   "GRPC_PORT": $((1234 + i*9)),
   "LAYER2_ADDRESS_IP": "127.0.0.1",
-  "LAYER_ADDRESS_PORT": $((1235 + i*9)),
+  "LAYER_ADDRESS_PORT": $((1235)),
   "STORAGE_PATH": "meta"
 }
 EOF
