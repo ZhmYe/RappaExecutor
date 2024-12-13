@@ -95,13 +95,13 @@ class GrpcEngine:
             return pb2.ScheduleResponse(accept=False, nodeId=str(self.node_id), sign=request.sign,
                                         errorMessage="The Node is not in schedule list.")
 
-    def start_server(self, port=50051):
+    def start_server(self):
         self.server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
         self.service = self.CoordinatorService(self)
         # 将服务添加到服务器
         pb2_grpc.add_CoordinatorServicer_to_server(self.service, self.server)
-        log.write_log("DEBUG", f"gRPC server started on port {port}")
-        self.server.add_insecure_port(f"[::]:{port}")
+        log.write_log("DEBUG", f"gRPC server started on port {self.address.get_port()}")
+        self.server.add_insecure_port(f"[::]:{self.address.get_port()}")
         # 启动grpc
         self.server.start()
         self.server.wait_for_termination()
