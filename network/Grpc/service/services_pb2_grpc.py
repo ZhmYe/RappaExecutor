@@ -24,11 +24,6 @@ class CoordinatorStub(object):
                 request_serializer=services__pb2.ScheduleRequest.SerializeToString,
                 response_deserializer=services__pb2.ScheduleResponse.FromString,
                 )
-        self.EpochVote = channel.unary_unary(
-                '/coordinator.Coordinator/EpochVote',
-                request_serializer=services__pb2.EpochVoteRequest.SerializeToString,
-                response_deserializer=services__pb2.EpochVoteResponse.FromString,
-                )
         self.CommitSlot = channel.unary_unary(
                 '/coordinator.Coordinator/CommitSlot',
                 request_serializer=services__pb2.SlotCommitRequest.SerializeToString,
@@ -48,13 +43,9 @@ class CoordinatorServicer(object):
 
     def Schedule(self, request, context):
         """Schedule 用于向节点发送调度
-        """
-        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
-
-    def EpochVote(self, request, context):
-        """EpochVote 投票epoch，用于上链
+        投票包含在heartbeat里
+        // EpochVote 投票epoch，用于上链
+        rpc EpochVote (EpochVoteRequest) returns (EpochVoteResponse);
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -79,11 +70,6 @@ def add_CoordinatorServicer_to_server(servicer, server):
                     servicer.Schedule,
                     request_deserializer=services__pb2.ScheduleRequest.FromString,
                     response_serializer=services__pb2.ScheduleResponse.SerializeToString,
-            ),
-            'EpochVote': grpc.unary_unary_rpc_method_handler(
-                    servicer.EpochVote,
-                    request_deserializer=services__pb2.EpochVoteRequest.FromString,
-                    response_serializer=services__pb2.EpochVoteResponse.SerializeToString,
             ),
             'CommitSlot': grpc.unary_unary_rpc_method_handler(
                     servicer.CommitSlot,
@@ -131,23 +117,6 @@ class Coordinator(object):
         return grpc.experimental.unary_unary(request, target, '/coordinator.Coordinator/Schedule',
             services__pb2.ScheduleRequest.SerializeToString,
             services__pb2.ScheduleResponse.FromString,
-            options, channel_credentials,
-            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
-
-    @staticmethod
-    def EpochVote(request,
-            target,
-            options=(),
-            channel_credentials=None,
-            call_credentials=None,
-            insecure=False,
-            compression=None,
-            wait_for_ready=None,
-            timeout=None,
-            metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/coordinator.Coordinator/EpochVote',
-            services__pb2.EpochVoteRequest.SerializeToString,
-            services__pb2.EpochVoteResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 

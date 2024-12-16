@@ -1,6 +1,5 @@
 import json
 import os
-import configparser
 from utils.function.func import  get_project_root
 from config.default import DEFAULT_NODE_ID, DEFAULT_RS_CODE_N, DEFAULT_RS_CODE_K, DEFAULT_GRPC_PORT, DEFAULT_NODE_IP, \
     DEFAULT_LAYER2NODE_IP, DEFAULT_LAYER2NODE_PORT, DEFAULT_STORAGE_PATH, DEFAULT_LOG_PATH
@@ -90,4 +89,4 @@ class BHExecutionNodeGlobalConfig:
 
             print(f"Configuration loaded from {config_file_path}")
         except Exception as e:
-            print(f"Error loading configuration: {e}")
+            print(f"Error loading configuration: {e},use default configuration")
