@@ -9,47 +9,56 @@ service Coordinator {
 
   // Schedule 用于向节点发送调度
   rpc Schedule(ScheduleRequest) returns (ScheduleResponse);
-
-  // EpochVote 投票epoch，用于上链
-  rpc EpochVote (EpochVoteRequest) returns (EpochVoteResponse);
+  // 投票包含在heartbeat里
+//  // EpochVote 投票epoch，用于上链
+//  rpc EpochVote (EpochVoteRequest) returns (EpochVoteResponse);
 
   // Commit 节点向Coordinator返回自己已经完成的Task Slot
   rpc CommitSlot (SlotCommitRequest) returns (SlotCommitResponse);
 }
+// 定义 JustifiedSlot 消息
+message JustifiedSlot {
+  int32 nid = 1;          // 节点ID
+  int32 process = 2;      // 进程ID
+  string sign = 3;        // 签名
+  int32 slot = 4;         // 槽位ID
+  int32 epoch = 5;        // 提交的epoch
+  // state字段省略
+}
 
 // Heartbeat request message
 message HeartbeatRequest {
-  map<string, string> slotDistribution = 1; // Slot distribution across nodes
+  repeated JustifiedSlot commits = 1;     // 提交的CommitSlotItem列表
+  repeated JustifiedSlot finalizes = 2;   // 完成的CommitSlotItem列表
+  map<string, int32> tasks = 3;            // 在这个epoch中过期的任务的最新slot
+  int32 epoch = 4;
 }
 
 // Heartbeat response message
-message HeartbeatResponse {
-  string nodeId = 1;               // Node ID of the sender
-  map<string, string> nodeStatus = 2; // Node status for monitoring
-  repeated string newSlots = 3;       // New slots if any
-}
 
-// EpochVote request message
-message EpochVoteRequest {
-  repeated string slots = 1; // Slots to be voted on
+message HeartbeatResponse {
+  int32 nodeId = 1;               // 节点id
+  map<string, string> nodeStatus = 2; // 节点状态，这里先不管，可以加点cpu利用率、内存啥的
+  repeated Vote votes = 3; // 投票
 }
 
 // EpochVote response message
-message EpochVoteResponse {
-  string nodeId = 1;           // Node ID of the sender
-  bytes voteBitmap = 2;        // Bitmap of the vote
+message Vote {
+  JustifiedSlot slot = 1; // 投票针对的内容
+  int32 nodeId = 2;           // Node ID of the sender
+  bool state = 3; // 是否同意
+  string desp = 4; // 原因
 }
 
 message ScheduleRequest {
   string sign = 1; // 任务标记
   string slot = 2;
-  string size = 3; // 数据总量
-  map<string, string> schedule = 4; // 分配，节点id: 数据量
+  int32 size = 3; // 数据总量
+  map<string, int32> schedule = 4; // 分配，节点id: 数据量
   string model = 5; // 模型名称
   // 用于得到model params
   google.protobuf.Struct params = 6;       // Dynamic details, accepts JSON-like structures
 }
-
 message ScheduleResponse {
   bool accept = 1; // 是否同意该调度
   string nodeId = 2;
@@ -61,7 +70,7 @@ message SlotCommitRequest {
   string nodeId = 1;
   string sign = 2;
   string slot = 3;
-  string size = 4;
+  int32 size = 4;
   string errorMessage = 5;// 可能有一些说明，比如没有完全完成
 }
 message SlotCommitResponse {
