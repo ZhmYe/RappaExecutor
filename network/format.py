@@ -15,7 +15,7 @@ class BHExecutionNodeAddress:
             "ip": self.grpc_ip,
             "port": self.grpc_port
         }
-class BHExecutionGrpcAddress:
+class BHExecutionAddress:
     def __init__(self, ip, port):
         self.ip = ip
         self.port = port
@@ -24,13 +24,13 @@ class BHExecutionGrpcAddress:
     def get_port(self):
         return self.port
     def get_address(self):
-        return "grpc://{}:{}".format(self.ip, self.port)
+        return "{}:{}".format(self.ip, self.port)
 
-class BHExecutionHttpAddress:
-    def __init__(self, ip, port):
-        self.ip = ip
-        self.port = port
-    def get_ip(self):
-        return self.ip
-    def get_port(self):
-        return self.port
+# class BHExecutionHttpAddress:
+#     def __init__(self, ip, port):
+#         self.ip = ip
+#         self.port = port
+#     def get_ip(self):
+#         return self.ip
+#     def get_port(self):
+#         return self.port

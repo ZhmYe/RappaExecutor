@@ -53,6 +53,8 @@ class PendingTaskPoolItem:
         return self.sign
     def get_slot_id(self):
         return self.slot.id
+    def get_slot_size(self):
+        return self.slot.size
 
 class PackedTaskOutput:
     def __init__(self, sign, slot: SlotItem, output: ModelFormatOutput):

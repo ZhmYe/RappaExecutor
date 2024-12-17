@@ -16,23 +16,23 @@ from .Task.task import Task
 from .format import PackedTaskOutput, FinishTaskPoolItem, PendingTaskPoolItem
 from config.config import BHExecutionNodeGlobalConfig
 
-class BHExecutionNode:
-    def __init__(self, pending_task_pool=Queue(), finish_task_pool=Queue())->None:
-        self.id = -1 # 节点的唯一标识
 
-        self.pending_task_pool = pending_task_pool # 等待处理的任务slot
-        self.finish_task_pool = finish_task_pool # 已经完成的任务slot，用于grpc发送心跳
+class BHExecutionNode:
+    def __init__(self, pending_task_pool=Queue(), finish_task_pool=Queue()) -> None:
+        self.id = -1  # 节点的唯一标识
+
+        self.pending_task_pool = pending_task_pool  # 等待处理的任务slot
+        self.finish_task_pool = finish_task_pool  # 已经完成的任务slot，用于grpc发送心跳
         self.grpc_engine = None
         # self.http_engine = None # http
-        self.tasks = [] # 所有的任务
-        self.task_map = {} # 这里可以用于记录task_sign和task_index的关系
+        self.tasks = []  # 所有的任务
+        self.task_map = {}  # 这里可以用于记录task_sign和task_index的关系
         self.storager = None
 
     def load_config(self):
         # todo
         log.write_log("INFO", "BHExecutionNode load config...")
         self.id = BHExecutionNodeGlobalConfig.NODE_ID
-
 
     def set_grpc_engine(self, grpc_engine):
         self.grpc_engine = grpc_engine
@@ -60,21 +60,21 @@ class BHExecutionNode:
                 if self.pending_task_pool.empty():
                     continue
                 task_data: PendingTaskPoolItem = self.pending_task_pool.get(timeout=1)  # Wait for a task
-                output = self.process_task(task_data) # 这里得到了一个输出，我们要将它放到grpc client里，以及要把输出放到storage里
+                output = self.process_task(task_data)  # 这里得到了一个输出，我们要将它放到grpc client里，以及要把输出放到storage里
                 # 接下来要做的事情
                 # todo 这里其实还需要机器在发送心跳前down了，那么数据可恢复但是平台不知道，可以在节点的心跳里加入收到了哪些数据块？
                 # 1. 将output用纠删码进行冗余块生成，并计算output的哈希值（用于完整性验证）
                 # 2. 将output用纠删码进行冗余块生成，然后分发到其它节点，当有超过k个节点反应说自己已经收到并存储了冗余块的时候（可以保证容错）
                 # 3. 向Layer2Node发送心跳，说明自己已经做完了
                 # 处理输出，得到数据块并分发
-                commitment = self.storager.handle_model_output(PackedTaskOutput(task_data.get_sign(), task_data.slot, output))
+                commitment = self.storager.handle_model_output(
+                    PackedTaskOutput(task_data.get_sign(), task_data.slot, output))
                 # 数据块已经备份，可恢复,将当前slot放入finish
-                self.finish_task_pool.put(FinishTaskPoolItem(commitment, task_data))
+                self.finish_task_pool.put(FinishTaskPoolItem(task_data, commitment))
             except Exception as e:
                 raise RuntimeError(e)
 
-        pass
-    def process_task(self, params: PendingTaskPoolItem)->ModelFormatOutput:
+    def process_task(self, params: PendingTaskPoolItem) -> ModelFormatOutput:
         if params.sign is None:
             raise ValueError("TaskPoolItem.sign should not be None")
         # 取出对应的task，这样写可能不太好，先这样
@@ -87,14 +87,11 @@ class BHExecutionNode:
         else:
             task = self.tasks[self.task_map[params.sign]]
         # 运行task的slot
-        output = task.update_slot(params.slot) # todo,这里的params()是slot内部的参数
+        output = task.update_slot(params.slot)  # todo,这里的params()是slot内部的参数
         log.write_log("EXECUTION", "process Task {} Slot {} finished".format(params.sign, params.slot.id))
         return output
 
-
-
-
-    def checkpoint(self)->None:
+    def checkpoint(self) -> None:
         # 如果节点down了，如果还想要尝试恢复历史任务状态（不用担心合成数据，因为已经通过纠删码冗余了）
         # 因为节点状态可能需要作为元数据的一部分，节点需要恢复，因此在这里留一个写checkpoint的接口
         # 可以找到当前节点未完成的所有任务

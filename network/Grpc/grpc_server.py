@@ -1,8 +1,8 @@
 import grpc
 from google.protobuf.json_format import MessageToDict
 
-import network.Grpc.service.services_pb2_grpc as pb2_grpc
-import network.Grpc.service.services_pb2 as pb2
+import network.Grpc.service.service_pb2_grpc as pb2_grpc
+import network.Grpc.service.service_pb2 as pb2
 from execution.format import PendingTaskPoolItem
 from network.Grpc.grpc_config import GrpcConfig
 from logger.logger import logWriter as log
@@ -10,16 +10,13 @@ from concurrent import futures
 
 
 #  实现service中节点服务端相关rpc接口
-class GrpcServer(pb2_grpc.CoordinatorServicer):
+class GrpcServer(pb2_grpc.NodeExecutorServicer):
     def __init__(self, grpc_config: GrpcConfig):
         self._grpc_config = grpc_config
         self._core_server = None
 
     def Heartbeat(self, request, context):
         return super().Heartbeat(request, context)
-
-    def CommitSlot(self, request, context):
-        return super().CommitSlot(request, context)
 
     # 服务端方法，用于处理调度
     def Schedule(self, request, context):
@@ -42,11 +39,11 @@ class GrpcServer(pb2_grpc.CoordinatorServicer):
     def start_server(self):
         self._core_server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
         # 将服务添加到服务器
-        pb2_grpc.add_CoordinatorServicer_to_server(self, self._core_server)
+        pb2_grpc.add_NodeExecutorServicer_to_server(self, self._core_server)
         self._core_server.add_insecure_port(f"[::]:{self._grpc_config.address.get_port()}")
-        log.write_log("DEBUG", f"gRPC server started on port {self._grpc_config.address.get_port()}")
         # 启动grpc
         self._core_server.start()
+        log.write_log("DEBUG", f"gRPC server started on port {self._grpc_config.address.get_port()}")
         self._core_server.wait_for_termination()
 
     # 关闭服务
