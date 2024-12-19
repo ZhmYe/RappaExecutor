@@ -7,7 +7,7 @@ from config.config import BHExecutionNodeGlobalConfig
 from logger.logger import logWriter as log
 from mocker.layer2node import MockerLayer2nNode
 from network.Grpc.grpc_client import GrpcClient
-from network.Grpc.grpc_config import GrpcConfig
+from network.Grpc.grpc_registry import GrpcRegistry
 from network.Grpc.grpc_server import GrpcServer
 
 from network.format import BHExecutionAddress
@@ -16,11 +16,11 @@ from network.format import BHExecutionAddress
 class GrpcEngine:
     def __init__(self, pending_task_pool=Queue(), finish_task_pool=Queue(), receive_chunks_pool=Queue()) -> None:
         # 当前的grpc配置信息
-        self.config = GrpcConfig()
+        self.registry = GrpcRegistry()
         # 设置队列
-        self.config.pending_task_pool = pending_task_pool
-        self.config.finish_task_pool = finish_task_pool
-        self.config.receive_chunks_pool = receive_chunks_pool
+        self.registry.pending_task_pool = pending_task_pool
+        self.registry.finish_task_pool = finish_task_pool
+        self.registry.receive_chunks_pool = receive_chunks_pool
         # 当前的grpc服务端
         self.server: Optional[GrpcServer] = None
         # 当前的grpc客户端
@@ -33,23 +33,23 @@ class GrpcEngine:
     # 加载配置
     def load_config(self):
         # 导入本机和layer2端地址和端口
-        self.config.address = BHExecutionAddress(BHExecutionNodeGlobalConfig.NODE_IP,
-                                                 BHExecutionNodeGlobalConfig.GRPC_PORT)
-        self.config.layer2_address = BHExecutionAddress(BHExecutionNodeGlobalConfig.LAYER2_ADDRESS_IP,
-                                                        BHExecutionNodeGlobalConfig.LAYER_ADDRESS_PORT)
+        self.registry.address = BHExecutionAddress(BHExecutionNodeGlobalConfig.NODE_IP,
+                                                   BHExecutionNodeGlobalConfig.GRPC_PORT)
+        self.registry.layer2_address = BHExecutionAddress(BHExecutionNodeGlobalConfig.LAYER2_ADDRESS_IP,
+                                                          BHExecutionNodeGlobalConfig.LAYER_ADDRESS_PORT)
         # 导入节点id
-        self.config.node_id = str(BHExecutionNodeGlobalConfig.NODE_ID)
+        self.registry.node_id = str(BHExecutionNodeGlobalConfig.NODE_ID)
         # 配置服务端
-        self.server = GrpcServer(self.config)
+        self.server = GrpcServer(self.registry)
         # 配置客户端
-        self.client = GrpcClient(self.config)
+        self.client = GrpcClient(self.registry)
         # todo ==============暂未实现的GRPC，用fake代替=========================
         self.fake_layer2_node = MockerLayer2nNode()
         for i in range(BHExecutionNodeGlobalConfig.EC_PARAMS_N - 1):
             node_id = BHExecutionNodeGlobalConfig.NODE_ID + i + 1
-            self.config.others_address[node_id] = BHExecutionAddress("127.0.0.1",
-                                                                     port=self.config.address.get_port() + 1 + i)
-            self.fake_other_nodes[node_id] = MockerNode(node_id, self.config.others_address[node_id],
+            self.registry.others_address[node_id] = BHExecutionAddress("127.0.0.1",
+                                                                       port=self.registry.address.get_port() + 1 + i)
+            self.fake_other_nodes[node_id] = MockerNode(node_id, self.registry.others_address[node_id],
                                                         self.fake_layer2_node)
         # todo ================================================================
         log.write_log("DEBUG", "GrpcEngine load config")

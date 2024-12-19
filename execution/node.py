@@ -55,10 +55,10 @@ class BHExecutionNode:
         # Start processing tasks
         log.write_log("INFO", "BHExecution Node Start...")
         while True:
+            # Get a task from the task pool (blocking)
+            if self.pending_task_pool.empty():
+                continue
             try:
-                # Get a task from the task pool (blocking)
-                if self.pending_task_pool.empty():
-                    continue
                 task_data: PendingTaskPoolItem = self.pending_task_pool.get(timeout=1)  # Wait for a task
                 output = self.process_task(task_data)  # 这里得到了一个输出，我们要将它放到grpc client里，以及要把输出放到storage里
                 # 接下来要做的事情

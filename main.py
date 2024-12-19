@@ -1,6 +1,4 @@
 import argparse
-import sys
-import threading
 from network.Grpc.grpc_engine import GrpcEngine
 from queue import Queue
 from logger.logger import logWriter as log
