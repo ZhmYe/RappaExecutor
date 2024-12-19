@@ -1,4 +1,4 @@
-class GrpcConfig:
+class GrpcRegistry:
     def __init__(self):
         # 当前节点的id
         self.node_id = None
