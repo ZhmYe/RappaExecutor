@@ -1,11 +1,11 @@
 # 这里用来模拟其它节点
 from mocker.layer2node import MockerLayer2nNode
-from network.format import BHExecutionNodeAddress, BHExecutionGrpcAddress
+from network.format import BHExecutionNodeAddress, BHExecutionAddress
 
 
 class MockerNode:
     # 这里目前测试，其它节点要存文件块
-    def __init__(self, _id, ip: BHExecutionGrpcAddress, layer2node: MockerLayer2nNode):
+    def __init__(self, _id, ip: BHExecutionAddress, layer2node: MockerLayer2nNode):
         self.id = _id
         self.files = {}
         self.fake_layer2 = layer2node
