@@ -5,13 +5,11 @@ import os.path
 import pickle
 import random
 import pandas as pd
-import config.config
 from logger.logger import logWriter as log
-from model.format import ModelFormatOutput
-from network.Grpc.FakeGrpc import FakeGrpcEngine
 from execution.format import PackedTaskOutput
+from network.Grpc.grpc_engine import GrpcEngine
 from storage.encoder.SimpleECHandler import ECHandler
-from storage.format import ChunksPoolItem, LoadChunkItem
+from storage.format import LoadChunkItem
 from utils.function.func import  get_project_root
 from config.config import BHExecutionNodeGlobalConfig
 # storage提供两个功能
@@ -26,7 +24,7 @@ class SimpleStorager:
         # self.send_chunks_pool = send_chunks_pool # 用来存储需要被发送给其它节点的chunk
         self.receive_chunks_pool = receive_chunks_pool # 用来存储收到的来自其它节点的chunk
         self.ec_handler:ECHandler = None # 纠删码
-        self.grpc_engine: FakeGrpcEngine = None
+        self.grpc_engine: GrpcEngine = None
     def load_config(self):
         self.storage_path = os.path.join(get_project_root(), BHExecutionNodeGlobalConfig.STORAGE_PATH)
         log.write_log("INFO", "Init Storager from config, storage_path: {}".format(self.storage_path))

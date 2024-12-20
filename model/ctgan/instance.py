@@ -22,7 +22,7 @@ class CTGAN_Model_Instance(ABC):
         self.model_path = model_path
         self.model = None
 
-    def load_model_from_pth_file_path(self, params:dict):
+    def load_model_from_pth_file_path(self, params: dict):
         """
         从 .pth 文件加载 CTGAN 模型。
 
@@ -51,7 +51,7 @@ class CTGAN_Model_Instance(ABC):
             # 加载保存的内容
             dir_path = params["dir_path"]
             checkpoint_path = os.path.join(self.model_path, dir_path, params["model_name"])
-            checkpoint = torch.load(checkpoint_path)
+            checkpoint = torch.load(checkpoint_path, weights_only=False)
             generator_state = checkpoint['generator_state']
             transformer_config = pickle.loads(checkpoint['transformer_config'])
             metadata = checkpoint['metadata']
@@ -114,8 +114,7 @@ class CTGAN_Model_Instance(ABC):
         else:
             return None, None
 
-
-    def generate_output(self, output_size=100, params=None)->ModelFormatOutput:
+    def generate_output(self, output_size=100, params=None) -> ModelFormatOutput:
         """
         使用模型生成输出数据。
 
@@ -128,19 +127,19 @@ class CTGAN_Model_Instance(ABC):
         """
         try:
             condition_column, condition_value = self.generate_input(params)
-            synthetic_data = self.model.sample(output_size,condition_column, condition_value)
+            synthetic_data = self.model.sample(output_size, condition_column, condition_value)
             log.write_log(
                 "INFO",
                 "{} generated output, size: {}".format(self.name(), len(synthetic_data))
             )
             return ModelFormatOutput(
                 "ctgan",
-          {
-              "condition_column": condition_column,
-              "condition_value": condition_value
-             },
-            synthetic_data,
-            params
+                {
+                    "condition_column": condition_column,
+                    "condition_value": condition_value
+                },
+                synthetic_data,
+                params
             )
         except Exception as e:
             log.write_log(

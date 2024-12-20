@@ -3,7 +3,7 @@ import time
 from queue import Queue
 from mocker.layer2node import MockerLayer2nNode
 from mocker.exection_node import MockerNode
-from network.format import BHExecutionGrpcAddress
+from network.format import BHExecutionAddress
 # 仅供测试使用
 # 模拟GRPC接收到请求或者假装发起请求
 
@@ -13,7 +13,7 @@ from config.config import BHExecutionNodeGlobalConfig
 
 class FakeGrpcEngine:
     def __init__(self, pending_task_pool=Queue(), finish_task_pool=Queue(), receive_chunks_pool=Queue()) -> None:
-        self.address = BHExecutionGrpcAddress("127.0.0.1", "0")
+        self.address = BHExecutionAddress("127.0.0.1", "0")
         self.server = None
         self.client = None
         self.pending_task_pool = pending_task_pool
@@ -27,14 +27,14 @@ class FakeGrpcEngine:
         self.fake_other_nodes = {}
         self.fake_layer2_node: MockerLayer2nNode = None
     def load_config(self):
-        self.address = BHExecutionGrpcAddress(BHExecutionNodeGlobalConfig.NODE_IP, BHExecutionNodeGlobalConfig.GRPC_PORT)
+        self.address = BHExecutionAddress(BHExecutionNodeGlobalConfig.NODE_IP, BHExecutionNodeGlobalConfig.GRPC_PORT)
         log.write_log("DEBUG", "FakeGrpcEngine load config")
         # 这里就简单的随机生成几个ip和port
         self.fake_layer2_node = MockerLayer2nNode()
         for i in range(BHExecutionNodeGlobalConfig.EC_PARAMS_N - 1):
             # self.ips.append(BHExecutionGrpcAddress("127.0.0.1", port=self.address.get_port() + 1))
             node_id = BHExecutionNodeGlobalConfig.NODE_ID + i + 1
-            self.fake_other_nodes[node_id] = MockerNode(node_id, BHExecutionGrpcAddress("127.0.0.1", port=self.address.get_port() + 1 + i), self.fake_layer2_node)
+            self.fake_other_nodes[node_id] = MockerNode(node_id, BHExecutionAddress("127.0.0.1", port=self.address.get_port() + 1 + i), self.fake_layer2_node)
 
 
     def send_heartbeat(self, message)->None:
