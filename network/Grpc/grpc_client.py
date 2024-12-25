@@ -7,7 +7,7 @@ import threading
 
 from grpc import Channel
 
-from execution.format import PendingTaskPoolItem
+from execution.format import PendingTaskPoolItem, FinishTaskPoolItem
 from network.Grpc.grpc_registry import GrpcRegistry
 import network.Grpc.service.service_pb2_grpc as pb2_grpc
 import network.Grpc.service.service_pb2 as pb2
@@ -17,6 +17,7 @@ from logger.logger import logWriter as log
 class GrpcClient:
     def __init__(self, registry: GrpcRegistry):
         self._registry = registry
+        # 这里配置grpc客户端策略
         self._client_config = json.dumps({
             "methodConfig": [{
                 "name": [
@@ -43,23 +44,33 @@ class GrpcClient:
                 continue
             try:
                 # 从完成的任务池中获取任务
-                finished_task: PendingTaskPoolItem = self._registry.finish_task_pool.get(timeout=1).task
+                finished_task: FinishTaskPoolItem = self._registry.finish_task_pool.get(timeout=1)
+                task: PendingTaskPoolItem = finished_task.task
+                commitment = finished_task.commitment
+
                 commit_request = pb2.SlotCommitRequest(
-                    nodeId=self._registry.node_id,
-                    sign=finished_task.get_sign(),
-                    slot=str(finished_task.slot),
-                    size=finished_task.get_slot_size()
+                    nodeId=int(self._registry.node_id),
+                    sign=task.get_sign(),
+                    slot=task.get_slot_id(),
+                    size=task.get_slot_size(),
+                    commitment=bytes(commitment, 'utf-8')
                 )
                 # 发送grpc请求
                 stub = pb2_grpc.CoordinatorStub(self._channel)
                 commit_response: pb2.SlotCommitResponse = stub.CommitSlot(commit_request, timeout=5,
                                                                           wait_for_ready=True)
+                # 对提交结果进行处理
+                self._commit_result_process(commit_response)
                 # 处理结果,这里暂时只打印日志
                 log.write_log("DEBUG",
                               f"successfully upload commit slot{commit_request.slot} of task{commit_request.sign}:[size:{commit_request.size}]")
 
             except Exception as e:
                 log.write_log("ERROR", f"faild to commit slot because of {e}")
+
+    # TODO 这里处理layer返回commit的结果
+    def _commit_result_process(self, response: pb2.SlotCommitResponse):
+        pass
 
     # 创建 channel
     def _create_channel(self):
@@ -74,9 +85,12 @@ class GrpcClient:
     # 用于监听channel的状态变化
     def _on_state_chage(self, state):
         # 这里先实现一个状态监测，通道没有接通
-        match state:
-            case grpc.ChannelConnectivity.TRANSIENT_FAILURE:
-                log.write_log("ERROR", f"{self._registry.layer2_address.get_address()} can not ping,try again!")
+        # TODO: 这里是3.10的写法
+        # match state:
+        #     case grpc.ChannelConnectivity.TRANSIENT_FAILURE:
+        #         log.write_log("ERROR", f"{self._registry.layer2_address.get_address()} can not ping,try again!")
+        if state == grpc.ChannelConnectivity.TRANSIENT_FAILURE:
+            log.write_log("WARNING", f"{self._registry.layer2_address.get_address()} can not ping,try again!")
 
     # 开启客户端
     def start_client(self):

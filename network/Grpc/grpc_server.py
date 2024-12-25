@@ -5,7 +5,7 @@ import network.Grpc.service.service_pb2_grpc as pb2_grpc
 import network.Grpc.service.service_pb2 as pb2
 from execution.format import PendingTaskPoolItem
 from network.Grpc.grpc_registry import GrpcRegistry
-from logger.logger import logWriter as log
+from logger.logger import logWriter as log, logWriter
 from concurrent import futures
 import utils.system.sys_monitor as sys_monitor
 
@@ -17,17 +17,18 @@ class GrpcServer(pb2_grpc.NodeExecutorServicer):
         self._core_server = None
 
     def Heartbeat(self, request: pb2.HeartbeatRequest, context):
-        # TODO 这里暂时这样做
+        # TODO 这里暂时这样做,简单实现一下
         votes = []
         status = {}
+        logWriter.write_log("DEBUG", f"receive heartbeat.vote for {len(request.commits)} commits.")
         for slot in request.commits:
             votes.append(pb2.Vote(
-                slot=slot,
-                nodeId=request.nodeId,
-                status=True,
+                hash='12345678',
+                nodeId=int(self._registry.node_id),
+                commitment=bytes('12345678', 'utf-8'),
+                state=True,
                 desp='agree everything'
             ))
-
         # 简单获取一个内存占用
         total_memory, used_memory, memory_usage = sys_monitor.get_memory_info()
         status['memory_usage'] = str(memory_usage)
