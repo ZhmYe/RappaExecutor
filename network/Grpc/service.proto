@@ -2,11 +2,14 @@ syntax = "proto3";
 
 package service;
 import "google/protobuf/struct.proto";
+option go_package = "/service";
 
 // 这个是layer端的服务协议
 service Coordinator {
   // Commit 节点向Coordinator返回自己已经完成的Task Slot
   rpc CommitSlot (SlotCommitRequest) returns (SlotCommitResponse);
+  // TODO: 这里有一个提交proof的接口，先不实现
+//  rpc CommitProof (ProofCommitRequest) returns (ProofCommitRespnse);
 }
 
 // 这个是节点端的服务协议
@@ -28,14 +31,18 @@ message JustifiedSlot {
   string sign = 3;        // 签名
   int32 slot = 4;         // 槽位ID
   int32 epoch = 5;        // 提交的epoch
+  // TODO: @SD 这里需要在python代码里先加一个commitment字段上去，可以先不真的算后面具体怎么算还要改，先放一个函数在那compute_commitment,我不记得我有没有放了
+  bytes commitment = 6; // 提交slot的时候向Master承诺，自己生成的数据文件的commitment
   // state字段省略
 }
 
+// TODO: @SD 下面的request改了
 // Heartbeat request message
 message HeartbeatRequest {
-  repeated JustifiedSlot commits = 1;     // 提交的CommitSlotItem列表
-  repeated JustifiedSlot finalizes = 2;   // 完成的CommitSlotItem列表
-  map<string, int32> tasks = 3;            // 在这个epoch中过期的任务的最新slot
+  map<string, bytes> commits = 1;     // 提交的CommitSlotItem列表
+  map<string, bytes> finalizes = 2;   // 完成的CommitSlotItem列表
+  map<string, int32> invalids = 3;    // 这个epoch中检测出的有问题的slot
+//  map<string, int32> tasks = 3;            // 在这个epoch中过期的任务的最新slot
   int32 epoch = 4;
 }
 
@@ -49,10 +56,15 @@ message HeartbeatResponse {
 
 // EpochVote response message
 message Vote {
-  JustifiedSlot slot = 1; // 投票针对的内容
-  int32 nodeId = 2;           // Node ID of the sender
-  bool state = 3; // 是否同意
-  string desp = 4; // 原因
+//  JustifiedSlot slot = 1; // 投票针对的内容
+//  int32 nodeId = 2;           // Node ID of the sender
+//  bool state = 3; // 是否同意
+//  string desp = 4; // 原因
+  string hash = 1; // 投票针对的slot的哈希，这里暂时都写string，后续可以改成bytes,sign_slot_nid
+    int32 nodeId = 2;           // Node ID of the sender
+  bytes commitment = 3; // slot的承诺
+  bool state = 4; // 是否同意
+  string desp = 5; // 原因
 }
 
 message ScheduleRequest {
@@ -70,16 +82,20 @@ message ScheduleResponse {
   string sign = 3;
   string errorMessage = 4; // 拒绝的理由
 }
-
+// TODO: @SD 下面这两个都改了，request多了一个commitment同上,response是我这里写好了，python里接收到后留一下process()函数，然后里面啥也不用写
 message SlotCommitRequest {
-  string nodeId = 1;
+  int32 nodeId = 1;
   string sign = 2;
-  string slot = 3;
+  int32 slot = 3;
   int32 size = 4;
-  string errorMessage = 5;// 可能有一些说明，比如没有完全完成
+  bytes commitment = 5;
+  string errorMessage = 6;// 可能有一些说明，比如没有完全完成
 }
 message SlotCommitResponse {
-  string valid = 1; // 你的提交是否合法，给个枚举
-  string sign = 2; //
-  string slot = 3; // 合法的slot
+//  string valid = 1; // 你的提交是否合法，给个枚举,这个感觉没啥必要
+  bytes seed = 1; // 传给节点一个随机值，用于生成随机的hash
+  string hash = 2; // 给节点一个标识用来标识这个slot，用于后续查看heartbeat
+  int32 timeout = 3; // 传给节点一个时限，用于说明多少时间后需要传递一个zkp证明以及多久后开始投票，暂定不可变
+//  string sign = 2; //
+//  string slot = 3; // 合法的slot
 }
