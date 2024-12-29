@@ -1,0 +1,13 @@
+[2024-12-24 08:41:55] [INFO] [BHExecutionNode] Init Storager from config, storage_path: /root/zkml_test/BHExecutionNode/meta
+[2024-12-24 08:41:55] [INFO] [BHExecutionNode] BHExecutionNode load config...
+[2024-12-24 08:41:55] [INFO] [BHExecutionNode] BHExecution Node Start...
+[2024-12-24 08:42:02] [INFO] [BHExecutionNode] Init Processor with model ctgan from /root/zkml_test/BHExecutionNode/model
+[2024-12-24 08:42:13] [INFO] [BHExecutionNode] Model successfully loaded from: /root/zkml_test/BHExecutionNode/model/ctgan/test
+[2024-12-24 08:42:15] [INFO] [BHExecutionNode] CTGAN_Model_Instance generated output, size: 50
+[2024-12-24 08:42:15] [EXECUTION] [BHExecutionNode] Generate output with model ctgan, sample size: 50, output size: 50
+[2024-12-24 08:42:15] [EXECUTION] [BHExecutionNode] process Task FakeSign-1735029701 Slot 1 finished
+[2024-12-24 08:42:16] [INFO] [BHExecutionNode] EC Encoder encode dataframe to encoded chunks, len(dataframe)=50, len(data_chunks)=6, len(encoded_chunks)=9, padding_size=1
+[2024-12-24 08:42:16] [STORAGE] [BHExecutionNode] Chunk stored locally: /root/zkml_test/BHExecutionNode/meta/FakeSign-1735029701/1/node_0/3-chunk.json
+[2024-12-24 08:42:16] [STORAGE] [BHExecutionNode] EC Decoder decode data success...
+[2024-12-24 08:42:16] [STORAGE] [BHExecutionNode] finish replicate the data from Task FakeSign-1735029701 Slot 1
+[2024-12-24 08:42:16] [ERROR] [BHExecutionNode] faild to commit slot because of string argument without an encoding

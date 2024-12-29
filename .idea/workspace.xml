@@ -1,0 +1,309 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="1dc9b31b-c6cf-4b8a-800b-76946d4ab624" name="Changes" comment="update grpc code">
+      <change afterPath="$PROJECT_DIR$/paradigm/commitment.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/paradigm/model.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/paradigm/schedule.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/paradigm/slot.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/paradigm/task.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/processor/processor.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/Storager.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/chunker.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/task/SlotManager.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/task/TaskTracker.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/execution/Task/processor.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/execution/Task/slot.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/execution/Task/task.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/execution/format.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/execution/node.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/model/ctgan/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/model/CTGAN/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/model/ctgan/component.py" beforeDir="false" afterPath="$PROJECT_DIR$/model/CTGAN/component.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/model/ctgan/instance.py" beforeDir="false" afterPath="$PROJECT_DIR$/model/CTGAN/instance.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/model/ctgan/test/ctgan_model.pth" beforeDir="false" afterPath="$PROJECT_DIR$/model/CTGAN/test/ctgan_model.pth" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/model/ctgan/test/sampler" beforeDir="false" afterPath="$PROJECT_DIR$/model/CTGAN/test/sampler" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/model/ctgan/train_model.py" beforeDir="false" afterPath="$PROJECT_DIR$/model/CTGAN/train_model.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/model/loader.py" beforeDir="false" afterPath="$PROJECT_DIR$/model/loader.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/network/Grpc/FakeGrpc.py" beforeDir="false" afterPath="$PROJECT_DIR$/network/Grpc/FakeGrpc.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/network/Grpc/grpc_client.py" beforeDir="false" afterPath="$PROJECT_DIR$/network/Grpc/grpc_client.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/network/Grpc/grpc_engine.py" beforeDir="false" afterPath="$PROJECT_DIR$/network/Grpc/grpc_engine.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/network/Grpc/grpc_registry.py" beforeDir="false" afterPath="$PROJECT_DIR$/network/Grpc/grpc_registry.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/network/Grpc/grpc_server.py" beforeDir="false" afterPath="$PROJECT_DIR$/network/Grpc/grpc_server.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/network/Grpc/service.proto" beforeDir="false" afterPath="$PROJECT_DIR$/network/Grpc/service.proto" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/network/Grpc/service/service_pb2.py" beforeDir="false" afterPath="$PROJECT_DIR$/network/Grpc/service/service_pb2.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/network/Grpc/service/service_pb2_grpc.py" beforeDir="false" afterPath="$PROJECT_DIR$/network/Grpc/service/service_pb2_grpc.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/SimpleStorager.py" beforeDir="false" afterPath="$PROJECT_DIR$/storage/SimpleStorager.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/uni_test/test_fake_grpc_engine.py" beforeDir="false" afterPath="$PROJECT_DIR$/uni_test/test_fake_grpc_engine.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/uni_test/test_loader.py" beforeDir="false" afterPath="$PROJECT_DIR$/uni_test/test_loader.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/function/func.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/function/func.py" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Python Script" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="HighlightingSettingsPerFile">
+    <setting file="file://$USER_HOME$/.cache/JetBrains/PyCharm2024.3/python_stubs/-1247971761/zfec/_fec.py" root0="SKIP_INSPECTION" />
+    <setting file="file:///usr/local/lib/python3.8/dist-packages/ctgan/synthesizers/ctgan.py" root0="SKIP_INSPECTION" />
+    <setting file="file:///usr/local/lib/python3.8/dist-packages/reedsolo.py" root0="SKIP_INSPECTION" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 2
+}</component>
+  <component name="ProjectId" id="2osATI5dQP3vLu6IBusIsVv4h3n" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Python tests.Python tests for test_BHExecutionNode.TestBHExecutionNode.executor": "Run",
+    "Python tests.Python tests for test_DataFrameChunker.TestDataFrameChunker.executor": "Run",
+    "Python tests.Python tests for test_EC_encoder.TestECEncoder.executor": "Run",
+    "Python tests.Python tests for test_EC_handler.TestECEncoder.executor": "Run",
+    "Python tests.Python tests for test_fake_grpc_engine.TestFakeGrpcEngine.executor": "Run",
+    "Python tests.Python tests for test_loader.TestLoader.executor": "Run",
+    "Python tests.Python tests for test_simple_storager.TestSimpleStorager.executor": "Run",
+    "Python tests.Python tests for uni_test.test_EC_handler.TestECEncoder.executor": "Run",
+    "Python.main.executor": "Run",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "git-widget-placeholder": "yzm",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "vue.rearranger.settings.migration": "true"
+  }
+}]]></component>
+  <component name="RdControllerToolWindowsLayoutState" isNewUi="true">
+    <layout>
+      <window_info id="Bookmarks" side_tool="true" />
+      <window_info id="Merge Requests" />
+      <window_info id="Commit_Guest" show_stripe_button="false" />
+      <window_info id="Pull Requests" />
+      <window_info id="Learn" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.25478142" />
+      <window_info id="Commit" order="1" weight="0.1169465" />
+      <window_info id="Structure" order="2" side_tool="true" weight="0.25" />
+      <window_info anchor="bottom" id="Database Changes" />
+      <window_info anchor="bottom" id="TypeScript" />
+      <window_info anchor="bottom" id="HfCacheToolWindow" />
+      <window_info anchor="bottom" id="File Transfer" />
+      <window_info anchor="bottom" id="Version Control" order="0" weight="0.3202429" />
+      <window_info anchor="bottom" id="Terminal" order="1" weight="0.82712555" />
+      <window_info anchor="bottom" id="Problems" order="2" />
+      <window_info anchor="bottom" id="Problems View" order="3" weight="0.54858303" />
+      <window_info anchor="bottom" id="Services" order="4" />
+      <window_info anchor="bottom" id="Python Packages" order="5" weight="0.1" />
+      <window_info anchor="bottom" id="Python Console" order="6" weight="0.81603336" />
+      <window_info anchor="bottom" id="Run" order="7" weight="0.19083585" />
+      <window_info anchor="bottom" id="TODO" order="8" weight="0.81603336" />
+      <window_info anchor="bottom" id="Debug" order="9" weight="0.18198134" />
+      <window_info anchor="bottom" id="Find" order="10" weight="0.82712555" />
+      <window_info anchor="right" id="Endpoints" />
+      <window_info anchor="right" id="Coverage" side_tool="true" />
+      <window_info anchor="right" id="SciView" />
+      <window_info anchor="right" content_ui="combo" id="Notifications" order="0" weight="0.25" />
+      <window_info anchor="right" id="AIAssistant" order="1" weight="0.25" />
+      <window_info anchor="right" id="Database" order="2" weight="0.25" />
+      <window_info anchor="right" id="Gradle" order="3" weight="0.25" />
+      <window_info anchor="right" id="Maven" order="4" weight="0.25" />
+      <window_info anchor="right" id="Plots" order="5" weight="0.1" />
+    </layout>
+  </component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/utils/cryptography/hash" />
+      <recent name="$PROJECT_DIR$/network/Http" />
+      <recent name="$PROJECT_DIR$/network/Grpc" />
+      <recent name="$PROJECT_DIR$/model/ctgan/test" />
+    </key>
+  </component>
+  <component name="RunManager" selected="Python.main">
+    <configuration name="main" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
+      <module name="BHExecutionNode" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/main.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="test_fake_grpc_engine.TestFakeGrpcEngine 的 Python 测试" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
+      <module name="BHExecutionNode" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/uni_test" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="_new_additionalArguments" value="&quot;&quot;" />
+      <option name="_new_target" value="&quot;test_fake_grpc_engine.TestFakeGrpcEngine&quot;" />
+      <option name="_new_targetType" value="&quot;PYTHON&quot;" />
+      <method v="2" />
+    </configuration>
+    <configuration name="test_loader.TestLoader 的 Python 测试" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
+      <module name="BHExecutionNode" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/uni_test" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="_new_additionalArguments" value="&quot;&quot;" />
+      <option name="_new_target" value="&quot;test_loader.TestLoader&quot;" />
+      <option name="_new_targetType" value="&quot;PYTHON&quot;" />
+      <method v="2" />
+    </configuration>
+    <configuration name="test_simple_storager.TestSimpleStorager 的 Python 测试" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
+      <module name="BHExecutionNode" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/uni_test" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="_new_additionalArguments" value="&quot;&quot;" />
+      <option name="_new_target" value="&quot;test_simple_storager.TestSimpleStorager&quot;" />
+      <option name="_new_targetType" value="&quot;PYTHON&quot;" />
+      <method v="2" />
+    </configuration>
+    <configuration name="uni_test.test_EC_handler.TestECEncoder 的 Python 测试" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
+      <module name="BHExecutionNode" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/uni_test" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="_new_additionalArguments" value="&quot;&quot;" />
+      <option name="_new_target" value="&quot;uni_test.test_EC_handler.TestECEncoder&quot;" />
+      <option name="_new_targetType" value="&quot;PYTHON&quot;" />
+      <method v="2" />
+    </configuration>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-js-predefined-d6986cc7102b-e768b9ed790e-JavaScript-PY-243.21565.199" />
+        <option value="bundled-python-sdk-cab1f2013843-4ae2d6a61b08-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-243.21565.199" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="1dc9b31b-c6cf-4b8a-800b-76946d4ab624" name="Changes" comment="" />
+      <created>1731647917234</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1731647917234</updated>
+      <workItem from="1731647919147" duration="110000" />
+      <workItem from="1731648035797" duration="16984000" />
+      <workItem from="1731903737008" duration="25338000" />
+      <workItem from="1731996774040" duration="121000" />
+      <workItem from="1731996909558" duration="17496000" />
+      <workItem from="1732018980815" duration="4184000" />
+      <workItem from="1732075594816" duration="9185000" />
+      <workItem from="1732085664520" duration="15527000" />
+      <workItem from="1732162097660" duration="10000" />
+      <workItem from="1732162125832" duration="17198000" />
+      <workItem from="1732240174895" duration="18000" />
+      <workItem from="1732240207427" duration="4480000" />
+      <workItem from="1732262667995" duration="7000" />
+      <workItem from="1732262689933" duration="7781000" />
+      <workItem from="1732338376199" duration="41000" />
+      <workItem from="1732338422590" duration="2194000" />
+      <workItem from="1733042144588" duration="2301000" />
+      <workItem from="1735018000734" duration="12000" />
+      <workItem from="1735018024511" duration="3305000" />
+      <workItem from="1735022280188" duration="12192000" />
+      <workItem from="1735105482598" duration="6687000" />
+      <workItem from="1735359238861" duration="518000" />
+      <workItem from="1735359762801" duration="24047000" />
+    </task>
+    <task id="LOCAL-00001" summary="update grpc interface">
+      <option name="closed" value="true" />
+      <created>1735110053714</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1735110053714</updated>
+    </task>
+    <task id="LOCAL-00002" summary="update grpc code">
+      <option name="closed" value="true" />
+      <created>1735110080505</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1735110080505</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="update grpc interface" />
+    <MESSAGE value="update grpc code" />
+    <option name="LAST_COMMIT_MESSAGE" value="update grpc code" />
+  </component>
+  <component name="com.intellij.coverage.CoverageDataManagerImpl">
+    <SUITE FILE_PATH="coverage/BHExecutionNode$.coverage" NAME=" Coverage Results" MODIFIED="1732167367653" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/uni_test" />
+    <SUITE FILE_PATH="coverage/BHExecutionNode$main.coverage" NAME="main 覆盖结果" MODIFIED="1735108873402" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+  </component>
+</project>

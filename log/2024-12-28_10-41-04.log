@@ -1,0 +1,9 @@
+[2024-12-28 10:41:04] [INFO] [BHExecutionNode] Init Storager from config, storage_path: /root/zkml_test/BHExecutionNode/meta
+[2024-12-28 10:41:05] [INFO] [BHExecutionNode] Init Processor with model from /root/zkml_test/BHExecutionNode/model
+[2024-12-28 10:41:05] [INFO] [BHExecutionNode] Init Processor with model from /root/zkml_test/BHExecutionNode/model
+[2024-12-28 10:41:05] [EXECUTION] [BHExecutionNode] Receive New Task, Sign: FakeSign-1735382389, Slot: 1
+[2024-12-28 10:41:05] [EXECUTION] [BHExecutionNode] Receive Unprocessed Slot, Sign: FakeSign-1735382389, Slot: 1
+[2024-12-28 10:41:19] [EXECUTION] [BHExecutionNode] Receive Unprocessed Slot, Sign: FakeSign-1735382389, Slot: 2
+[2024-12-28 10:41:34] [INFO] [BHExecutionNode] Model successfully loaded from: /root/zkml_test/BHExecutionNode/model/CTGAN/test
+[2024-12-28 10:41:35] [INFO] [BHExecutionNode] Model successfully loaded from: /root/zkml_test/BHExecutionNode/model/CTGAN/test
+[2024-12-28 10:41:39] [EXECUTION] [BHExecutionNode] Receive Unprocessed Slot, Sign: FakeSign-1735382389, Slot: 3

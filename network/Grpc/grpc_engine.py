@@ -11,16 +11,18 @@ from network.Grpc.grpc_registry import GrpcRegistry
 from network.Grpc.grpc_server import GrpcServer
 
 from network.format import BHExecutionAddress
+from paradigm.slot import CommitSlotItem
 
 
 class GrpcEngine:
-    def __init__(self, pending_task_pool=Queue(), finish_task_pool=Queue(), receive_chunks_pool=Queue()) -> None:
+    def __init__(self, pending_task_pool=Queue(), finish_task_pool=Queue(), receive_chunks_pool=Queue(), slot_channel=Queue()) -> None:
         # 当前的grpc配置信息
         self.registry = GrpcRegistry()
         # 设置队列
         self.registry.pending_task_pool = pending_task_pool
         self.registry.finish_task_pool = finish_task_pool
         self.registry.receive_chunks_pool = receive_chunks_pool
+        self.registry.slot_channel = slot_channel
         # 当前的grpc服务端
         self.server: Optional[GrpcServer] = None
         # 当前的grpc客户端
@@ -70,7 +72,11 @@ class GrpcEngine:
         fake_node: MockerNode = self.fake_other_nodes[node_id]
         fake_node.fake_store_chunk(message)
         log.write_log("DEBUG", "fake request is sent to {}".format(fake_node.ip.get_address()))
-
+    def process_undetermined_slot(self, slot: CommitSlotItem):
+        # 这里是要发起commitSlot
+        if not slot.is_undetermined():
+            raise ValueError("slot called grpc_engine.process_undetermined_slot must be UNDETERMINED!!!")
+        self.registry.finish_task_pool.put(slot)
     def replicate_encoded_chunks(self, sign, slot, chunks, indices, padding_size, redundancy=False):
         # 发送数据块，redundancy表示是否需要额外冗余存储（纠删码一般不需要，多副本需要）
         # chunks是数据块，indices表示数据块位置索引

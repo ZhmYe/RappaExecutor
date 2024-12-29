@@ -1,0 +1,21 @@
+[2024-12-24 08:38:17] [INFO] [BHExecutionNode] Init Storager from config, storage_path: /root/zkml_test/BHExecutionNode/meta
+[2024-12-24 08:38:17] [INFO] [BHExecutionNode] BHExecutionNode load config...
+[2024-12-24 08:38:17] [INFO] [BHExecutionNode] BHExecution Node Start...
+[2024-12-24 08:38:18] [INFO] [BHExecutionNode] Init Processor with model ctgan from /root/zkml_test/BHExecutionNode/model
+[2024-12-24 08:38:25] [INFO] [BHExecutionNode] Model successfully loaded from: /root/zkml_test/BHExecutionNode/model/ctgan/test
+[2024-12-24 08:38:27] [INFO] [BHExecutionNode] CTGAN_Model_Instance generated output, size: 50
+[2024-12-24 08:38:27] [EXECUTION] [BHExecutionNode] Generate output with model ctgan, sample size: 50, output size: 50
+[2024-12-24 08:38:27] [EXECUTION] [BHExecutionNode] process Task FakeSign-1735029487 Slot 0 finished
+[2024-12-24 08:38:27] [INFO] [BHExecutionNode] EC Encoder encode dataframe to encoded chunks, len(dataframe)=50, len(data_chunks)=6, len(encoded_chunks)=9, padding_size=5
+[2024-12-24 08:38:27] [STORAGE] [BHExecutionNode] Chunk stored locally: /root/zkml_test/BHExecutionNode/meta/FakeSign-1735029487/0/node_0/2-chunk.json
+[2024-12-24 08:38:27] [STORAGE] [BHExecutionNode] EC Decoder decode data success...
+[2024-12-24 08:38:27] [STORAGE] [BHExecutionNode] finish replicate the data from Task FakeSign-1735029487 Slot 0
+[2024-12-24 08:38:27] [ERROR] [BHExecutionNode] faild to commit slot because of Protocol message SlotCommitRequest has no "commitent" field.
+[2024-12-24 08:38:38] [INFO] [BHExecutionNode] CTGAN_Model_Instance generated output, size: 50
+[2024-12-24 08:38:38] [EXECUTION] [BHExecutionNode] Generate output with model ctgan, sample size: 50, output size: 50
+[2024-12-24 08:38:38] [EXECUTION] [BHExecutionNode] process Task FakeSign-1735029487 Slot 1 finished
+[2024-12-24 08:38:38] [INFO] [BHExecutionNode] EC Encoder encode dataframe to encoded chunks, len(dataframe)=50, len(data_chunks)=6, len(encoded_chunks)=9, padding_size=5
+[2024-12-24 08:38:38] [STORAGE] [BHExecutionNode] Chunk stored locally: /root/zkml_test/BHExecutionNode/meta/FakeSign-1735029487/1/node_0/5-chunk.json
+[2024-12-24 08:38:39] [STORAGE] [BHExecutionNode] EC Decoder decode data success...
+[2024-12-24 08:38:39] [STORAGE] [BHExecutionNode] finish replicate the data from Task FakeSign-1735029487 Slot 1
+[2024-12-24 08:38:39] [ERROR] [BHExecutionNode] faild to commit slot because of Protocol message SlotCommitRequest has no "commitent" field.

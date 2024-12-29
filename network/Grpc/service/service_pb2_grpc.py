@@ -2,8 +2,7 @@
 """Client and server classes corresponding to protobuf-defined services."""
 import grpc
 
-import network.Grpc.service.service_pb2 as service__pb2
-
+from . import  service_pb2 as service__pb2
 
 class CoordinatorStub(object):
     """这个是layer端的服务协议
