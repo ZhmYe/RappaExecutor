@@ -1,6 +1,0 @@
-[2024-12-29 05:06:48] [INFO] [BHExecutionNode] Init Storager from config, storage_path: /root/zkml_test/BHExecutionNode/meta
-[2024-12-29 05:06:48] [WARNING] [BHExecutionNode] 127.0.0.1:1235 can not ping,try again!
-[2024-12-29 05:06:48] [INFO] [BHExecutionNode] Init Processor with model from /root/zkml_test/BHExecutionNode/model
-[2024-12-29 05:07:17] [INFO] [BHExecutionNode] Model successfully loaded from: /root/zkml_test/BHExecutionNode/model/CTGAN/test
-[2024-12-29 05:07:22] [EXECUTION] [BHExecutionNode] Receive New Task, Sign: FakeSign-1735448841, Slot: 0
-[2024-12-29 05:07:22] [EXECUTION] [BHExecutionNode] Receive Unprocessed Slot, Sign: FakeSign-1735448841, Slot: 0
