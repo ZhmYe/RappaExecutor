@@ -1,8 +1,8 @@
 import unittest
 from queue import Queue
 from unittest.mock import patch
-from execution.Task.task import Task
-from execution.format import PendingTaskPoolItem
+from _execution.Task.task import Task
+from _execution.format import PendingTaskPoolItem
 from logger.logger import logWriter as log
 from network.Grpc.FakeGrpc import FakeGrpcEngine  # Replace 'your_module' with the actual module name
 
@@ -29,7 +29,7 @@ class TestFakeGrpcEngine(unittest.TestCase):
         # self.assertEqual(task.id, tid)
         self.assertEqual(task.sign, sign)
         self.assertEqual(task.slot.id, slot)
-        self.assertEqual(task.model(), "ctgan")
+        self.assertEqual(task.model(), "CTGAN")
 
     def test_handle_request(self):
         """

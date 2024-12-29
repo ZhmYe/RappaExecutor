@@ -18,7 +18,7 @@ def get_model_root():
 
 def get_model_params_dict(model_name):
     model_dict = {
-        "ctgan": {
+        "CTGAN": {
             "dir_path": "test",
             "model_name": "ctgan_model.pth",
             "sampler_file_name": "sampler"

@@ -7,7 +7,7 @@ from network.format import BHExecutionAddress
 # 仅供测试使用
 # 模拟GRPC接收到请求或者假装发起请求
 
-from execution.format import PendingTaskPoolItem
+from _execution.format import PendingTaskPoolItem
 from logger.logger import logWriter as log
 from config.config import BHExecutionNodeGlobalConfig
 
@@ -49,7 +49,7 @@ class FakeGrpcEngine:
         log.write_log("DEBUG", "fake request is sent to {}".format(fake_node.ip.get_address()))
 
     def generate_fake_request(self, sign ,slot)->PendingTaskPoolItem:
-        return PendingTaskPoolItem(sign, slot, random.randint(100, 1000), "ctgan")
+        return PendingTaskPoolItem(sign, slot, random.randint(100, 1000), "CTGAN")
     def handle_request(self) -> None:
         """
         模拟接收到请求，并将任务放入任务池中。
