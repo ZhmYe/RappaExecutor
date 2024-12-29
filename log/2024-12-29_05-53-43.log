@@ -1,0 +1,8 @@
+[2024-12-29 05:53:43] [INFO] [BHExecutionNode] Init Storager from config, storage_path: /root/zkml_test/BHExecutionNode/meta
+[2024-12-29 05:53:43] [WARNING] [BHExecutionNode] 127.0.0.1:1235 can not ping,try again!
+[2024-12-29 05:53:43] [INFO] [BHExecutionNode] Init Processor with model from /root/zkml_test/BHExecutionNode/model
+[2024-12-29 05:54:02] [INFO] [BHExecutionNode] Model successfully loaded from: /root/zkml_test/BHExecutionNode/model/CTGAN/test
+[2024-12-29 05:56:39] [EXECUTION] [BHExecutionNode] Receive New Task, Sign: FakeSign-1735451798, Slot: 0
+[2024-12-29 05:56:39] [EXECUTION] [BHExecutionNode] Receive Unprocessed Slot, Sign: FakeSign-1735451798, Slot: 0
+[2024-12-29 05:56:39] [ERROR] [BHExecutionNode] CTGAN_Model_Instance failed to generate output: 'CommitSlotModelParams' object is not subscriptable
+[2024-12-29 05:56:40] [ERROR] [BHExecutionNode] Worker encountered an error: Failed to generate output.

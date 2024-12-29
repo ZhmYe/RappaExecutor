@@ -1,0 +1,2 @@
+[2024-12-28 10:31:36] [INFO] [BHExecutionNode] Init Storager from config, storage_path: /root/zkml_test/BHExecutionNode/meta
+[2024-12-28 10:31:36] [EXECUTION] [BHExecutionNode] Receive New Task, Sign: FakeSign-1735381496, Slot: 12

@@ -1,0 +1,45 @@
+[2024-12-20 10:00:38] [INFO] [BHExecutionNode] Init Storager from config, storage_path: /root/zkml_test/BHExecutionNode/meta
+[2024-12-20 10:00:38] [INFO] [BHExecutionNode] BHExecutionNode load config...
+[2024-12-20 10:00:38] [INFO] [BHExecutionNode] BHExecution Node Start...
+[2024-12-20 10:00:38] [ERROR] [BHExecutionNode] 127.0.0.1:1235 can not ping,try again!
+[2024-12-20 10:00:39] [INFO] [BHExecutionNode] Init Processor with model ctgan from /root/zkml_test/BHExecutionNode/model
+[2024-12-20 10:00:48] [INFO] [BHExecutionNode] Model successfully loaded from: /root/zkml_test/BHExecutionNode/model/ctgan/test
+[2024-12-20 10:00:49] [INFO] [BHExecutionNode] CTGAN_Model_Instance generated output, size: 50
+[2024-12-20 10:00:49] [EXECUTION] [BHExecutionNode] Generate output with model ctgan, sample size: 50, output size: 50
+[2024-12-20 10:00:49] [EXECUTION] [BHExecutionNode] process Task FakeSign-1734688839 Slot 0 finished
+[2024-12-20 10:00:49] [INFO] [BHExecutionNode] EC Encoder encode dataframe to encoded chunks, len(dataframe)=50, len(data_chunks)=6, len(encoded_chunks)=9, padding_size=2
+[2024-12-20 10:00:49] [STORAGE] [BHExecutionNode] Chunk stored locally: /root/zkml_test/BHExecutionNode/meta/FakeSign-1734688839/0/node_0/8-chunk.json
+[2024-12-20 10:00:49] [STORAGE] [BHExecutionNode] EC Decoder decode data success...
+[2024-12-20 10:00:49] [STORAGE] [BHExecutionNode] finish replicate the data from Task FakeSign-1734688839 Slot 0
+[2024-12-20 10:00:49] [ERROR] [BHExecutionNode] 127.0.0.1:1235 can not ping,try again!
+[2024-12-20 10:00:54] [ERROR] [BHExecutionNode] faild to commit slot because of <_InactiveRpcError of RPC that terminated with:
+	status = StatusCode.DEADLINE_EXCEEDED
+	details = "Deadline Exceeded"
+	debug_error_string = "UNKNOWN:Deadline Exceeded {grpc_status:4, created_time:"2024-12-20T10:00:54.871703953+00:00"}"
+>
+[2024-12-20 10:01:34] [INFO] [BHExecutionNode] Init Processor with model ctgan from /root/zkml_test/BHExecutionNode/model
+[2024-12-20 10:01:35] [INFO] [BHExecutionNode] Model successfully loaded from: /root/zkml_test/BHExecutionNode/model/ctgan/test
+[2024-12-20 10:01:37] [INFO] [BHExecutionNode] CTGAN_Model_Instance generated output, size: 50
+[2024-12-20 10:01:37] [EXECUTION] [BHExecutionNode] Generate output with model ctgan, sample size: 50, output size: 50
+[2024-12-20 10:01:37] [EXECUTION] [BHExecutionNode] process Task FakeSign-1734688894 Slot 0 finished
+[2024-12-20 10:01:37] [INFO] [BHExecutionNode] EC Encoder encode dataframe to encoded chunks, len(dataframe)=50, len(data_chunks)=6, len(encoded_chunks)=9, padding_size=0
+[2024-12-20 10:01:37] [STORAGE] [BHExecutionNode] Chunk stored locally: /root/zkml_test/BHExecutionNode/meta/FakeSign-1734688894/0/node_0/4-chunk.json
+[2024-12-20 10:01:37] [STORAGE] [BHExecutionNode] EC Decoder decode data success...
+[2024-12-20 10:01:37] [STORAGE] [BHExecutionNode] finish replicate the data from Task FakeSign-1734688894 Slot 0
+[2024-12-20 10:01:42] [ERROR] [BHExecutionNode] faild to commit slot because of <_InactiveRpcError of RPC that terminated with:
+	status = StatusCode.DEADLINE_EXCEEDED
+	details = "Deadline Exceeded"
+	debug_error_string = "UNKNOWN:Deadline Exceeded {grpc_status:4, created_time:"2024-12-20T10:01:42.341693532+00:00"}"
+>
+[2024-12-20 10:01:55] [INFO] [BHExecutionNode] CTGAN_Model_Instance generated output, size: 50
+[2024-12-20 10:01:55] [EXECUTION] [BHExecutionNode] Generate output with model ctgan, sample size: 50, output size: 50
+[2024-12-20 10:01:55] [EXECUTION] [BHExecutionNode] process Task FakeSign-1734688894 Slot 1 finished
+[2024-12-20 10:01:55] [INFO] [BHExecutionNode] EC Encoder encode dataframe to encoded chunks, len(dataframe)=50, len(data_chunks)=6, len(encoded_chunks)=9, padding_size=1
+[2024-12-20 10:01:56] [STORAGE] [BHExecutionNode] Chunk stored locally: /root/zkml_test/BHExecutionNode/meta/FakeSign-1734688894/1/node_0/3-chunk.json
+[2024-12-20 10:01:56] [STORAGE] [BHExecutionNode] EC Decoder decode data success...
+[2024-12-20 10:01:56] [STORAGE] [BHExecutionNode] finish replicate the data from Task FakeSign-1734688894 Slot 1
+[2024-12-20 10:01:56] [ERROR] [BHExecutionNode] faild to commit slot because of <_InactiveRpcError of RPC that terminated with:
+	status = StatusCode.INTERNAL
+	details = "Exception deserializing response!"
+	debug_error_string = "None"
+>

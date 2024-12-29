@@ -1,0 +1,70 @@
+[2024-12-24 08:34:47] [INFO] [BHExecutionNode] Init Storager from config, storage_path: /root/zkml_test/BHExecutionNode/meta
+[2024-12-24 08:34:47] [INFO] [BHExecutionNode] BHExecutionNode load config...
+[2024-12-24 08:34:47] [INFO] [BHExecutionNode] BHExecution Node Start...
+[2024-12-24 08:34:49] [INFO] [BHExecutionNode] Init Processor with model ctgan from /root/zkml_test/BHExecutionNode/model
+[2024-12-24 08:35:08] [INFO] [BHExecutionNode] Model successfully loaded from: /root/zkml_test/BHExecutionNode/model/ctgan/test
+[2024-12-24 08:35:10] [INFO] [BHExecutionNode] CTGAN_Model_Instance generated output, size: 50
+[2024-12-24 08:35:10] [EXECUTION] [BHExecutionNode] Generate output with model ctgan, sample size: 50, output size: 50
+[2024-12-24 08:35:11] [EXECUTION] [BHExecutionNode] process Task FakeSign-1735029264 Slot 0 finished
+[2024-12-24 08:35:11] [INFO] [BHExecutionNode] EC Encoder encode dataframe to encoded chunks, len(dataframe)=50, len(data_chunks)=6, len(encoded_chunks)=9, padding_size=3
+[2024-12-24 08:35:11] [STORAGE] [BHExecutionNode] Chunk stored locally: /root/zkml_test/BHExecutionNode/meta/FakeSign-1735029264/0/node_0/4-chunk.json
+[2024-12-24 08:35:11] [STORAGE] [BHExecutionNode] EC Decoder decode data success...
+[2024-12-24 08:35:11] [STORAGE] [BHExecutionNode] finish replicate the data from Task FakeSign-1735029264 Slot 0
+[2024-12-24 08:35:11] [ERROR] [BHExecutionNode] faild to commit slot because of <execution.format.SlotItem object at 0x7f0bd018edf0> has type SlotItem, but expected one of: int
+[2024-12-24 08:35:13] [INFO] [BHExecutionNode] CTGAN_Model_Instance generated output, size: 50
+[2024-12-24 08:35:13] [EXECUTION] [BHExecutionNode] Generate output with model ctgan, sample size: 50, output size: 50
+[2024-12-24 08:35:13] [EXECUTION] [BHExecutionNode] process Task FakeSign-1735029264 Slot 1 finished
+[2024-12-24 08:35:13] [INFO] [BHExecutionNode] EC Encoder encode dataframe to encoded chunks, len(dataframe)=50, len(data_chunks)=6, len(encoded_chunks)=9, padding_size=1
+[2024-12-24 08:35:13] [STORAGE] [BHExecutionNode] Chunk stored locally: /root/zkml_test/BHExecutionNode/meta/FakeSign-1735029264/1/node_0/0-chunk.json
+[2024-12-24 08:35:13] [STORAGE] [BHExecutionNode] EC Decoder decode data success...
+[2024-12-24 08:35:13] [STORAGE] [BHExecutionNode] finish replicate the data from Task FakeSign-1735029264 Slot 1
+[2024-12-24 08:35:13] [ERROR] [BHExecutionNode] faild to commit slot because of <execution.format.SlotItem object at 0x7f0bb0535820> has type SlotItem, but expected one of: int
+[2024-12-24 08:35:25] [INFO] [BHExecutionNode] CTGAN_Model_Instance generated output, size: 50
+[2024-12-24 08:35:25] [EXECUTION] [BHExecutionNode] Generate output with model ctgan, sample size: 50, output size: 50
+[2024-12-24 08:35:25] [EXECUTION] [BHExecutionNode] process Task FakeSign-1735029264 Slot 2 finished
+[2024-12-24 08:35:25] [INFO] [BHExecutionNode] EC Encoder encode dataframe to encoded chunks, len(dataframe)=50, len(data_chunks)=6, len(encoded_chunks)=9, padding_size=1
+[2024-12-24 08:35:25] [STORAGE] [BHExecutionNode] Chunk stored locally: /root/zkml_test/BHExecutionNode/meta/FakeSign-1735029264/2/node_0/7-chunk.json
+[2024-12-24 08:35:25] [STORAGE] [BHExecutionNode] EC Decoder decode data success...
+[2024-12-24 08:35:25] [STORAGE] [BHExecutionNode] finish replicate the data from Task FakeSign-1735029264 Slot 2
+[2024-12-24 08:35:44] [INFO] [BHExecutionNode] CTGAN_Model_Instance generated output, size: 50
+[2024-12-24 08:35:44] [EXECUTION] [BHExecutionNode] Generate output with model ctgan, sample size: 50, output size: 50
+[2024-12-24 08:35:44] [EXECUTION] [BHExecutionNode] process Task FakeSign-1735029264 Slot 3 finished
+[2024-12-24 08:35:44] [INFO] [BHExecutionNode] EC Encoder encode dataframe to encoded chunks, len(dataframe)=50, len(data_chunks)=6, len(encoded_chunks)=9, padding_size=4
+[2024-12-24 08:35:44] [STORAGE] [BHExecutionNode] Chunk stored locally: /root/zkml_test/BHExecutionNode/meta/FakeSign-1735029264/3/node_0/3-chunk.json
+[2024-12-24 08:35:44] [STORAGE] [BHExecutionNode] EC Decoder decode data success...
+[2024-12-24 08:35:44] [STORAGE] [BHExecutionNode] finish replicate the data from Task FakeSign-1735029264 Slot 3
+[2024-12-24 08:36:04] [INFO] [BHExecutionNode] CTGAN_Model_Instance generated output, size: 50
+[2024-12-24 08:36:04] [EXECUTION] [BHExecutionNode] Generate output with model ctgan, sample size: 50, output size: 50
+[2024-12-24 08:36:04] [EXECUTION] [BHExecutionNode] process Task FakeSign-1735029264 Slot 4 finished
+[2024-12-24 08:36:04] [INFO] [BHExecutionNode] EC Encoder encode dataframe to encoded chunks, len(dataframe)=50, len(data_chunks)=6, len(encoded_chunks)=9, padding_size=3
+[2024-12-24 08:36:04] [STORAGE] [BHExecutionNode] Chunk stored locally: /root/zkml_test/BHExecutionNode/meta/FakeSign-1735029264/4/node_0/8-chunk.json
+[2024-12-24 08:36:04] [STORAGE] [BHExecutionNode] EC Decoder decode data success...
+[2024-12-24 08:36:04] [STORAGE] [BHExecutionNode] finish replicate the data from Task FakeSign-1735029264 Slot 4
+[2024-12-24 08:36:24] [INFO] [BHExecutionNode] CTGAN_Model_Instance generated output, size: 50
+[2024-12-24 08:36:24] [EXECUTION] [BHExecutionNode] Generate output with model ctgan, sample size: 50, output size: 50
+[2024-12-24 08:36:24] [EXECUTION] [BHExecutionNode] process Task FakeSign-1735029264 Slot 5 finished
+[2024-12-24 08:36:24] [INFO] [BHExecutionNode] EC Encoder encode dataframe to encoded chunks, len(dataframe)=50, len(data_chunks)=6, len(encoded_chunks)=9, padding_size=0
+[2024-12-24 08:36:24] [STORAGE] [BHExecutionNode] Chunk stored locally: /root/zkml_test/BHExecutionNode/meta/FakeSign-1735029264/5/node_0/3-chunk.json
+[2024-12-24 08:36:24] [STORAGE] [BHExecutionNode] EC Decoder decode data success...
+[2024-12-24 08:36:24] [STORAGE] [BHExecutionNode] finish replicate the data from Task FakeSign-1735029264 Slot 5
+[2024-12-24 08:36:44] [INFO] [BHExecutionNode] CTGAN_Model_Instance generated output, size: 50
+[2024-12-24 08:36:44] [EXECUTION] [BHExecutionNode] Generate output with model ctgan, sample size: 50, output size: 50
+[2024-12-24 08:36:44] [EXECUTION] [BHExecutionNode] process Task FakeSign-1735029264 Slot 6 finished
+[2024-12-24 08:36:44] [INFO] [BHExecutionNode] EC Encoder encode dataframe to encoded chunks, len(dataframe)=50, len(data_chunks)=6, len(encoded_chunks)=9, padding_size=0
+[2024-12-24 08:36:44] [STORAGE] [BHExecutionNode] Chunk stored locally: /root/zkml_test/BHExecutionNode/meta/FakeSign-1735029264/6/node_0/4-chunk.json
+[2024-12-24 08:36:44] [STORAGE] [BHExecutionNode] EC Decoder decode data success...
+[2024-12-24 08:36:44] [STORAGE] [BHExecutionNode] finish replicate the data from Task FakeSign-1735029264 Slot 6
+[2024-12-24 08:37:04] [INFO] [BHExecutionNode] CTGAN_Model_Instance generated output, size: 50
+[2024-12-24 08:37:04] [EXECUTION] [BHExecutionNode] Generate output with model ctgan, sample size: 50, output size: 50
+[2024-12-24 08:37:04] [EXECUTION] [BHExecutionNode] process Task FakeSign-1735029264 Slot 7 finished
+[2024-12-24 08:37:04] [INFO] [BHExecutionNode] EC Encoder encode dataframe to encoded chunks, len(dataframe)=50, len(data_chunks)=6, len(encoded_chunks)=9, padding_size=4
+[2024-12-24 08:37:04] [STORAGE] [BHExecutionNode] Chunk stored locally: /root/zkml_test/BHExecutionNode/meta/FakeSign-1735029264/7/node_0/5-chunk.json
+[2024-12-24 08:37:04] [STORAGE] [BHExecutionNode] EC Decoder decode data success...
+[2024-12-24 08:37:04] [STORAGE] [BHExecutionNode] finish replicate the data from Task FakeSign-1735029264 Slot 7
+[2024-12-24 08:37:24] [INFO] [BHExecutionNode] CTGAN_Model_Instance generated output, size: 50
+[2024-12-24 08:37:24] [EXECUTION] [BHExecutionNode] Generate output with model ctgan, sample size: 50, output size: 50
+[2024-12-24 08:37:24] [EXECUTION] [BHExecutionNode] process Task FakeSign-1735029264 Slot 8 finished
+[2024-12-24 08:37:24] [INFO] [BHExecutionNode] EC Encoder encode dataframe to encoded chunks, len(dataframe)=50, len(data_chunks)=6, len(encoded_chunks)=9, padding_size=4
+[2024-12-24 08:37:24] [STORAGE] [BHExecutionNode] Chunk stored locally: /root/zkml_test/BHExecutionNode/meta/FakeSign-1735029264/8/node_0/4-chunk.json
+[2024-12-24 08:37:24] [STORAGE] [BHExecutionNode] EC Decoder decode data success...
+[2024-12-24 08:37:24] [STORAGE] [BHExecutionNode] finish replicate the data from Task FakeSign-1735029264 Slot 8

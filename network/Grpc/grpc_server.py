@@ -3,11 +3,12 @@ from google.protobuf.json_format import MessageToDict
 
 import network.Grpc.service.service_pb2_grpc as pb2_grpc
 import network.Grpc.service.service_pb2 as pb2
-from execution.format import PendingTaskPoolItem
 from network.Grpc.grpc_registry import GrpcRegistry
 from logger.logger import logWriter as log, logWriter
 from concurrent import futures
 import utils.system.sys_monitor as sys_monitor
+from paradigm.model import CommitSlotModelParams
+from paradigm.slot import CommitSlotItem
 
 
 #  实现service中节点服务端相关rpc接口
@@ -21,7 +22,7 @@ class GrpcServer(pb2_grpc.NodeExecutorServicer):
         votes = []
         status = {}
         logWriter.write_log("DEBUG", f"receive heartbeat.vote for {len(request.commits)} commits.")
-        for slot in request.commits:
+        for slot_hash in request.commits:
             votes.append(pb2.Vote(
                 hash='12345678',
                 nodeId=int(self._registry.node_id),
@@ -29,6 +30,25 @@ class GrpcServer(pb2_grpc.NodeExecutorServicer):
                 state=True,
                 desp='agree everything'
             ))
+        # add by zhmye
+        for slot_hash in request.justifieds:
+            # 判断是否有自己的
+            if slot_hash in self._registry.slot_buffer:
+                # 说明自己的slot通过了投票
+                slot: CommitSlotItem = self._registry.slot_buffer[slot_hash]
+                slot.sign_as_justified()
+                self._registry.slot_buffer[slot_hash] = slot
+                self._registry.slot_channel.put(slot)
+        for slot_hash in request.finalizes:
+            # 判断是否有自己的
+            if slot_hash in self._registry.slot_buffer:
+                # 说明自己的slot通过了投票
+                slot: CommitSlotItem = self._registry.slot_buffer[slot_hash]
+                slot.sign_as_finalized()
+                self._registry.slot_channel.put(slot)
+                # 删除buffer
+                del self._registry.slot_buffer[slot_hash]
+                # self._registry.slot_buffer[slot_hash] = slot
         # 简单获取一个内存占用
         total_memory, used_memory, memory_usage = sys_monitor.get_memory_info()
         status['memory_usage'] = str(memory_usage)
@@ -46,12 +66,22 @@ class GrpcServer(pb2_grpc.NodeExecutorServicer):
         # 调度不存在或者为0时
         if request.schedule.get(self._registry.node_id, 0) != 0:
             # 节点在其调度内，将任务加入当前任务的队列中
-            new_task = PendingTaskPoolItem(
-                request.sign, int(request.slot), request.schedule[self._registry.node_id], request.model,
-                MessageToDict(request.params)
+            # new_task = PendingTaskPoolItem(
+            #     request.sign, int(request.slot), request.schedule[self._registry.node_id], request.model,
+            #     MessageToDict(request.params)
+            # )
+            # modify by zhmye
+            new_slot = CommitSlotItem(
+                request.sign,
+                request.slot,
+                request.schedule[self._registry.node_id],
+                CommitSlotModelParams(
+                    request.model,
+                    MessageToDict(request.params)
+                )
             )
             log.write_log("DEBUG", f"receive Task {request.sign} Slot {request.slot}")
-            self._registry.pending_task_pool.put(new_task)
+            self._registry.pending_task_pool.put(new_slot)
             return pb2.ScheduleResponse(accept=True, nodeId=self._registry.node_id, sign=request.sign)
         else:
             # 不在调度内，则拒绝

@@ -1,0 +1,26 @@
+[2024-12-24 08:42:42] [INFO] [BHExecutionNode] Init Storager from config, storage_path: /root/zkml_test/BHExecutionNode/meta
+[2024-12-24 08:42:42] [INFO] [BHExecutionNode] BHExecutionNode load config...
+[2024-12-24 08:42:42] [INFO] [BHExecutionNode] BHExecution Node Start...
+[2024-12-24 08:42:43] [INFO] [BHExecutionNode] Init Processor with model ctgan from /root/zkml_test/BHExecutionNode/model
+[2024-12-24 08:42:51] [INFO] [BHExecutionNode] Model successfully loaded from: /root/zkml_test/BHExecutionNode/model/ctgan/test
+[2024-12-24 08:42:53] [INFO] [BHExecutionNode] CTGAN_Model_Instance generated output, size: 50
+[2024-12-24 08:42:53] [EXECUTION] [BHExecutionNode] Generate output with model ctgan, sample size: 50, output size: 50
+[2024-12-24 08:42:53] [EXECUTION] [BHExecutionNode] process Task FakeSign-1735029701 Slot 3 finished
+[2024-12-24 08:42:53] [INFO] [BHExecutionNode] EC Encoder encode dataframe to encoded chunks, len(dataframe)=50, len(data_chunks)=6, len(encoded_chunks)=9, padding_size=4
+[2024-12-24 08:42:53] [STORAGE] [BHExecutionNode] Chunk stored locally: /root/zkml_test/BHExecutionNode/meta/FakeSign-1735029701/3/node_0/8-chunk.json
+[2024-12-24 08:42:53] [STORAGE] [BHExecutionNode] EC Decoder decode data success...
+[2024-12-24 08:42:53] [STORAGE] [BHExecutionNode] finish replicate the data from Task FakeSign-1735029701 Slot 3
+[2024-12-24 08:43:03] [INFO] [BHExecutionNode] CTGAN_Model_Instance generated output, size: 50
+[2024-12-24 08:43:03] [EXECUTION] [BHExecutionNode] Generate output with model ctgan, sample size: 50, output size: 50
+[2024-12-24 08:43:03] [EXECUTION] [BHExecutionNode] process Task FakeSign-1735029701 Slot 4 finished
+[2024-12-24 08:43:03] [INFO] [BHExecutionNode] EC Encoder encode dataframe to encoded chunks, len(dataframe)=50, len(data_chunks)=6, len(encoded_chunks)=9, padding_size=0
+[2024-12-24 08:43:03] [STORAGE] [BHExecutionNode] Chunk stored locally: /root/zkml_test/BHExecutionNode/meta/FakeSign-1735029701/4/node_0/5-chunk.json
+[2024-12-24 08:43:03] [STORAGE] [BHExecutionNode] EC Decoder decode data success...
+[2024-12-24 08:43:03] [STORAGE] [BHExecutionNode] finish replicate the data from Task FakeSign-1735029701 Slot 4
+[2024-12-24 08:43:03] [ERROR] [BHExecutionNode] 127.0.0.1:1235 can not ping,try again!
+[2024-12-24 08:43:08] [ERROR] [BHExecutionNode] faild to commit slot because of <_InactiveRpcError of RPC that terminated with:
+	status = StatusCode.DEADLINE_EXCEEDED
+	details = "Deadline Exceeded"
+	debug_error_string = "UNKNOWN:Deadline Exceeded {created_time:"2024-12-24T08:43:08.326532499+00:00", grpc_status:4}"
+>
+[2024-12-24 08:52:50] [ERROR] [BHExecutionNode] 127.0.0.1:1235 can not ping,try again!

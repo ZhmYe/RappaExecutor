@@ -1,0 +1,4 @@
+[2024-12-28 10:36:49] [INFO] [BHExecutionNode] Init Storager from config, storage_path: /root/zkml_test/BHExecutionNode/meta
+[2024-12-28 10:36:49] [WARNING] [BHExecutionNode] 127.0.0.1:1235 can not ping,try again!
+[2024-12-28 10:37:05] [EXECUTION] [BHExecutionNode] Receive New Task, Sign: FakeSign-1735382224, Slot: 0
+[2024-12-28 10:37:05] [EXECUTION] [BHExecutionNode] Receive Unprocessed Slot, Sign: FakeSign-1735382224, Slot: 0

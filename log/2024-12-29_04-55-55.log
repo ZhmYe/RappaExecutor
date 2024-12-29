@@ -1,0 +1,13 @@
+[2024-12-29 04:55:55] [INFO] [BHExecutionNode] Init Storager from config, storage_path: /root/zkml_test/BHExecutionNode/meta
+[2024-12-29 04:55:56] [WARNING] [BHExecutionNode] 127.0.0.1:1235 can not ping,try again!
+[2024-12-29 04:55:56] [INFO] [BHExecutionNode] Init Processor with model from /root/zkml_test/BHExecutionNode/model
+[2024-12-29 04:56:04] [INFO] [BHExecutionNode] Model successfully loaded from: /root/zkml_test/BHExecutionNode/model/CTGAN/test
+[2024-12-29 04:56:04] [EXECUTION] [BHExecutionNode] Receive New Task, Sign: FakeSign-1735448157, Slot: 0
+[2024-12-29 04:56:04] [EXECUTION] [BHExecutionNode] Receive Unprocessed Slot, Sign: FakeSign-1735448157, Slot: 0
+[2024-12-29 04:56:18] [EXECUTION] [BHExecutionNode] Receive Unprocessed Slot, Sign: FakeSign-1735448157, Slot: 1
+[2024-12-29 04:56:21] [INFO] [BHExecutionNode] CTGAN_Model_Instance generated output, size: 10
+[2024-12-29 04:56:28] [INFO] [BHExecutionNode] CTGAN_Model_Instance generated output, size: 10
+[2024-12-29 04:56:38] [EXECUTION] [BHExecutionNode] Receive Unprocessed Slot, Sign: FakeSign-1735448157, Slot: 2
+[2024-12-29 04:56:51] [INFO] [BHExecutionNode] CTGAN_Model_Instance generated output, size: 10
+[2024-12-29 04:56:57] [EXECUTION] [BHExecutionNode] Receive Unprocessed Slot, Sign: FakeSign-1735448157, Slot: 3
+[2024-12-29 04:57:10] [INFO] [BHExecutionNode] CTGAN_Model_Instance generated output, size: 10

@@ -1,0 +1,3 @@
+[2024-12-29 06:13:19] [INFO] [BHExecutionNode] Init Storager from config, storage_path: /root/zkml_test/BHExecutionNode/meta
+[2024-12-29 06:13:20] [WARNING] [BHExecutionNode] 127.0.0.1:1235 can not ping,try again!
+[2024-12-29 06:13:20] [INFO] [BHExecutionNode] Init Processor with model from /root/zkml_test/BHExecutionNode/model
