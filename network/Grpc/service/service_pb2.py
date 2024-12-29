@@ -20,7 +20,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   syntax='proto3',
   serialized_options=b'Z\010/service',
   create_key=_descriptor._internal_create_key,
-  serialized_pb=b'\n\rservice.proto\x12\x07service\x1a\x1cgoogle/protobuf/struct.proto\"l\n\rJustifiedSlot\x12\x0b\n\x03nid\x18\x01 \x01(\x05\x12\x0f\n\x07process\x18\x02 \x01(\x05\x12\x0c\n\x04sign\x18\x03 \x01(\t\x12\x0c\n\x04slot\x18\x04 \x01(\x05\x12\r\n\x05\x65poch\x18\x05 \x01(\x05\x12\x12\n\ncommitment\x18\x06 \x01(\x0c\"\xe5\x02\n\x10HeartbeatRequest\x12\x37\n\x07\x63ommits\x18\x01 \x03(\x0b\x32&.service.HeartbeatRequest.CommitsEntry\x12;\n\tfinalizes\x18\x02 \x03(\x0b\x32(.service.HeartbeatRequest.FinalizesEntry\x12\x39\n\x08invalids\x18\x03 \x03(\x0b\x32\'.service.HeartbeatRequest.InvalidsEntry\x12\r\n\x05\x65poch\x18\x04 \x01(\x05\x1a.\n\x0c\x43ommitsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x0c:\x02\x38\x01\x1a\x30\n\x0e\x46inalizesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x0c:\x02\x38\x01\x1a/\n\rInvalidsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x05:\x02\x38\x01\"\xb4\x01\n\x11HeartbeatResponse\x12\x0e\n\x06nodeId\x18\x01 \x01(\x05\x12>\n\nnodeStatus\x18\x02 \x03(\x0b\x32*.service.HeartbeatResponse.NodeStatusEntry\x12\x1c\n\x05votes\x18\x03 \x03(\x0b\x32\r.service.Vote\x1a\x31\n\x0fNodeStatusEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"U\n\x04Vote\x12\x0c\n\x04hash\x18\x01 \x01(\t\x12\x0e\n\x06nodeId\x18\x02 \x01(\x05\x12\x12\n\ncommitment\x18\x03 \x01(\x0c\x12\r\n\x05state\x18\x04 \x01(\x08\x12\x0c\n\x04\x64\x65sp\x18\x05 \x01(\t\"\xde\x01\n\x0fScheduleRequest\x12\x0c\n\x04sign\x18\x01 \x01(\t\x12\x0c\n\x04slot\x18\x02 \x01(\t\x12\x0c\n\x04size\x18\x03 \x01(\x05\x12\x38\n\x08schedule\x18\x04 \x03(\x0b\x32&.service.ScheduleRequest.ScheduleEntry\x12\r\n\x05model\x18\x05 \x01(\t\x12\'\n\x06params\x18\x06 \x01(\x0b\x32\x17.google.protobuf.Struct\x1a/\n\rScheduleEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x05:\x02\x38\x01\"V\n\x10ScheduleResponse\x12\x0e\n\x06\x61\x63\x63\x65pt\x18\x01 \x01(\x08\x12\x0e\n\x06nodeId\x18\x02 \x01(\t\x12\x0c\n\x04sign\x18\x03 \x01(\t\x12\x14\n\x0c\x65rrorMessage\x18\x04 \x01(\t\"w\n\x11SlotCommitRequest\x12\x0e\n\x06nodeId\x18\x01 \x01(\x05\x12\x0c\n\x04sign\x18\x02 \x01(\t\x12\x0c\n\x04slot\x18\x03 \x01(\x05\x12\x0c\n\x04size\x18\x04 \x01(\x05\x12\x12\n\ncommitment\x18\x05 \x01(\x0c\x12\x14\n\x0c\x65rrorMessage\x18\x06 \x01(\t\"A\n\x12SlotCommitResponse\x12\x0c\n\x04seed\x18\x01 \x01(\x0c\x12\x0c\n\x04hash\x18\x02 \x01(\t\x12\x0f\n\x07timeout\x18\x03 \x01(\x05\x32T\n\x0b\x43oordinator\x12\x45\n\nCommitSlot\x12\x1a.service.SlotCommitRequest\x1a\x1b.service.SlotCommitResponse2\x93\x01\n\x0cNodeExecutor\x12\x42\n\tHeartbeat\x12\x19.service.HeartbeatRequest\x1a\x1a.service.HeartbeatResponse\x12?\n\x08Schedule\x12\x18.service.ScheduleRequest\x1a\x19.service.ScheduleResponseB\nZ\x08/serviceb\x06proto3'
+  serialized_pb=b'\n\rservice.proto\x12\x07service\x1a\x1cgoogle/protobuf/struct.proto\"l\n\rJustifiedSlot\x12\x0b\n\x03nid\x18\x01 \x01(\x05\x12\x0f\n\x07process\x18\x02 \x01(\x05\x12\x0c\n\x04sign\x18\x03 \x01(\t\x12\x0c\n\x04slot\x18\x04 \x01(\x05\x12\r\n\x05\x65poch\x18\x05 \x01(\x05\x12\x12\n\ncommitment\x18\x06 \x01(\x0c\"\xd7\x03\n\x10HeartbeatRequest\x12\x37\n\x07\x63ommits\x18\x01 \x03(\x0b\x32&.service.HeartbeatRequest.CommitsEntry\x12=\n\njustifieds\x18\x02 \x03(\x0b\x32).service.HeartbeatRequest.JustifiedsEntry\x12;\n\tfinalizes\x18\x03 \x03(\x0b\x32(.service.HeartbeatRequest.FinalizesEntry\x12\x39\n\x08invalids\x18\x04 \x03(\x0b\x32\'.service.HeartbeatRequest.InvalidsEntry\x12\r\n\x05\x65poch\x18\x05 \x01(\x05\x1a.\n\x0c\x43ommitsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x0c:\x02\x38\x01\x1a\x31\n\x0fJustifiedsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x0c:\x02\x38\x01\x1a\x30\n\x0e\x46inalizesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x0c:\x02\x38\x01\x1a/\n\rInvalidsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x05:\x02\x38\x01\"\xb4\x01\n\x11HeartbeatResponse\x12\x0e\n\x06nodeId\x18\x01 \x01(\x05\x12>\n\nnodeStatus\x18\x02 \x03(\x0b\x32*.service.HeartbeatResponse.NodeStatusEntry\x12\x1c\n\x05votes\x18\x03 \x03(\x0b\x32\r.service.Vote\x1a\x31\n\x0fNodeStatusEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"U\n\x04Vote\x12\x0c\n\x04hash\x18\x01 \x01(\t\x12\x0e\n\x06nodeId\x18\x02 \x01(\x05\x12\x12\n\ncommitment\x18\x03 \x01(\x0c\x12\r\n\x05state\x18\x04 \x01(\x08\x12\x0c\n\x04\x64\x65sp\x18\x05 \x01(\t\"\xde\x01\n\x0fScheduleRequest\x12\x0c\n\x04sign\x18\x01 \x01(\t\x12\x0c\n\x04slot\x18\x02 \x01(\x05\x12\x0c\n\x04size\x18\x03 \x01(\x05\x12\x38\n\x08schedule\x18\x04 \x03(\x0b\x32&.service.ScheduleRequest.ScheduleEntry\x12\r\n\x05model\x18\x05 \x01(\t\x12\'\n\x06params\x18\x06 \x01(\x0b\x32\x17.google.protobuf.Struct\x1a/\n\rScheduleEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x05:\x02\x38\x01\"V\n\x10ScheduleResponse\x12\x0e\n\x06\x61\x63\x63\x65pt\x18\x01 \x01(\x08\x12\x0e\n\x06nodeId\x18\x02 \x01(\t\x12\x0c\n\x04sign\x18\x03 \x01(\t\x12\x14\n\x0c\x65rrorMessage\x18\x04 \x01(\t\"w\n\x11SlotCommitRequest\x12\x0e\n\x06nodeId\x18\x01 \x01(\x05\x12\x0c\n\x04sign\x18\x02 \x01(\t\x12\x0c\n\x04slot\x18\x03 \x01(\x05\x12\x0c\n\x04size\x18\x04 \x01(\x05\x12\x12\n\ncommitment\x18\x05 \x01(\x0c\x12\x14\n\x0c\x65rrorMessage\x18\x06 \x01(\t\"A\n\x12SlotCommitResponse\x12\x0c\n\x04seed\x18\x01 \x01(\x0c\x12\x0c\n\x04hash\x18\x02 \x01(\t\x12\x0f\n\x07timeout\x18\x03 \x01(\x05\x32T\n\x0b\x43oordinator\x12\x45\n\nCommitSlot\x12\x1a.service.SlotCommitRequest\x1a\x1b.service.SlotCommitResponse2\x93\x01\n\x0cNodeExecutor\x12\x42\n\tHeartbeat\x12\x19.service.HeartbeatRequest\x1a\x1a.service.HeartbeatResponse\x12?\n\x08Schedule\x12\x18.service.ScheduleRequest\x1a\x19.service.ScheduleResponseB\nZ\x08/serviceb\x06proto3'
   ,
   dependencies=[google_dot_protobuf_dot_struct__pb2.DESCRIPTOR,])
 
@@ -128,8 +128,46 @@ _HEARTBEATREQUEST_COMMITSENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=379,
-  serialized_end=425,
+  serialized_start=442,
+  serialized_end=488,
+)
+
+_HEARTBEATREQUEST_JUSTIFIEDSENTRY = _descriptor.Descriptor(
+  name='JustifiedsEntry',
+  full_name='service.HeartbeatRequest.JustifiedsEntry',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  create_key=_descriptor._internal_create_key,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='key', full_name='service.HeartbeatRequest.JustifiedsEntry.key', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='value', full_name='service.HeartbeatRequest.JustifiedsEntry.value', index=1,
+      number=2, type=12, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"",
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=b'8\001',
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=490,
+  serialized_end=539,
 )
 
 _HEARTBEATREQUEST_FINALIZESENTRY = _descriptor.Descriptor(
@@ -166,8 +204,8 @@ _HEARTBEATREQUEST_FINALIZESENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=427,
-  serialized_end=475,
+  serialized_start=541,
+  serialized_end=589,
 )
 
 _HEARTBEATREQUEST_INVALIDSENTRY = _descriptor.Descriptor(
@@ -204,8 +242,8 @@ _HEARTBEATREQUEST_INVALIDSENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=477,
-  serialized_end=524,
+  serialized_start=591,
+  serialized_end=638,
 )
 
 _HEARTBEATREQUEST = _descriptor.Descriptor(
@@ -224,22 +262,29 @@ _HEARTBEATREQUEST = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='finalizes', full_name='service.HeartbeatRequest.finalizes', index=1,
+      name='justifieds', full_name='service.HeartbeatRequest.justifieds', index=1,
       number=2, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='invalids', full_name='service.HeartbeatRequest.invalids', index=2,
+      name='finalizes', full_name='service.HeartbeatRequest.finalizes', index=2,
       number=3, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='epoch', full_name='service.HeartbeatRequest.epoch', index=3,
-      number=4, type=5, cpp_type=1, label=1,
+      name='invalids', full_name='service.HeartbeatRequest.invalids', index=3,
+      number=4, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='epoch', full_name='service.HeartbeatRequest.epoch', index=4,
+      number=5, type=5, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
@@ -247,7 +292,7 @@ _HEARTBEATREQUEST = _descriptor.Descriptor(
   ],
   extensions=[
   ],
-  nested_types=[_HEARTBEATREQUEST_COMMITSENTRY, _HEARTBEATREQUEST_FINALIZESENTRY, _HEARTBEATREQUEST_INVALIDSENTRY, ],
+  nested_types=[_HEARTBEATREQUEST_COMMITSENTRY, _HEARTBEATREQUEST_JUSTIFIEDSENTRY, _HEARTBEATREQUEST_FINALIZESENTRY, _HEARTBEATREQUEST_INVALIDSENTRY, ],
   enum_types=[
   ],
   serialized_options=None,
@@ -257,7 +302,7 @@ _HEARTBEATREQUEST = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=167,
-  serialized_end=524,
+  serialized_end=638,
 )
 
 
@@ -295,8 +340,8 @@ _HEARTBEATRESPONSE_NODESTATUSENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=658,
-  serialized_end=707,
+  serialized_start=772,
+  serialized_end=821,
 )
 
 _HEARTBEATRESPONSE = _descriptor.Descriptor(
@@ -340,8 +385,8 @@ _HEARTBEATRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=527,
-  serialized_end=707,
+  serialized_start=641,
+  serialized_end=821,
 )
 
 
@@ -400,8 +445,8 @@ _VOTE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=709,
-  serialized_end=794,
+  serialized_start=823,
+  serialized_end=908,
 )
 
 
@@ -439,8 +484,8 @@ _SCHEDULEREQUEST_SCHEDULEENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=972,
-  serialized_end=1019,
+  serialized_start=1086,
+  serialized_end=1133,
 )
 
 _SCHEDULEREQUEST = _descriptor.Descriptor(
@@ -460,8 +505,8 @@ _SCHEDULEREQUEST = _descriptor.Descriptor(
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='slot', full_name='service.ScheduleRequest.slot', index=1,
-      number=2, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=b"".decode('utf-8'),
+      number=2, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
@@ -505,8 +550,8 @@ _SCHEDULEREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=797,
-  serialized_end=1019,
+  serialized_start=911,
+  serialized_end=1133,
 )
 
 
@@ -558,8 +603,8 @@ _SCHEDULERESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1021,
-  serialized_end=1107,
+  serialized_start=1135,
+  serialized_end=1221,
 )
 
 
@@ -625,8 +670,8 @@ _SLOTCOMMITREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1109,
-  serialized_end=1228,
+  serialized_start=1223,
+  serialized_end=1342,
 )
 
 
@@ -671,14 +716,16 @@ _SLOTCOMMITRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1230,
-  serialized_end=1295,
+  serialized_start=1344,
+  serialized_end=1409,
 )
 
 _HEARTBEATREQUEST_COMMITSENTRY.containing_type = _HEARTBEATREQUEST
+_HEARTBEATREQUEST_JUSTIFIEDSENTRY.containing_type = _HEARTBEATREQUEST
 _HEARTBEATREQUEST_FINALIZESENTRY.containing_type = _HEARTBEATREQUEST
 _HEARTBEATREQUEST_INVALIDSENTRY.containing_type = _HEARTBEATREQUEST
 _HEARTBEATREQUEST.fields_by_name['commits'].message_type = _HEARTBEATREQUEST_COMMITSENTRY
+_HEARTBEATREQUEST.fields_by_name['justifieds'].message_type = _HEARTBEATREQUEST_JUSTIFIEDSENTRY
 _HEARTBEATREQUEST.fields_by_name['finalizes'].message_type = _HEARTBEATREQUEST_FINALIZESENTRY
 _HEARTBEATREQUEST.fields_by_name['invalids'].message_type = _HEARTBEATREQUEST_INVALIDSENTRY
 _HEARTBEATRESPONSE_NODESTATUSENTRY.containing_type = _HEARTBEATRESPONSE
@@ -713,6 +760,13 @@ HeartbeatRequest = _reflection.GeneratedProtocolMessageType('HeartbeatRequest', 
     })
   ,
 
+  'JustifiedsEntry' : _reflection.GeneratedProtocolMessageType('JustifiedsEntry', (_message.Message,), {
+    'DESCRIPTOR' : _HEARTBEATREQUEST_JUSTIFIEDSENTRY,
+    '__module__' : 'service_pb2'
+    # @@protoc_insertion_point(class_scope:service.HeartbeatRequest.JustifiedsEntry)
+    })
+  ,
+
   'FinalizesEntry' : _reflection.GeneratedProtocolMessageType('FinalizesEntry', (_message.Message,), {
     'DESCRIPTOR' : _HEARTBEATREQUEST_FINALIZESENTRY,
     '__module__' : 'service_pb2'
@@ -732,6 +786,7 @@ HeartbeatRequest = _reflection.GeneratedProtocolMessageType('HeartbeatRequest', 
   })
 _sym_db.RegisterMessage(HeartbeatRequest)
 _sym_db.RegisterMessage(HeartbeatRequest.CommitsEntry)
+_sym_db.RegisterMessage(HeartbeatRequest.JustifiedsEntry)
 _sym_db.RegisterMessage(HeartbeatRequest.FinalizesEntry)
 _sym_db.RegisterMessage(HeartbeatRequest.InvalidsEntry)
 
@@ -796,6 +851,7 @@ _sym_db.RegisterMessage(SlotCommitResponse)
 
 DESCRIPTOR._options = None
 _HEARTBEATREQUEST_COMMITSENTRY._options = None
+_HEARTBEATREQUEST_JUSTIFIEDSENTRY._options = None
 _HEARTBEATREQUEST_FINALIZESENTRY._options = None
 _HEARTBEATREQUEST_INVALIDSENTRY._options = None
 _HEARTBEATRESPONSE_NODESTATUSENTRY._options = None
@@ -808,8 +864,8 @@ _COORDINATOR = _descriptor.ServiceDescriptor(
   index=0,
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
-  serialized_start=1297,
-  serialized_end=1381,
+  serialized_start=1411,
+  serialized_end=1495,
   methods=[
   _descriptor.MethodDescriptor(
     name='CommitSlot',
@@ -834,8 +890,8 @@ _NODEEXECUTOR = _descriptor.ServiceDescriptor(
   index=1,
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
-  serialized_start=1384,
-  serialized_end=1531,
+  serialized_start=1498,
+  serialized_end=1645,
   methods=[
   _descriptor.MethodDescriptor(
     name='Heartbeat',

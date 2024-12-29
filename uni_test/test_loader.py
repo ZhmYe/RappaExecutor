@@ -10,7 +10,7 @@ class TestLoader(unittest.TestCase):
             model_path = get_model_root()
             print("===========================UNIT TEST LOADER===========================")
             loader = ModelLoader(model_path)
-            instance = loader.load("ctgan")
+            instance = loader.load("CTGAN")
             output = instance.generate_output(1000)
             print(output.format_json())
         except Exception as e:
