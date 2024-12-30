@@ -40,7 +40,7 @@ cd "$OUTPUT_DIR" || exit 1
 echo "节点主目录：$(pwd)"
 
 ###############################################################################
-# 3. 为每个节点创建目录结构，复制代码并覆盖 config.json、生成启动脚本
+# 3. 为每个节点创建目录结构，复制代码并覆盖 config.json、生成启动/终止脚本
 ###############################################################################
 for (( i=0; i<NODES_NUM; i++ )); do
   node_folder="node${i}"
@@ -78,17 +78,60 @@ cd "\$(dirname "\$0")/RappaExecutor" || exit 1
 
 echo "启动节点：node${i}"
 
-# 根据 MODE 是否为 --debug 执行不同命令
+# 以后台方式启动，并将进程 PID 写入 node.pid（放到上一级目录 nodeX 下）
 if [ "\$MODE" = "--debug" ]; then
   echo "节点 node${i}：进入调试模式..."
-  python main.py --debug
+  python main.py --debug &
 else
   echo "节点 node${i}：进入生产模式..."
-  python main.py
+  python main.py &
 fi
+
+# 将后台进程的 PID 写入 ../node.pid 文件
+echo "\$!" > "../node.pid"
 EOF
   chmod +x "${node_folder}/start.sh"
   # echo "已生成启动脚本：${node_folder}/start.sh"
+
+  # 3.4 创建单个节点的停止脚本 stop.sh
+cat <<EOF > "${node_folder}/stop.sh"
+#!/bin/bash
+
+# 切换到当前脚本所在目录（nodeX）
+SHELL_FOLDER="\$(cd "\$(dirname "\$0")" && pwd)"
+cd "\${SHELL_FOLDER}" || exit 1
+
+node_name="node${i}"
+pid_file="\${SHELL_FOLDER}/node.pid"
+
+# 如果没找到 node.pid，说明进程可能不在运行
+if [ ! -f "\$pid_file" ]; then
+    echo "【INFO】\${node_name} 未检测到 pid 文件，可能未启动或已停止。"
+    exit 0
+fi
+
+pid=\$(cat "\$pid_file")
+echo "尝试停止 \${node_name} (PID=\$pid)..."
+kill "\$pid"
+
+# 等待进程退出，最多尝试 10 次
+try_times=10
+j=0
+while [ \$j -lt \$try_times ]; do
+    sleep 1
+    # 如果该 pid 不再存活，说明停止成功
+    if ! ps -p "\$pid" > /dev/null 2>&1; then
+        echo "【INFO】\${node_name} 已停止。"
+        rm -f "\$pid_file"
+        exit 0
+    fi
+    ((j=j+1))
+done
+
+echo "【WARN】停止 \${node_name} 超时，请手动检查或使用 kill -9。"
+exit 1
+EOF
+chmod +x "${node_folder}/stop.sh"
 done
 
 ###############################################################################
@@ -131,5 +174,38 @@ EOF
 chmod +x "${OUTPUT_DIR}/start_all.sh"
 
 echo "一键启动脚本：${OUTPUT_DIR}/start_all.sh"
-# echo "一键启动脚本：$(pwd)/start_all.sh"
+
+###############################################################################
+# 5. 生成一键停止脚本：stop_all.sh
+###############################################################################
+cat <<EOF > "./stop_all.sh"
+#!/bin/bash
+
+# 获取脚本所在目录绝对路径
+script_dir="\$(cd "\$(dirname "\$0")" && pwd)"
+
+echo "开始停止所有节点..."
+
+# 遍历所有节点目录
+for (( i=0; i<${NODES_NUM}; i++ )); do
+  node_folder="node\${i}"
+  node_stop_script="\${script_dir}/\${node_folder}/stop.sh"
+
+  if [ -f "\$node_stop_script" ]; then
+    echo "-----------------------------"
+    echo "停止节点：\${node_folder}"
+    bash "\$node_stop_script"
+  else
+    echo "-----------------------------"
+    echo "【错误】未检测到节点\${i}的停止脚本: \$node_stop_script"
+    echo "节点\${i} 停止失败！"
+  fi
+done
+
+echo "所有节点停止命令已执行完毕。"
+EOF
+chmod +x "${OUTPUT_DIR}/stop_all.sh"
+
+echo "一键停止脚本：${OUTPUT_DIR}/stop_all.sh"
+
 echo "所有节点已生成完毕。"
