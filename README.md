@@ -201,7 +201,12 @@ BHExecutionNode/
   ```bash
   ./nodes/start_all.sh
   ```
+#### 3. 终止所有节点
+- 运行nodes目录下的`stop_all.sh`，调用每个节点目录下的`stop.sh`终止节点对应进程。
 
+  ```bash
+  ./nodes/stop_all.sh
+  ```
 ---
 
 ## **测试指南**
