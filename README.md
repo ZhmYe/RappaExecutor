@@ -160,7 +160,7 @@ BHExecutionNode/
   ```
 
 ### **启动节点**
-
+### **单节点**
 1. 调试模式：
 
    ```bash
@@ -172,6 +172,35 @@ BHExecutionNode/
    ```bash
    python main.py
    ```
+
+### **多节点**
+
+#### 1. 单机部署多节点
+
+- **基本用法：** 第一个参数即为节点数，需要至少指定一个整数节点数量。  
+
+  ```bash
+  ./RappaExecutor/generate_nodes.sh 100
+  ```
+  在当前目录下直接创建 `nodes` 文件夹并生成 100 个节点，生成的节点目录为 `./nodes`，并在该目录下生成一键启动脚本 `start_all.sh`。
+
+- **自定义输出路径：** 如果需要在其他指定路径下创建 `nodes` 目录并生成节点，可以在第二个参数中指定输出路径。
+  ```bash
+  ./RappaExecutor/generate_nodes.sh 100 output
+  ```
+  脚本会在 `./output` 目录下创建节点主目录`nodes`。
+
+#### 2. 启动所有节点
+- 调试模式
+
+  ```bash
+  ./nodes/start_all.sh --debug
+  ```
+- 生产模式
+
+  ```bash
+  ./nodes/start_all.sh
+  ```
 
 ---
 
