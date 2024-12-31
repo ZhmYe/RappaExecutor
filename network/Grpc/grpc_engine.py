@@ -12,6 +12,7 @@ from network.Grpc.grpc_server import GrpcServer
 
 from network.format import BHExecutionAddress
 from paradigm.slot import CommitSlotItem
+from paradigm.storage import ErasureCodeChunks, ErasureCodeChunk
 
 
 class GrpcEngine:
@@ -99,18 +100,21 @@ class GrpcEngine:
             self.send_request(node_id, message)
             i += 1
 
-    def start_test_collect_process(self, node_id, sign, slot):
+    def start_test_collect_process(self, node_id, sign, slot, padding_size)->ErasureCodeChunks:
         # 这里的chunk就是本地的一个，拿出来算作拿到了
         request = self.fake_layer2_node.collect(sign, slot, node_id)
-        chunks = []
-        indices = []
+        # chunks = []
+        # indices = []
+        packed_chunks = ErasureCodeChunks(padding_size=padding_size)
         for item in request:
             store_node_id, index = item[0], item[1]
             fake_node: MockerNode = self.fake_other_nodes[store_node_id]
             store_chunk = fake_node.load_store_chunk(sign, slot, node_id, index)
-            chunks.append(store_chunk["data"])
-            indices.append(index)
-        return chunks, indices
+            chunk = ErasureCodeChunk(chunk=store_chunk["data"], index=index)
+            packed_chunks.add_chunk(chunk)
+            # chunks.append(store_chunk["data"])
+            # indices.append(index)
+        return packed_chunks
 
     def send_store_message(self, node_id, sign, slot, _id, index, padding_size):
         self.fake_layer2_node.update_index(node_id, sign, slot, _id, index)

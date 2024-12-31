@@ -4,6 +4,7 @@ from click import UNPROCESSED
 
 from config.config import BHExecutionNodeGlobalConfig
 from paradigm.model import CommitSlotModelParams
+from paradigm.storage import ChunkReplicateRecord
 
 """
     NOTE: CommitSlotItem和Master中的CommitSlotItem类似
@@ -46,6 +47,7 @@ class CommitSlotItem:
         self.params: CommitSlotModelParams = params # 输入模型参数
         self.commitment = "" # todo 这里还有一个commitment
         self.hash = ""
+        self.replicate_records: ChunkReplicateRecord = None
     def set_index(self, index):
         self.index = index
     def check_is_reliable(self) -> bool:
@@ -70,3 +72,5 @@ class CommitSlotItem:
         return self.hash != ""
     def set_hash(self, slot_hash):
         self.hash = slot_hash
+    def set_replicate_record(self, record: ChunkReplicateRecord):
+        self.replicate_records = record
