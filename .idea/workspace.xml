@@ -5,8 +5,20 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="1dc9b31b-c6cf-4b8a-800b-76946d4ab624" name="Changes" comment="update grpc code">
+      <change afterPath="$PROJECT_DIR$/paradigm/storage.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/chunker/chunker.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/encoder/rs_decoder.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/encoder/rs_encoder.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/utils/cryptography/commitment/commitment_computer.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/config/default.py" beforeDir="false" afterPath="$PROJECT_DIR$/config/default.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/network/Grpc/grpc_engine.py" beforeDir="false" afterPath="$PROJECT_DIR$/network/Grpc/grpc_engine.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/paradigm/slot.py" beforeDir="false" afterPath="$PROJECT_DIR$/paradigm/slot.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/Storager.py" beforeDir="false" afterPath="$PROJECT_DIR$/storage/Storager.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/chunker.py" beforeDir="false" afterPath="$PROJECT_DIR$/paradigm/mod.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/encoder/SimpleECHandler.py" beforeDir="false" afterPath="$PROJECT_DIR$/storage/encoder/SimpleECHandler.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/task/TaskTracker.py" beforeDir="false" afterPath="$PROJECT_DIR$/task/TaskTracker.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/cryptography/commitment/merkle_root.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/cryptography/commitment/merkle_root.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/cryptography/hash/sha256.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/cryptography/hash/hasher.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -36,28 +48,28 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Python tests.Python tests for test_BHExecutionNode.TestBHExecutionNode.executor": "Run",
-    "Python tests.Python tests for test_DataFrameChunker.TestDataFrameChunker.executor": "Run",
-    "Python tests.Python tests for test_EC_encoder.TestECEncoder.executor": "Run",
-    "Python tests.Python tests for test_EC_handler.TestECEncoder.executor": "Run",
-    "Python tests.Python tests for test_fake_grpc_engine.TestFakeGrpcEngine.executor": "Run",
-    "Python tests.Python tests for test_loader.TestLoader.executor": "Run",
-    "Python tests.Python tests for test_simple_storager.TestSimpleStorager.executor": "Run",
-    "Python tests.Python tests for uni_test.test_EC_handler.TestECEncoder.executor": "Run",
-    "Python.main.executor": "Run",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "git-widget-placeholder": "yzm",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Python tests.Python tests for test_BHExecutionNode.TestBHExecutionNode.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests for test_DataFrameChunker.TestDataFrameChunker.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests for test_EC_encoder.TestECEncoder.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests for test_EC_handler.TestECEncoder.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests for test_fake_grpc_engine.TestFakeGrpcEngine.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests for test_loader.TestLoader.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests for test_simple_storager.TestSimpleStorager.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Python tests for uni_test.test_EC_handler.TestECEncoder.executor&quot;: &quot;Run&quot;,
+    &quot;Python.main.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;yzm&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RdControllerToolWindowsLayoutState" isNewUi="true">
     <layout>
       <window_info id="Bookmarks" side_tool="true" />
@@ -65,7 +77,7 @@
       <window_info id="Commit_Guest" show_stripe_button="false" />
       <window_info id="Pull Requests" />
       <window_info id="Learn" />
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.25478142" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.20787796" />
       <window_info id="Commit" order="1" weight="0.1169465" />
       <window_info id="Structure" order="2" side_tool="true" weight="0.25" />
       <window_info anchor="bottom" id="Database Changes" />
@@ -73,9 +85,9 @@
       <window_info anchor="bottom" id="HfCacheToolWindow" />
       <window_info anchor="bottom" id="File Transfer" />
       <window_info anchor="bottom" id="Version Control" order="0" weight="0.3202429" />
-      <window_info anchor="bottom" id="Terminal" order="1" weight="0.82712555" />
+      <window_info anchor="bottom" id="Terminal" order="1" weight="0.74939275" />
       <window_info anchor="bottom" id="Problems" order="2" />
-      <window_info anchor="bottom" id="Problems View" order="3" weight="0.54858303" />
+      <window_info anchor="bottom" id="Problems View" order="3" weight="0.43846154" />
       <window_info anchor="bottom" id="Services" order="4" />
       <window_info anchor="bottom" id="Python Packages" order="5" weight="0.1" />
       <window_info anchor="bottom" id="Python Console" order="6" weight="0.81603336" />
@@ -96,6 +108,7 @@
   </component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/storage/chunker" />
       <recent name="$PROJECT_DIR$/utils/cryptography/hash" />
       <recent name="$PROJECT_DIR$/network/Http" />
       <recent name="$PROJECT_DIR$/network/Grpc" />
@@ -229,7 +242,10 @@
       <workItem from="1735022280188" duration="12192000" />
       <workItem from="1735105482598" duration="6687000" />
       <workItem from="1735359238861" duration="518000" />
-      <workItem from="1735359762801" duration="24253000" />
+      <workItem from="1735359762801" duration="26637000" />
+      <workItem from="1735455399495" duration="24000" />
+      <workItem from="1735455464480" duration="1919000" />
+      <workItem from="1735618751373" duration="20010000" />
     </task>
     <task id="LOCAL-00001" summary="update grpc interface">
       <option name="closed" value="true" />

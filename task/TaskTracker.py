@@ -15,7 +15,7 @@ class TaskTracker:
     def __init__(self, pending_task_pool: Queue = Queue()):
         self.tasks = [] # 所有的任务，任务类型为Task
         self.tasks_map = {} # 任务映射， 由sign映射到self.tasks的Index上
-        self.slot_manager:SlotManager = None # todo 这里有一个slotManager,task更新slot后将slot传到slotManager，然后返回得到一个index用于查询slot
+        self.slot_manager:SlotManager = None
         self.pending_task_pool = pending_task_pool
     def set_slot_manager(self, slot_manager: SlotManager):
         self.slot_manager = slot_manager
