@@ -5,20 +5,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="1dc9b31b-c6cf-4b8a-800b-76946d4ab624" name="Changes" comment="update grpc code">
-      <change afterPath="$PROJECT_DIR$/paradigm/storage.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/storage/chunker/chunker.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/storage/encoder/rs_decoder.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/storage/encoder/rs_encoder.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/utils/cryptography/commitment/commitment_computer.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/receiver/SimpleReceiver.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/network/Grpc/grpc_engine.py" beforeDir="false" afterPath="$PROJECT_DIR$/network/Grpc/grpc_engine.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/paradigm/slot.py" beforeDir="false" afterPath="$PROJECT_DIR$/paradigm/slot.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/storage/Storager.py" beforeDir="false" afterPath="$PROJECT_DIR$/storage/Storager.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/storage/chunker.py" beforeDir="false" afterPath="$PROJECT_DIR$/paradigm/mod.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/storage/encoder/SimpleECHandler.py" beforeDir="false" afterPath="$PROJECT_DIR$/storage/encoder/SimpleECHandler.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/task/TaskTracker.py" beforeDir="false" afterPath="$PROJECT_DIR$/task/TaskTracker.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/utils/cryptography/commitment/merkle_root.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/cryptography/commitment/merkle_root.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/utils/cryptography/hash/sha256.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/cryptography/hash/hasher.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/SimpleStorager.py" beforeDir="false" afterPath="$PROJECT_DIR$/storage/SimpleStorager.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -245,7 +234,7 @@
       <workItem from="1735359762801" duration="26637000" />
       <workItem from="1735455399495" duration="24000" />
       <workItem from="1735455464480" duration="1919000" />
-      <workItem from="1735618751373" duration="20010000" />
+      <workItem from="1735618751373" duration="20446000" />
     </task>
     <task id="LOCAL-00001" summary="update grpc interface">
       <option name="closed" value="true" />
