@@ -1,14 +1,15 @@
 from enum import Enum, auto
+from typing import List
 
 from click import UNPROCESSED
 
 from config.config import BHExecutionNodeGlobalConfig
 from paradigm.model import CommitSlotModelParams
-from paradigm.storage import ChunkReplicateRecord
+from paradigm.replicate import ChunkReplicateRecord
 
 """
     NOTE: CommitSlotItem和Master中的CommitSlotItem类似
-    用于维护一个slot的完整周期，但在这里比Master里多一个状态
+    用于维护一个slot的完整周期
     1. UNPROCESSED
     2. UNDETERMINED
     3. JUSTIFIED
@@ -47,11 +48,13 @@ class CommitSlotItem:
         self.params: CommitSlotModelParams = params # 输入模型参数
         self.commitment = "" # todo 这里还有一个commitment
         self.hash = ""
-        self.replicate_records: ChunkReplicateRecord = None
+        self.replicate_records: List[ChunkReplicateRecord] = []
+        self.nb_chunks = -1
+        self.set_hash("{}_{}_{}".format(self.sign, self.slot, self.node_id)) # TODO @YZM 这里要改master的hash，应该是在分配任务的时候就给一个唯一标识
     def set_index(self, index):
         self.index = index
     def check_is_reliable(self) -> bool:
-        return self.params.is_reliable # todo 这里要求一定要有这个参数
+        return self.is_reliable # todo 这里要求一定要有这个参数
     def is_unprocess(self) -> bool:
         return self.state == SlotState.UNPROCESSED
     def sign_as_processed(self):
@@ -68,9 +71,17 @@ class CommitSlotItem:
         return self.state == SlotState.FINALIZED
     def set_commitment(self, commitment):
         self.commitment = commitment
-    def has_been_commit(self):
-        return self.hash != ""
+    # def has_been_commit(self):
+    #     return self.hash != ""
     def set_hash(self, slot_hash):
         self.hash = slot_hash
-    def set_replicate_record(self, record: ChunkReplicateRecord):
-        self.replicate_records = record
+    def set_nb_chunks(self, nb_chunks):
+        self.nb_chunks = nb_chunks
+        self.replicate_records = [None for _ in range(self.nb_chunks)]
+    def update_record(self, record: ChunkReplicateRecord):
+        index = record.index
+        self.replicate_records[index] = record
+    def check_replicate_state(self) -> bool:
+        return not any(record is None for record in self.replicate_records)
+    # def set_replicate_record(self, record: ChunkReplicateRecord):
+    #     self.replicate_records = record

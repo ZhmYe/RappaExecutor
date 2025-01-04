@@ -3,22 +3,20 @@
 """
     NOTE: 这里的TaskTracker和Master的TaskManager不同，严格意义上不需要维护slot的track，因为可能节点不会参与所有的slot
 """
+from paradigm.channel import Channel
 from paradigm.slot import CommitSlotItem
 from paradigm.task import Task
-from queue import Queue
 import threading
 from logger.logger import logWriter as log
-from task.SlotManager import SlotManager
 
 
 class TaskTracker:
-    def __init__(self, pending_task_pool: Queue = Queue()):
+    def __init__(self, channel: Channel):
         self.tasks = [] # 所有的任务，任务类型为Task
-        self.tasks_map = {} # 任务映射， 由sign映射到self.tasks的Index上
-        self.slot_manager:SlotManager = None
-        self.pending_task_pool = pending_task_pool
-    def set_slot_manager(self, slot_manager: SlotManager):
-        self.slot_manager = slot_manager
+        self.tasks_map = {} # 任务映射， 由sign映射到self.tasks的Index上.
+        self.channel = channel
+        # self.to_task_tracker_channel: Queue[CommitSlotItem] = to_task_tracker_channel # 这一channel将slot传入task，由SlotManager传递
+        # self.pending_task_pool = pending_task_pool
     """
         NOTE: handle_receive_slot 接收到新的slot后调用
         1. 首先根据sign来判断是否曾经收到过这一任务，得到或新建相应任务
@@ -37,14 +35,16 @@ class TaskTracker:
             log.write_log("EXECUTION", "Receive New Task, Sign: {}, Slot: {}".format(slot.sign, slot.slot))
         else:
             task = self.tasks[self.tasks_map[slot.sign]]
-        slot_index = self.slot_manager.handle_receive_slot(slot) # 向slotManager传递slot
-        task.update_slot(slot_index) # 更新
+        # slot_index = self.slot_manager.handle_receive_slot(slot) # 向slotManager传递slot
+        if slot.index == -1:
+            raise ValueError("Slot Pass to TaskTracker should have index != -1!!!")
+        task.update_slot(slot.index) # 更新
     def process(self):
         while True:
-            if self.pending_task_pool.empty():
+            if self.channel.to_task_tracker_channel.empty():
                 continue
             try:
-                task_slot: CommitSlotItem = self.pending_task_pool.get(timeout=1)
+                task_slot: CommitSlotItem = self.channel.to_task_tracker_channel.get(timeout=0.01)
                 self.handle_receive_slot(task_slot)
             except Exception as e:
                 raise RuntimeError(e)

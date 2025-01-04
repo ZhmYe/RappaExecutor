@@ -33,21 +33,21 @@ class GrpcServer(pb2_grpc.NodeExecutorServicer):
         # add by zhmye
         for slot_hash in request.justifieds:
             # 判断是否有自己的
-            if slot_hash in self._registry.slot_buffer:
+            if slot_hash in self._registry.channel.slot_buffer_share_dict:
                 # 说明自己的slot通过了投票
-                slot: CommitSlotItem = self._registry.slot_buffer[slot_hash]
+                slot: CommitSlotItem = self._registry.channel.slot_buffer_share_dict[slot_hash]
                 slot.sign_as_justified()
-                self._registry.slot_buffer[slot_hash] = slot
-                self._registry.slot_channel.put(slot)
+                self._registry.channel.slot_buffer_share_dict[slot_hash] = slot
+                self._registry.channel.to_slot_manager_channel.put(slot)
         for slot_hash in request.finalizes:
             # 判断是否有自己的
-            if slot_hash in self._registry.slot_buffer:
+            if slot_hash in self._registry.channel.slot_buffer_share_dict:
                 # 说明自己的slot通过了投票
-                slot: CommitSlotItem = self._registry.slot_buffer[slot_hash]
+                slot: CommitSlotItem = self._registry.channel.slot_buffer_share_dict[slot_hash]
                 slot.sign_as_finalized()
-                self._registry.slot_channel.put(slot)
+                self._registry.channel.to_slot_manager_channel.put(slot)
                 # 删除buffer
-                del self._registry.slot_buffer[slot_hash]
+                del self._registry.channel.slot_buffer_share_dict[slot_hash]
                 # self._registry.slot_buffer[slot_hash] = slot
         # 简单获取一个内存占用
         total_memory, used_memory, memory_usage = sys_monitor.get_memory_info()
@@ -81,7 +81,7 @@ class GrpcServer(pb2_grpc.NodeExecutorServicer):
                 )
             )
             log.write_log("DEBUG", f"receive Task {request.sign} Slot {request.slot}")
-            self._registry.pending_task_pool.put(new_slot)
+            self._registry.channel.to_slot_manager_channel.put(new_slot)
             return pb2.ScheduleResponse(accept=True, nodeId=self._registry.node_id, sign=request.sign)
         else:
             # 不在调度内，则拒绝
