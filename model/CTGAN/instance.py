@@ -1,5 +1,6 @@
 import os.path
 import pickle
+import time
 from abc import ABC, abstractmethod
 import torch
 from ctgan import CTGAN
@@ -92,7 +93,6 @@ class CTGAN_Model_Instance(ABC):
 
             # 保存到实例属性
             self.model = ctgan
-
         except KeyError as e:
             log.write_log("ERROR", f"Missing key in parameters: {e}")
             raise ValueError(f"Missing key in parameters: {e}")

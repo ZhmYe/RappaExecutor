@@ -5,9 +5,26 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="1dc9b31b-c6cf-4b8a-800b-76946d4ab624" name="Changes" comment="update grpc code">
-      <change afterPath="$PROJECT_DIR$/storage/receiver/SimpleReceiver.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/storage/SimpleStorager.py" beforeDir="false" afterPath="$PROJECT_DIR$/storage/SimpleStorager.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mocker/mocker_executor.py" beforeDir="false" afterPath="$PROJECT_DIR$/mocker/mocker_executor.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mocker/mocker_receiver.py" beforeDir="false" afterPath="$PROJECT_DIR$/mocker/mocker_receiver.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/model/CTGAN/instance.py" beforeDir="false" afterPath="$PROJECT_DIR$/model/CTGAN/instance.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/model/CTGAN/test/ctgan_model.pth" beforeDir="false" afterPath="$PROJECT_DIR$/model/CTGAN/test/ctgan_model.pth" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/model/CTGAN/train_model.py" beforeDir="false" afterPath="$PROJECT_DIR$/model/CTGAN/train_model.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/network/Grpc/grpc_client.py" beforeDir="false" afterPath="$PROJECT_DIR$/network/Grpc/grpc_client.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/network/Grpc/grpc_engine.py" beforeDir="false" afterPath="$PROJECT_DIR$/network/Grpc/grpc_engine.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/network/Grpc/grpc_registry.py" beforeDir="false" afterPath="$PROJECT_DIR$/network/Grpc/grpc_registry.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/network/Grpc/grpc_server.py" beforeDir="false" afterPath="$PROJECT_DIR$/network/Grpc/grpc_server.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/paradigm/channel.py" beforeDir="false" afterPath="$PROJECT_DIR$/paradigm/channel.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/paradigm/replicate.py" beforeDir="false" afterPath="$PROJECT_DIR$/paradigm/replicate.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/paradigm/slot.py" beforeDir="false" afterPath="$PROJECT_DIR$/paradigm/slot.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/paradigm/storage.py" beforeDir="false" afterPath="$PROJECT_DIR$/paradigm/storage.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/processor/processor.py" beforeDir="false" afterPath="$PROJECT_DIR$/processor/processor.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/Storager.py" beforeDir="false" afterPath="$PROJECT_DIR$/storage/Storager.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/receiver/SimpleReceiver.py" beforeDir="false" afterPath="$PROJECT_DIR$/storage/receiver/SimpleReceiver.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/task/SlotManager.py" beforeDir="false" afterPath="$PROJECT_DIR$/task/SlotManager.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/task/TaskTracker.py" beforeDir="false" afterPath="$PROJECT_DIR$/task/TaskTracker.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -66,7 +83,7 @@
       <window_info id="Commit_Guest" show_stripe_button="false" />
       <window_info id="Pull Requests" />
       <window_info id="Learn" />
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.20787796" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.16689435" />
       <window_info id="Commit" order="1" weight="0.1169465" />
       <window_info id="Structure" order="2" side_tool="true" weight="0.25" />
       <window_info anchor="bottom" id="Database Changes" />
@@ -74,9 +91,9 @@
       <window_info anchor="bottom" id="HfCacheToolWindow" />
       <window_info anchor="bottom" id="File Transfer" />
       <window_info anchor="bottom" id="Version Control" order="0" weight="0.3202429" />
-      <window_info anchor="bottom" id="Terminal" order="1" weight="0.74939275" />
+      <window_info active="true" anchor="bottom" id="Terminal" order="1" visible="true" weight="0.57935226" />
       <window_info anchor="bottom" id="Problems" order="2" />
-      <window_info anchor="bottom" id="Problems View" order="3" weight="0.43846154" />
+      <window_info anchor="bottom" id="Problems View" order="3" weight="0.57935226" />
       <window_info anchor="bottom" id="Services" order="4" />
       <window_info anchor="bottom" id="Python Packages" order="5" weight="0.1" />
       <window_info anchor="bottom" id="Python Console" order="6" weight="0.81603336" />
@@ -234,7 +251,9 @@
       <workItem from="1735359762801" duration="26637000" />
       <workItem from="1735455399495" duration="24000" />
       <workItem from="1735455464480" duration="1919000" />
-      <workItem from="1735618751373" duration="20446000" />
+      <workItem from="1735618751373" duration="21442000" />
+      <workItem from="1735811178861" duration="1556000" />
+      <workItem from="1735873986740" duration="38704000" />
     </task>
     <task id="LOCAL-00001" summary="update grpc interface">
       <option name="closed" value="true" />

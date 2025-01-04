@@ -1,5 +1,4 @@
 import json
-import time
 from typing import Optional
 
 import grpc
@@ -35,15 +34,24 @@ class GrpcClient:
             }]
         })
         self._channel: Optional[Channel] = None
+    # 客户端方法，分发冗余块
+    def client_replicate_chunk(self):
+        while True:
+            if self._registry.channel.to_grpc_replicate_channel.empty():
+                continue
+            try:
+                record, replicate_encode_chunks = self._registry.channel.to_grpc_replicate_channel.get(timeout=0.01)
+            except Exception as e:
+                log.write_log("ERROR", f"faild to replicate chunk because of {e}")
 
     # 客户端方法，提交task slot
     def client_commit_slot(self):
         while True:
-            if self._registry.finish_task_pool.empty():
+            if self._registry.channel.to_grpc_slot_channel.empty():
                 continue
             try:
                 # 从完成的任务池中获取任务
-                commit_slot: CommitSlotItem = self._registry.finish_task_pool.get(timeout=1)
+                commit_slot: CommitSlotItem = self._registry.channel.to_grpc_slot_channel.get(timeout=0.01)
                 if not commit_slot.is_undetermined():
                     raise ValueError("Commit Slot must be UNDETERMINED!!!")
 
@@ -71,11 +79,11 @@ class GrpcClient:
     # TODO 这里处理layer返回commit的结果
     def _commit_result_process(self, slot: CommitSlotItem, response: pb2.SlotCommitResponse):
         # 这里response应该暂时是不涉及invalid的
-        slot_hash = response.hash
-        slot.set_hash(slot_hash)
-        self._registry.slot_buffer[slot_hash] = slot # todo 暂时先这样写
+        # slot_hash = response.hash
+        # slot.set_hash(slot_hash)
+        self._registry.channel.slot_buffer_share_dict[slot.hash] = slot # todo 暂时先这样写
         # self._registry.slot_hash[slot_hash] = True
-        self._registry.slot_channel.put(slot) # 传递到slot_channel
+        # self._registry.channel.to_slot_manager_channel.put(slot) # 传递到slot_channel
         pass
 
     # 创建 channel

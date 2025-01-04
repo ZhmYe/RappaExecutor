@@ -1,8 +1,10 @@
+import os
 from enum import Enum,auto
 from typing import List
 
 from config.config import BHExecutionNodeGlobalConfig
 from paradigm.mod import ModelOutputType
+from paradigm.replicate import ReplicateChunk
 
 """
     NOTE: 这里是关于存储的部分
@@ -12,33 +14,41 @@ from paradigm.mod import ModelOutputType
 
 
 # 表示一个将被存储的文件块
-# 需要记录的是: 1. 从哪个节点发过来的; 2. 是哪个任务的第几个slot; 3. 是第几个chunk; 4. 存储的路径是什么
+# 需要记录的是: 1. 是哪个任务的第几个slot; 2. 是第几个chunk; 3. 存储的路径是什么
 class StoredChunk:
-    def __init__(self, node_id, sign, slot, index):
-        self.node_id = node_id
-        self.sign = sign
-        self.slot = slot
-        self.index = index
-        self.store_path = self.generate_file_store_path()
-    def generate_file_store_path(self):
-        return ""
-    def store(self):
+    def __init__(self, storage_path, chunk_to_store: ReplicateChunk):
+        # self.node_id = node_id #这个不重要
+        self.sign = chunk_to_store.sign
+        self.slot = chunk_to_store.slot
+        self.row_index = chunk_to_store.row_index
+        self.col_index = chunk_to_store.col_index
+        self.slot_hash = chunk_to_store.slot_hash # Master为每个 CommitSlotItem赋予了slot_hash，这里记录，方便作为索引
+        self.store_path = self.generate_file_store_path(storage_path)
+    def generate_file_store_path(self, storage_path):
+        # 构建分级存储路径
+        file_dir = os.path.join(storage_path, str(self.sign), str(self.slot))
+        file_path = os.path.join(file_dir, "{}-row-{}-{}-chunk.slot".format(self.slot_hash, self.row_index, self.col_index))
+
+        # 确保存储路径存在
+        os.makedirs(file_dir, exist_ok=True)
+        return file_path
+    def store(self, data_bytes):
+        # 写入文件
+        try:
+            with open(self.store_path, "wb") as f:
+                # json.dump(chunk_data, f, ensure_ascii=False, indent=4)
+                f.write(data_bytes) # 直接写
+                f.close()
+        except Exception as e:
+            raise IOError(f"Failed to store chunk locally at { self.store_path }: {e}")
         # 这里直接存储
+        pass
+    def load(self):
+        # 这里读取
         pass
 
 
-# 这里记录一个由当前节点生成的数据被分发的记录，便于回收并恢复
-# 需要记录的是: 1. 每个chunk被发给了谁; 2. padding_size
-# 其它的数据全部放到CommitSlot里去
-class ChunkReplicateRecord:
-    # chunk_replicate_list: List[str]是ip的列表，对应index的chunk被发到对应的ip
-    def __init__(self, chunk_replicate_list: List[str], padding_size=0):
-        self.replicates = chunk_replicate_list
-        self.padding_size = padding_size
-
     # def set_slot_hash(self, slot_hash):
-
-
 
 
 """
