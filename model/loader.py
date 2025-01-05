@@ -1,8 +1,8 @@
 import os
 from model.CTGAN.instance import CTGAN_Model_Instance
-from model.format import ModelInstance
 from utils.function.func import get_model_params_dict
-from paradigm.model import ModelEnum
+from paradigm.model import ModelEnum, ModelInstance
+
 
 class ModelLoader:
     def __init__(self, path):

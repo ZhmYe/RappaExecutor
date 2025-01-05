@@ -1,10 +1,15 @@
 import argparse
+from multiprocessing import Process, Queue, Manager
+
+from mocker.mocker_collector import MockerCollector
 from network.Grpc.grpc_engine import GrpcEngine
-from queue import Queue
+# from queue import Queue
 from logger.logger import logWriter as log
+from paradigm.channel import Channel
 from storage.Storager import Storager
 from config.config import BHExecutionNodeGlobalConfig
 from processor.processor import Processor
+from storage.receiver.SimpleReceiver import SimpleReceiver
 from task.SlotManager import SlotManager
 from task.TaskTracker import TaskTracker
 
@@ -39,57 +44,58 @@ def init_pool() -> Queue:
     return Queue()
 
 
-def init_grpc_engine(pending, finish, chunks, slot_channel) -> GrpcEngine:
-    grpc_engine = GrpcEngine(pending, finish, chunks, slot_channel)
-    grpc_engine.load_config()
-    return grpc_engine
-
-
-def init_storager(slot_channel, chunks) -> Storager:
-    s = Storager(slot_channel, chunks)
-    # s.load_config()
-    return s
-
 
 if __name__ == '__main__':
-    # 解析命令行参数
+
+# 解析命令行参数
     args = parse_args()
     load_config(args.config)  # 解析参数
     # 根据命令行参数设置全局调试模式
     BHExecutionNodeGlobalConfig.set_debug(args.debug)
-
-    # 初始化grpc，所有公用
-    pending_task_pool = init_pool()
-    finish_task_pool = init_pool()
-    receive_chunks_pool = init_pool()
-    slot_channel = init_pool()
-    grpc_engine = init_grpc_engine(pending_task_pool, finish_task_pool, receive_chunks_pool, slot_channel)
-    # 初始化存储模块
-    storager = init_storager(slot_channel, receive_chunks_pool)
-    storager.set_grpc(grpc_engine)
-
-    # Processor
-    processor = Processor()
-    processor.set_storager(storager)
-
-    slot_manager = SlotManager(slot_channel)
-    slot_manager.set_processor(processor=processor)
-    slot_manager.set_grpc_engine(grpc_engine=grpc_engine)
-
-    task_tracker = TaskTracker(pending_task_pool)
-    task_tracker.set_slot_manager(slot_manager)
+    # 定义所有的channel
+    manager = Manager()
+    channel = Channel(manager)
 
 
-    # # 初始化合成节点
-    # node = BHExecutionNode(pending_task_pool, finish_task_pool)
-    # node.load_config()
-    # node.set_grpc_engine(grpc_engine)
-    # node.set_storager(storager)
-    # 启动grpc
-    grpc_engine.start_all()
+    # ===================================== TaskTracker,用于标识本地收到了哪些任务 =====================================
+    # to_task_tracker_channel = Queue()
+    task_tracker = TaskTracker(channel=channel)
 
-    storager.start()
-    processor.start()
-    task_tracker.start()
-    slot_manager.start()
-    # node.start()
+    # ===================================== SlotManager, Slot全生命周期管理 =====================================
+    # to_slot_manager_channel = init_pool()
+    slot_manager = SlotManager(channel=channel)
+    # SlotManager需要与TaskTracker交互
+    # slot_manager.set_to_task_tracker_channel(to_task_tracker_channel=to_task_tracker_channel)
+
+    # ===================================== Grpc Engine, 管理Grpc Server和Grpc Client =====================================
+    grpc_engine = GrpcEngine(channel=channel)
+
+    # ===================================== Storager, 管理存储(纠删码生成和冗余块存储) =====================================
+    storager = Storager(channel=channel)
+
+    # ===================================== Processor, 管理model, 生成输出 =====================================
+    processor = Processor(channel=channel)
+    # ===================================== Receiver, 接收冗余块，存储 =====================================
+    receiver = SimpleReceiver(channel=channel)
+
+
+    # ===================================== Collector, 测试恢复ec块, 仅用于测试 =====================================
+    collector = MockerCollector(channel=channel)
+
+    processes = [
+        Process(target=grpc_engine.start_all),
+        Process(target=storager.start),
+        Process(target=processor.start),
+        Process(target=task_tracker.start),
+        Process(target=slot_manager.start),
+        Process(target=collector.start),
+        Process(target=receiver.start)
+    ]
+
+    # 启动所有进程
+    for process in processes:
+        process.start()
+
+    # 等待所有进程完成
+    for process in processes:
+        process.join()

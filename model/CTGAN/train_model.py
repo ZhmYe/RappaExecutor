@@ -1,3 +1,5 @@
+import time
+
 from ctgan import CTGAN, load_demo
 import torch
 import pickle
@@ -21,6 +23,9 @@ discrete_columns = [
 # 训练 CTGAN
 ctgan = CTGAN(epochs=10)
 ctgan.fit(real_data, discrete_columns)
+startTime = time.time()
+print(ctgan.sample(10))
+print(time.time() - startTime)
 def save_ctgan(ctgan, filepath):
     """
     保存 CTGAN 模型到 .pth 文件。

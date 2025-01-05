@@ -11,7 +11,7 @@ from logger.logger import logWriter as log
 from storage.format import EncodedChunk
 
 
-class ECHandler:
+class SimpleECHandler:
     def __init__(self, k, n):
         self.n = n  # 总块数（n）
         self.k = k  # 数据块数（k）
