@@ -61,6 +61,7 @@ class GrpcClient:
                     sign=commit_slot.sign,
                     slot=commit_slot.slot,
                     size=commit_slot.size,
+                    hash=commit_slot.hash,
                     commitment=bytes(commit_slot.commitment, 'utf-8')
                 )
                 # 发送grpc请求
@@ -70,7 +71,7 @@ class GrpcClient:
                 # 对提交结果进行处理
                 self._commit_result_process(commit_slot, commit_response)
                 # 处理结果,这里暂时只打印日志
-                log.write_log("DEBUG",
+                log.write_log("NETWORK",
                               f"successfully upload commit slot{commit_request.slot} of task{commit_request.sign}:[size:{commit_request.size}]")
 
             except Exception as e:

@@ -50,7 +50,7 @@ class CommitSlotItem:
         self.hash = ""
         self.replicate_records: List[ChunkReplicateRecord] = []
         self.nb_chunks = -1
-        self.set_hash("{}_{}_{}".format(self.sign, self.slot, self.node_id)) # TODO @YZM 这里要改master的hash，应该是在分配任务的时候就给一个唯一标识
+        # self.set_hash("{}_{}_{}".format(self.sign, self.slot, self.node_id)) # TODO @YZM 这里要改master的hash，应该是在分配任务的时候就给一个唯一标识
     def set_index(self, index):
         self.index = index
     def check_is_reliable(self) -> bool:

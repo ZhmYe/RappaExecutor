@@ -6,10 +6,10 @@ import torch
 from ctgan import CTGAN
 from ctgan.data_sampler import DataSampler
 
+from paradigm.model import ModelFormatOutput
 from .component import Generator
 # 引入日志模块
 from logger.logger import logWriter as log
-from ..format import ModelFormatOutput
 
 
 class CTGAN_Model_Instance(ABC):
@@ -89,7 +89,7 @@ class CTGAN_Model_Instance(ABC):
             # 加载生成器权重
             ctgan._generator.load_state_dict(generator_state)
 
-            log.write_log("INFO", "Model successfully loaded from: {}".format(os.path.join(self.model_path, dir_path)))
+            log.write_log("MODEL", "Model successfully loaded from: {}".format(os.path.join(self.model_path, dir_path)))
 
             # 保存到实例属性
             self.model = ctgan
@@ -129,7 +129,7 @@ class CTGAN_Model_Instance(ABC):
             condition_column, condition_value = self.generate_input(params)
             synthetic_data = self.model.sample(output_size, condition_column, condition_value)
             log.write_log(
-                "INFO",
+                "MODEL",
                 "{} generated output, size: {}".format(self.name(), len(synthetic_data))
             )
             return ModelFormatOutput(

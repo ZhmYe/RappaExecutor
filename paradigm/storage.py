@@ -45,7 +45,16 @@ class StoredChunk:
         pass
     def load(self):
         # 这里读取
-        pass
+        # 写入文件
+        try:
+            with open(self.store_path, "rb") as f:
+                # json.dump(chunk_data, f, ensure_ascii=False, indent=4)
+                data = f.read()
+                f.close()
+                return data
+        except Exception as e:
+            raise IOError(f"Failed to store chunk locally at { self.store_path }: {e}")
+        # 这里直接存储
 
 
     # def set_slot_hash(self, slot_hash):

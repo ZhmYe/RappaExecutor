@@ -6,6 +6,7 @@ from paradigm.slot import CommitSlotItem
 
 class Channel:
     def __init__(self, manager: Manager):
+        self.manager = manager
         self.to_slot_manager_channel: Queue[CommitSlotItem] = manager.Queue()
         self.to_task_tracker_channel: Queue[CommitSlotItem] = manager.Queue()
         self.to_grpc_replicate_channel: Queue = manager.Queue()
@@ -18,3 +19,15 @@ class Channel:
         self.to_storager_record_channel: Queue = manager.Queue()
 
         self.slot_buffer_share_dict = manager.dict()
+        self.store_chunks = manager.dict()
+
+        self.test_collect_output_channel = manager.Queue()
+        self.test_collect_signal_channel = manager.Queue()
+        self.test_collect_pass_receiver_channel = manager.Queue()
+        self.test_collect_pass_grpc_channel = manager.Queue()
+    def update_store_chunk(self, slot_hash, new_store_chunk_item, row_index):
+        if not self.store_chunks.get(slot_hash):
+            self.store_chunks[slot_hash] = self.manager.dict()
+        self.store_chunks[slot_hash][row_index] = new_store_chunk_item
+    def update_slot_buff(self):
+        pass

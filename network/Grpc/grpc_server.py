@@ -21,7 +21,7 @@ class GrpcServer(pb2_grpc.NodeExecutorServicer):
         # TODO 这里暂时这样做,简单实现一下
         votes = []
         status = {}
-        logWriter.write_log("DEBUG", f"receive heartbeat.vote for {len(request.commits)} commits.")
+        logWriter.write_log("NETWORK", f"receive heartbeat.vote for {len(request.commits)} commits.")
         for slot_hash in request.commits:
             votes.append(pb2.Vote(
                 hash='12345678',
@@ -63,8 +63,10 @@ class GrpcServer(pb2_grpc.NodeExecutorServicer):
 
     # 服务端方法，用于处理调度
     def Schedule(self, request: pb2.ScheduleRequest, context):
-        # 调度不存在或者为0时
-        if request.schedule.get(self._registry.node_id, 0) != 0:
+        # print(request.nodeID, self._registry.node_id, request.nodeID == self._registry.node_id)
+        if int(request.nodeID) == int(self._registry.node_id):
+        #
+        # if request.schedule.get(self._registry.node_id, 0) != 0:
             # 节点在其调度内，将任务加入当前任务的队列中
             # new_task = PendingTaskPoolItem(
             #     request.sign, int(request.slot), request.schedule[self._registry.node_id], request.model,
@@ -74,13 +76,15 @@ class GrpcServer(pb2_grpc.NodeExecutorServicer):
             new_slot = CommitSlotItem(
                 request.sign,
                 request.slot,
-                request.schedule[self._registry.node_id],
+                request.size,
                 CommitSlotModelParams(
                     request.model,
                     MessageToDict(request.params)
                 )
+
             )
-            log.write_log("DEBUG", f"receive Task {request.sign} Slot {request.slot}")
+            new_slot.set_hash(request.hash)
+            log.write_log("NETWORK", f"receive Task {request.sign} Slot {request.slot} Schedule {request.hash}")
             self._registry.channel.to_slot_manager_channel.put(new_slot)
             return pb2.ScheduleResponse(accept=True, nodeId=self._registry.node_id, sign=request.sign)
         else:
@@ -96,7 +100,7 @@ class GrpcServer(pb2_grpc.NodeExecutorServicer):
         self._core_server.add_insecure_port(f"[::]:{self._registry.address.get_port()}")
         # 启动grpc
         self._core_server.start()
-        log.write_log("DEBUG", f"gRPC server started on port {self._registry.address.get_port()}")
+        log.write_log("NETWORK", f"gRPC server started on port {self._registry.address.get_port()}")
         self._core_server.wait_for_termination()
 
     # 关闭服务

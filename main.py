@@ -1,6 +1,7 @@
 import argparse
 from multiprocessing import Process, Queue, Manager
 
+from mocker.mocker_collector import MockerCollector
 from network.Grpc.grpc_engine import GrpcEngine
 # from queue import Queue
 from logger.logger import logWriter as log
@@ -74,43 +75,21 @@ if __name__ == '__main__':
 
     # ===================================== Processor, 管理model, 生成输出 =====================================
     processor = Processor(channel=channel)
-    #
+    # ===================================== Receiver, 接收冗余块，存储 =====================================
     receiver = SimpleReceiver(channel=channel)
-    # grpc_engine = init_grpc_engine(pending_task_pool, finish_task_pool, receive_chunks_pool, slot_channel)
-    # # 初始化存储模块
-    # storager = init_storager(slot_channel, receive_chunks_pool)
-    # storager.set_grpc(grpc_engine)
-    #
-    # # Processor
-    # processor = Processor()
-    # processor.set_storager(storager)
-    #
-    # slot_manager = SlotManager(slot_channel)
-    # slot_manager.set_processor(processor=processor)
-    # slot_manager.set_grpc_engine(grpc_engine=grpc_engine)
-    #
-    # task_tracker = TaskTracker()
-    # task_tracker.set_slot_manager(slot_manager)
 
 
-    # # 初始化合成节点
-    # node = BHExecutionNode(pending_task_pool, finish_task_pool)
-    # node.load_config()
-    # node.set_grpc_engine(grpc_engine)
-    # node.set_storager(storager)
-    # 启动grpc
-    # grpc_engine.start_all()
-    #
-    # storager.start()
-    # processor.start()
-    # task_tracker.start()
-    # slot_manager.start()
+    # ===================================== Collector, 测试恢复ec块, 仅用于测试 =====================================
+    collector = MockerCollector(channel=channel)
+
     processes = [
         Process(target=grpc_engine.start_all),
         Process(target=storager.start),
         Process(target=processor.start),
         Process(target=task_tracker.start),
-        Process(target=slot_manager.start)
+        Process(target=slot_manager.start),
+        Process(target=collector.start),
+        Process(target=receiver.start)
     ]
 
     # 启动所有进程

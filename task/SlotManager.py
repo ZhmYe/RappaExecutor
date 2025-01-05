@@ -22,21 +22,6 @@ class SlotManager:
         # self.to_task_tracker_channel: Queue[CommitSlotItem] = None # 给taskTracker新的slot
 
 
-    # def set_to_task_tracker_channel(self, to_task_tracker_channel: Queue[CommitSlotItem]):
-    #     self.to_task_tracker_channel = to_task_tracker_channel
-    #
-    # def check_channel_connect(self)->True:
-    #     if self.to_slot_manager_channel is None:
-    #         return False
-    #     if self.to_task_tracker_channel is None:
-    #         return False
-
-
-
-    # def set_grpc_engine(self, grpc_engine: GrpcEngine):
-    #     self.grpc_engine = grpc_engine
-    # def set_processor(self, processor: Processor):
-    #     self.processor = processor
 
     def handle_new_receive_slot(self, slot: CommitSlotItem) -> int:
         # 这里针对最新的unprocessed的slot
@@ -88,6 +73,8 @@ class SlotManager:
                         pass # 还没实现，暂时就先pass todo
                 if slot.is_finalized():
                     # slot已经finalize,暂时没有额外逻辑
+                    # todo 这里暂时放一下测试collect的逻辑
+                    self.channel.test_collect_signal_channel.put(slot)
                     log.write_log("EXECUTION", "Update Finalized Slot, Sign: {}, Slot: {}, Hash: {}".format(slot.sign, slot.slot, slot.hash))
                     pass
 

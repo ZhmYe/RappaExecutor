@@ -2,6 +2,8 @@ import os
 from multiprocessing import Process, Queue
 from typing import Optional, List
 
+import pandas as pd
+
 from config.config import BHExecutionNodeGlobalConfig
 from logger.logger import logWriter as log
 from mocker.mocker_executor import MockerExecutor
@@ -13,7 +15,8 @@ from network.format import BHExecutionAddress
 from paradigm.channel import Channel
 from paradigm.replicate import ReplicateChunk, ChunkReplicateRecord
 from paradigm.slot import CommitSlotItem
-from paradigm.storage import ErasureCodeChunks, ErasureCodeChunk
+from paradigm.storage import ErasureCodeChunks, ErasureCodeChunk, ErasureCodeRecoverError
+from storage.encoder.rs_decoder import ReedSolomonDecoder
 from utils.function.func import get_project_root
 
 
@@ -63,7 +66,7 @@ class GrpcEngine:
             self.mocker_executors[node_id] = MockerExecutor(node_id, self.registry.others_address[node_id], self.registry.channel) # 存储冗余数据块的路径
             # self.fake_other_nodes[node_id] = MockerNode(node_id, self.registry.others_address[node_id],
             #                                             self.fake_layer2_node)
-        log.write_log("DEBUG", "GrpcEngine load config")
+        log.write_log("NETWORK", "GrpcEngine load config")
 
     def start_all(self):
         self.load_config()
@@ -81,9 +84,9 @@ class GrpcEngine:
             mocker_executor = self.mocker_executors[node_id]
             mocker_executor.start() # 这里方便测试就是在同一个进程里
             # processes.append(Process(target=mocker_executor.start))
-
         for process in processes:
             process.start()
+        self.process_test_collect()
         for process in processes:
             process.join()
 
@@ -141,27 +144,38 @@ class GrpcEngine:
         #     if self.process_replicate_chunk(node_idx, chunk):
         #        iter_chunk_replicate_record.record_success_replicate(i, self.mocker_executors[node_idx].ip.get_address())
         # return iter_chunk_replicate_record
-    # start_test_collect_process 测试是否能够收齐
-    # 这里只需要一个Slot_hash
-    def start_test_collect_process(self, slot_hash, row_index, padding_size)->ErasureCodeChunks:
-        # 这里的chunk就是本地的一个，拿出来算作拿到了
-        # request = self.fake_layer2_node.collect(sign, slot, node_id)
-        # chunks = []
-        # indices = []
-        # total_packed_chunks = []
-        # for row_index in range(nb_chunk):
-        packed_chunks = ErasureCodeChunks(padding_size=padding_size)
-        for mocker_executor in self.mocker_executors:
-            store_chunk: ErasureCodeChunk = mocker_executor.load(slot_hash, row_index)
-        # for item in request:
-        #     store_node_id, index = item[0], item[1]
-        #     fake_node: MockerNode = self.fake_other_nodes[store_node_id]
-        #     store_chunk = fake_node.load_store_chunk(sign, slot, node_id, index)
-            packed_chunks.add_chunk(store_chunk)
-            # chunks.append(store_chunk["data"])
-            # indices.append(index)
-        # total_packed_chunks.append(packed_chunks)
-        return packed_chunks
 
-    # def send_store_message(self, node_id, sign, slot, _id, index, padding_size):
-    #     self.fake_layer2_node.update_index(node_id, sign, slot, _id, index)
+
+
+
+
+    """
+        NOTE: 这里是测试collect
+    """
+    def process_test_collect(self):
+        while True:
+            if self.registry.channel.test_collect_pass_grpc_channel.empty():
+                continue
+            try:
+                item = self.registry.channel.test_collect_pass_grpc_channel.get(timeout=0.01)
+                slot: CommitSlotItem = item[0]
+                output, local_chunks = item[1], item[2]
+                restored_test_data_merge = pd.DataFrame()
+                for row_index in range(len(local_chunks)):
+                    # 收集所有的其他块
+                    ec_chunks = ErasureCodeChunks(padding_size=slot.replicate_records[row_index].padding_size)
+                    ec_chunks.add_chunk(local_chunks[row_index])
+                    for node_id in self.mocker_executors:
+                        mocker_executor: MockerExecutor = self.mocker_executors[node_id]
+                        chunk = mocker_executor.load(slot.hash, row_index)
+                        ec_chunks.add_chunk(chunk)
+                    decoder = ReedSolomonDecoder()
+                    restored_test_data, error = decoder.decode(ec_chunks)
+                    if error != ErasureCodeRecoverError.NONE:
+                        raise ValueError("ERROR", "Recover data error: {}".format(error.name))
+                    restored_test_data_merge= pd.concat([restored_test_data_merge, restored_test_data], axis=0, ignore_index=True)
+                pd.testing.assert_frame_equal(restored_test_data_merge, output, check_dtype=False, obj="Decoded Dataframe does not match the origin Dataframe")
+                log.write_log("DEBUG", "{} recover test success!!!".format(slot.hash))
+                log.write_log("DEBUG", "recover result: \n{}".format(restored_test_data_merge))
+            except Exception as e:
+                raise RuntimeError(e)

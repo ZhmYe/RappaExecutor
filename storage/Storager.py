@@ -7,8 +7,8 @@ import pandas as pd
 from django.contrib.messages.constants import SUCCESS
 
 from logger.logger import logWriter as log
-from model.format import ModelFormatOutput
 from paradigm.channel import Channel
+from paradigm.model import ModelFormatOutput
 from paradigm.replicate import ChunkReplicateRecord, ReplicateState
 from paradigm.slot import CommitSlotItem
 from paradigm.storage import ErasureCodeChunks, ErasureCodeChunk, ErasureCodeRecoverError, ReplicateChunk
@@ -72,7 +72,6 @@ class Storager:
                 slot: CommitSlotItem = packed_slot_output[0]
                 output: ModelFormatOutput = packed_slot_output[1]
                 # commitment = self.compute_model_output_commitment(output) # 计算输出文件的承诺（和ec无关）
-
                 commitment = self.process_unprocess_slot(slot, output.output) # 这里要完成全部的任务： 1. commitment的计算; 2. 分发
                 slot.set_commitment(commitment)
                 # 数据块已经备份，可恢复,将状态置为UNDETERMINED，然后交还给slotManager
@@ -114,7 +113,6 @@ class Storager:
                     # send_indices.append(i)
                     # send_chunks.append(item.encoded_chunks[i].chunk)
             # self.grpc_engine.replicate_encoded_chunks(slot.sign, slot.slot,send_chunks, send_indices, item.padding_size, False)
-            # TODO: @YZM 这里要改成先把slot挂起，然后等待record回来，如果发现是错的就继续
             record = ChunkReplicateRecord(slot_hash=slot.hash, index=row, nb_chunk=len(replicate_encode_chunks), padding_size=item.padding_size)
             self.channel.to_grpc_replicate_channel.put((record, replicate_encode_chunks))
             # while True:
@@ -133,6 +131,8 @@ class Storager:
         # pd.testing.assert_frame_equal(restored_test_data_merge, output, check_dtype=False, obj="Decoded Dataframe does not match the origin Dataframe")
         # todo 这里应该会得到一个分发记录
         # self.test_recover(output=output, slot_hash=slot.hash, records=records)
+        # todo 这里为了测试collect,将slot和output传递到MockerCollector
+        self.channel.test_collect_output_channel.put((slot, output, len(encoded_packed_chunks)))
         log.write_log("STORAGE", "finish pass the data from Task {} Slot {} to grpc_engine".format(slot.sign, slot.slot))
         return commitment
 
