@@ -24,7 +24,7 @@ class ReedSolomonDecoder:
                 # 反序列化 JSON 数据
             json_str = decoded_data.decode('utf-8')  # 从字节流解码为 JSON 字符串
             restored_df = pd.read_json(StringIO(json_str))  # 反序列化为 DataFrame
-            log.write_log("STORAGE", "EC Decoder decode data success...")
+            log.write_log("INFO", "EC Decoder decode data success...")
             # 反序列化为 DataFrame
             return restored_df, ErasureCodeRecoverError.NONE
         else:

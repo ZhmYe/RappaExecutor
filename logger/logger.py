@@ -15,18 +15,35 @@ class LogColors:
     MAGENTA = "\033[35m"
     CYAN = "\033[36m"
     WHITE = "\033[37m"
+    BLACK = "\033[30m"  # 黑色
+    BRIGHT_RED = "\033[1;31m"  # 明亮红色
+    BRIGHT_GREEN = "\033[1;32m"  # 明亮绿色
+    BRIGHT_YELLOW = "\033[1;33m"  # 明亮黄色
+    BRIGHT_BLUE = "\033[1;34m"  # 明亮蓝色
+    BRIGHT_MAGENTA = "\033[1;35m"  # 明亮品红
+    BRIGHT_CYAN = "\033[1;36m"  # 明亮青色
+    BRIGHT_WHITE = "\033[1;37m"  # 明亮白色
+    LIGHT_BLACK = "\033[90m"  # 灰色（亮黑色）
+    LIGHT_RED = "\033[91m"  # 浅红色
+    LIGHT_GREEN = "\033[92m"  # 浅绿色
+    LIGHT_YELLOW = "\033[93m"  # 浅黄色
+    LIGHT_BLUE = "\033[94m"  # 浅蓝色
+    LIGHT_MAGENTA = "\033[95m"  # 浅品红
+    LIGHT_CYAN = "\033[96m"  # 浅青色
+    LIGHT_WHITE = "\033[97m"  # 浅白色
+
 
 
 class ColoredFormatter(logging.Formatter):
     COLORS = {
-        "DEBUG": LogColors.CYAN,
+        "DEBUG": LogColors.WHITE,
         "INFO": LogColors.GREEN,
         "WARNING": LogColors.YELLOW,
         "ERROR": LogColors.RED,
-        "CRITICAL": LogColors.MAGENTA,
-        "NETWORK": LogColors.GREEN,
-        "EXECUTION": LogColors.GREEN,
-        "STORAGE": LogColors.GREEN,
+        "STORAGE": LogColors.MAGENTA,
+        "NETWORK": LogColors.CYAN,
+        "EXECUTION": LogColors.BLUE,
+        "MODEL": LogColors.BRIGHT_MAGENTA,
     }
 
     def format(self, record):
@@ -39,6 +56,7 @@ class LogWriter:
     NETWORK_LEVEL_NUM = 25
     EXECUTION_LEVEL_NUM = 26
     STORAGE_LEVEL_NUM = 27
+    MODEL_LEVEL_NUM = 28
 
     def __init__(self):
         self.log_path =  Path(get_project_root()) / BHExecutionNodeGlobalConfig.LOG_PATH
@@ -81,6 +99,7 @@ class LogWriter:
         logging.addLevelName(self.NETWORK_LEVEL_NUM, "NETWORK")
         logging.addLevelName(self.EXECUTION_LEVEL_NUM, "EXECUTION")
         logging.addLevelName(self.STORAGE_LEVEL_NUM, "STORAGE")
+        logging.addLevelName(self.MODEL_LEVEL_NUM, "MODEL")
 
         def network(message, *args, **kwargs):
             if logger.isEnabledFor(self.NETWORK_LEVEL_NUM):
@@ -93,10 +112,14 @@ class LogWriter:
         def execution(message, *args, **kwargs):
             if logger.isEnabledFor(self.EXECUTION_LEVEL_NUM):
                 logger._log(self.EXECUTION_LEVEL_NUM, message, args, **kwargs)
+        def model(message, *args, **kwargs):
+            if logger.isEnabledFor(self.MODEL_LEVEL_NUM):
+                logger._log(self.EXECUTION_LEVEL_NUM, message, args, **kwargs)
 
         logger.network = network
         logger.execution = execution
         logger.storage = storage
+        logger.model = model
         return logger
 
     def write_log(self, level, message):
@@ -119,6 +142,8 @@ class LogWriter:
             self.logger.execution(message)
         elif level == "STORAGE":
             self.logger.storage(message)
+        elif level == "MODEL":
+            self.logger.model(message)
         else:
             raise ValueError(f"Unsupported log level: {level}")
 

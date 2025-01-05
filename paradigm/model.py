@@ -11,8 +11,22 @@
 from abc import abstractmethod
 from enum import Enum, auto
 
-from model.format import ModelFormatOutput
-
+# 这里统一规定模型的输出 # todo 不断完善
+# 要考虑的是，我们将合成任务分成了若干次，然后事实上每个小任务在模型处可能会因为batch_size变成几批，每一批对应一个Input，output
+# 所以最后的结果可能是(input, output)对，能否直接合并成(inputs, outputs)这样两个向量?
+class ModelFormatOutput:
+    def __init__(self, model_name, _input, output, params: dict):
+        self.name = model_name
+        self.input = _input
+        self.output = output
+        self.params = params
+    def format_json(self) -> dict:
+        return {
+            "model": self.name,
+            "input": self.input,
+            "output": self.output,
+            "params": self.params
+        }
 class ModelEnum(Enum):
     CTGAN = auto()
 

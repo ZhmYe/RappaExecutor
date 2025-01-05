@@ -14,7 +14,7 @@ from logger.logger import logWriter as log
 class MockerReceiver:
     def __init__(self, channel: Queue):
         self.storage_path = os.path.join(get_project_root(), BHExecutionNodeGlobalConfig.STORAGE_PATH) # 存储冗余数据块的路径
-        log.write_log("INFO", "Init Storage Receiver from config, storage_path: {}".format(self.storage_path))
+        log.write_log("DEBUG", "Init Storage Receiver from config, storage_path: {}".format(self.storage_path))
         self.store_chunks: dict = {} # 存储 chunk，通过 slot_hash作为 key
         # self.store_chunk_channel = store_chunk_channel # 通过这一通道传递要存储的 slot
         self.channel = channel

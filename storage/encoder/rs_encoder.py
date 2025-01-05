@@ -11,7 +11,6 @@ from config.default import DEFAULT_RS_CODE_K, DEFAULT_RS_CODE_N
 from logger.logger import logWriter as log
 from paradigm.mod import ModelOutputType
 from paradigm.storage import ErasureCodeChunks, ErasureCodeChunk
-from storage.format import EncodedChunk
 
 """
     NOTE: ReedSolomonEncoder 这里暂时就用一种纠删码RS Code
