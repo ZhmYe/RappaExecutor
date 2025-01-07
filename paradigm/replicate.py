@@ -1,6 +1,9 @@
 from typing import List
 from enum import Enum, auto
 
+from utils.cryptography.commitment.kzg.kzg_commitment import KZGProof
+from utils.cryptography.commitment.merkle.merkle_root import MerkleCommitment, MerkleProof
+
 
 class ReplicateChunk:
     def __init__(self, sign, slot, row_index, col_index, slot_hash, chunk):
@@ -9,9 +12,13 @@ class ReplicateChunk:
         self.row_index = row_index
         self.col_index = col_index
         self.slot_hash = slot_hash
+        self.kzg_proof: KZGProof = None
         self.chunk = chunk
+        # TODO @YZM 这里应该是还有commitment
     def bytes(self):
         return self.chunk # todo 这里等待实现
+    def set_kzg_proof(self, proof: KZGProof):
+        self.kzg_proof = proof
 
 class ReplicateState(Enum):
     SUCCESS = auto()
@@ -23,11 +30,12 @@ class ReplicateState(Enum):
 # 其它的数据全部放到CommitSlot里去
 class ChunkReplicateRecord:
     # chunk_replicate_list: List[str]是ip的列表，对应index的chunk被发到对应的ip
-    def __init__(self,  slot_hash, index, nb_chunk, padding_size=0):
+    def __init__(self,  slot_hash, index, nb_chunk, merkle_proof: MerkleProof, padding_size=0):
         self.slot_hash = slot_hash
         self.replicates = ["" for i in range(nb_chunk)]
         self.padding_size = padding_size
         self.index = index
+        self.merkle_proof = merkle_proof
     def check(self):
         if any([ip == "" for ip in self.replicates]):
             return ReplicateState.FAILED

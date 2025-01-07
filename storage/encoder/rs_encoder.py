@@ -162,7 +162,7 @@ class ReedSolomonEncoder:
         encoded_chunks = encoder.encode(data_chunks)
         encoded_chunks = [ErasureCodeChunk(chunk, index) for index, chunk in enumerate(encoded_chunks)]
         ec_encoded_chunks.add_chunks(encoded_chunks)
-        ec_encoded_chunks.compute_commitment() # todo 计算KZG承诺
+        ec_encoded_chunks.compute_kzg_commitment() # todo 计算KZG承诺
         # 这里需要额外传递padding_size，可以在heartbeat里记录下，这个要能拿到不然还原有问题（不能直接清除后缀0因为可能本来就有若干个）
         log.write_log("INFO", "EC Encoder encode dataframe to encoded chunks, len(data_chunks)={}, len(encoded_chunks)={}, padding_size={}".format(len(data_chunks), len(encoded_chunks), padding_size))
 
