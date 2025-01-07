@@ -8,7 +8,7 @@
 # 在output目录下生成num_nodes个节点包括其配置文件config.json
 
 # 运行文件后续可改为下载/可执行文件/虚拟环境
-CODE_DIRECTORY="/root/BeihangProject/BHExecutionNode" # 运行代码的目录路径
+CODE_DIRECTORY="/root/zkml_test/BHExecutionNode" # 运行代码的目录路径
 
 # 检查是否已存在 config.json 文件，如果存在则删除
 if [ -f "${CODE_DIRECTORY}/config.json" ]; then
@@ -80,4 +80,23 @@ EOF
     chmod +x $NODE_DIR/start.sh
 
 done
+# 生成 start_all.sh 启动所有节点的脚本
+cat <<EOF > start_all.sh
+#!/bin/bash
+# 启动所有节点的脚本
+
+echo "Starting all nodes..."
+
+for ((i=0; i<$NUM_NODES; i++)); do
+    echo "Starting node$i..."
+    ./node\$i/start.sh &
+    sleep 1 # 给每个节点一点时间启动
+done
+
+echo "All nodes started."
+EOF
+
+chmod +x start_all.sh
+
 echo "Generated $NUM_NODES nodes."
+echo "Use ./start_all.sh to start all nodes."

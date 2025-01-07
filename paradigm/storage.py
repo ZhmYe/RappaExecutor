@@ -5,6 +5,8 @@ from typing import List
 from config.config import BHExecutionNodeGlobalConfig
 from paradigm.mod import ModelOutputType
 from paradigm.replicate import ReplicateChunk
+from utils.cryptography.commitment.commitment_computer import CommitmentComputer, CommitmentType
+from utils.cryptography.commitment.kzg.kzg_commitment import KZGCommitment
 
 """
     NOTE: 这里是关于存储的部分
@@ -82,17 +84,18 @@ class ErasureCodeChunks:
         self.n = n
         self.k = k # 这两个参数暂时放在这里，考虑后面是否可以动态调整 todo
         self.padding_size = padding_size
-        self.encoded_chunks = []
-        self.commitment = "" # 这里设置KZG承诺 todo
+        self.encoded_chunks: List[ErasureCodeChunk] = []
+        self.kzg_commitment: KZGCommitment = KZGCommitment()# 这里设置KZG承诺 todo
         self.output_type = output_type
     def add_chunk(self, chunk: ErasureCodeChunk):
         self.encoded_chunks.append(chunk) # 这边就简单的插入即可
     def add_chunks(self, chunks: List[ErasureCodeChunk]):
         for chunk in chunks:
             self.add_chunk(chunk)
-    def compute_commitment(self):
+    def compute_kzg_commitment(self):
         # TODO 这里计算纠删码的KZG承诺 @YZM
-        pass
+        commitment_computer = CommitmentComputer()
+        self.kzg_commitment = commitment_computer.compute_commitment([chunk.chunk for chunk in self.encoded_chunks], commitment_type=CommitmentType.KZG)
     def check(self) -> ErasureCodeRecoverError:
         # 在check之前一定要先去重
         if len(self.encoded_chunks) < self.k:

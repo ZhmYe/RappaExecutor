@@ -3,6 +3,7 @@ import pickle
 import pandas as pd
 
 from utils.cryptography.commitment.commitment_computer import CommitmentComputer, CommitmentType
+from utils.cryptography.commitment.merkle.merkle_root import MerkleCommitment
 from utils.cryptography.hash.hasher import Hasher, HashFunction
 
 """
@@ -34,8 +35,7 @@ class Chunker:
 
         返回：
             List[pd.DataFrame]: chunks
-            Str(暂定): Commitment
-            List: proofs
+            Commitment: Commitment
         """
         num_rows = len(data)
         chunks = []
@@ -44,6 +44,7 @@ class Chunker:
             end_row = min(start_row + self.num_row_in_chunk, num_rows)
             chunk = data.iloc[start_row:end_row]
 
+
             # 使用pickle将chunk序列化为bytes
             # chunk_bytes = pickle.dumps(chunk)
 
@@ -51,11 +52,13 @@ class Chunker:
             # TODO 这里的hasher暂时定为sha256，如果要在zkp里验是否修改为波塞冬哈希比较好
             # chunk_hash = self.hasher.compute(chunk_bytes, hash_function=HashFunction.SHA256)
             # chunk_hashes.append(chunk_hash) # 按序得到所有的hash块
+
+            # TODO 这里最好是一个向量，如果是Pickle的bytes的话是否rust里不能识别
+            # 需要一个全局的字典，能够将类别映射成整数，大家的字典需要是一样的 TODO @YZM
             chunks.append(chunk)
 
 
         # 根据所有的chunk块计算commitment
         commitment_computer = CommitmentComputer(hasher=self.hasher)
-        commitment = commitment_computer.compute_commitment(chunks, commitment_type=CommitmentType.MERKLE)
-        # TODO 还需要有个proof list
-        return chunks, commitment, [] # 这里暂时用空的list来表示proof
+        commitment: MerkleCommitment = commitment_computer.compute_commitment(chunks, commitment_type=CommitmentType.MERKLE) # 这里得到按行分块的结果，每个分块都需要计算一个hash然后组成merkle commitment
+        return chunks, commitment
