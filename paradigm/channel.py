@@ -25,6 +25,7 @@ class Channel:
         self.test_collect_signal_channel = manager.Queue()
         self.test_collect_pass_receiver_channel = manager.Queue()
         self.test_collect_pass_grpc_channel = manager.Queue()
+        self.test_replicate_mocker_executor_channel = manager.Queue()
     def update_store_chunk(self, slot_hash, new_store_chunk_item, row_index):
         if not self.store_chunks.get(slot_hash):
             self.store_chunks[slot_hash] = self.manager.dict()
