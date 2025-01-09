@@ -18,13 +18,13 @@ from utils.cryptography.commitment.kzg.kzg_commitment import KZGCommitment
 # 表示一个将被存储的文件块
 # 需要记录的是: 1. 是哪个任务的第几个slot; 2. 是第几个chunk; 3. 存储的路径是什么
 class StoredChunk:
-    def __init__(self, storage_path, chunk_to_store: ReplicateChunk):
+    def __init__(self, storage_path, sign, slot, slot_hash, row_index, chunk_to_store: ReplicateChunk):
         # self.node_id = node_id #这个不重要
-        self.sign = chunk_to_store.sign
-        self.slot = chunk_to_store.slot
-        self.row_index = chunk_to_store.row_index
+        self.sign = sign
+        self.slot = slot
+        self.row_index = row_index
         self.col_index = chunk_to_store.col_index
-        self.slot_hash = chunk_to_store.slot_hash # Master为每个 CommitSlotItem赋予了slot_hash，这里记录，方便作为索引
+        self.slot_hash = slot_hash # Master为每个 CommitSlotItem赋予了slot_hash，这里记录，方便作为索引
         self.store_path = self.generate_file_store_path(storage_path)
     def generate_file_store_path(self, storage_path):
         # 构建分级存储路径

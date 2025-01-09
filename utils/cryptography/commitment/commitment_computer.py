@@ -4,7 +4,7 @@ from typing import List, Any
 from utils.cryptography.commitment.merkle.merkle_root import MerkleCommitment
 
 from utils.cryptography.commitment.kzg.kzg_commitment import KZGCommitment
-from utils.cryptography.hash.hasher import Hasher
+from utils.cryptography.hash.hasher import Hasher, HashFunction
 
 
 class CommitmentType(Enum):
@@ -20,7 +20,7 @@ class CommitmentComputer:
         if commitment_type == CommitmentType.KZG:
             return self._compute_kzg_commitment(data)
     def _compute_merkle_root(self, data)->MerkleCommitment:
-        merkle_commitment = MerkleCommitment(hasher=self.hasher)
+        merkle_commitment = MerkleCommitment(hf=HashFunction.SHA256)
         merkle_commitment.commit(vec=data)
         return merkle_commitment
         # merkle_commitment.

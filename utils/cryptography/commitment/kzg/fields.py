@@ -202,6 +202,9 @@ class FieldExtBase(tuple):
                 raise Exception("Invalid number of arguments")
             arg_extension = 1
             new_args = [Fq(Q, a) for a in args]
+        except Exception as e:
+            arg_extension = 1
+            new_args = [Fq(Q, a) for a in args]
         if arg_extension != 1:
             if len(args) != cls.embedding:
                 raise Exception("Invalid number of arguments")

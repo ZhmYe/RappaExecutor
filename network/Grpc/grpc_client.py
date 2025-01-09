@@ -49,33 +49,33 @@ class GrpcClient:
         while True:
             if self._registry.channel.to_grpc_slot_channel.empty():
                 continue
-            try:
+            # try:
                 # 从完成的任务池中获取任务
-                commit_slot: CommitSlotItem = self._registry.channel.to_grpc_slot_channel.get(timeout=0.01)
-                if not commit_slot.is_undetermined():
-                    raise ValueError("Commit Slot must be UNDETERMINED!!!")
+            commit_slot: CommitSlotItem = self._registry.channel.to_grpc_slot_channel.get(timeout=0.01)
+            if not commit_slot.is_undetermined():
+                raise ValueError("Commit Slot must be UNDETERMINED!!!")
 
 
-                commit_request = pb2.SlotCommitRequest(
-                    nodeId=int(self._registry.node_id),
-                    sign=commit_slot.sign,
-                    slot=commit_slot.slot,
-                    size=commit_slot.size,
-                    hash=commit_slot.hash,
-                    commitment=bytes(commit_slot.commitment, 'utf-8')
-                )
-                # 发送grpc请求
-                stub = pb2_grpc.CoordinatorStub(self._channel)
-                commit_response: pb2.SlotCommitResponse = stub.CommitSlot(commit_request, timeout=5,
-                                                                          wait_for_ready=True)
-                # 对提交结果进行处理
-                self._commit_result_process(commit_slot, commit_response)
-                # 处理结果,这里暂时只打印日志
-                log.write_log("NETWORK",
-                              f"successfully upload commit slot{commit_request.slot} of task{commit_request.sign}:[size:{commit_request.size}]")
+            commit_request = pb2.SlotCommitRequest(
+                nodeId=int(self._registry.node_id),
+                sign=commit_slot.sign,
+                slot=commit_slot.slot,
+                size=commit_slot.size,
+                hash=commit_slot.hash,
+                commitment=commit_slot.commitment
+            )
+            # 发送grpc请求
+            stub = pb2_grpc.CoordinatorStub(self._channel)
+            commit_response: pb2.SlotCommitResponse = stub.CommitSlot(commit_request, timeout=5,
+                                                                        wait_for_ready=True)
+            # 对提交结果进行处理
+            self._commit_result_process(commit_slot, commit_response)
+            # 处理结果,这里暂时只打印日志
+            log.write_log("NETWORK",
+                            f"successfully upload commit slot{commit_request.slot} of task{commit_request.sign}:[size:{commit_request.size}]")
 
-            except Exception as e:
-                log.write_log("ERROR", f"faild to commit slot because of {e}")
+            # except Exception as e:
+            #     log.write_log("ERROR", f"faild to commit slot because of {e}")
 
     # TODO 这里处理layer返回commit的结果
     def _commit_result_process(self, slot: CommitSlotItem, response: pb2.SlotCommitResponse):

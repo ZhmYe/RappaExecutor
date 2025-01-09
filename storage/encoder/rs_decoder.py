@@ -1,5 +1,5 @@
 from io import StringIO
-
+import json
 from config.config import BHExecutionNodeGlobalConfig
 from paradigm.mod import ModelOutputType
 from paradigm.storage import ErasureCodeChunks, ErasureCodeRecoverError
@@ -23,7 +23,9 @@ class ReedSolomonDecoder:
                 decoded_data = decoded_data[: -encoded_chunks.padding_size]
                 # 反序列化 JSON 数据
             json_str = decoded_data.decode('utf-8')  # 从字节流解码为 JSON 字符串
-            restored_df = pd.read_json(StringIO(json_str))  # 反序列化为 DataFrame
+            # print(json_str)
+            pd_json = json.loads(json_str.strip())
+            restored_df = pd.DataFrame(pd_json)
             log.write_log("INFO", "EC Decoder decode data success...")
             # 反序列化为 DataFrame
             return restored_df, ErasureCodeRecoverError.NONE
