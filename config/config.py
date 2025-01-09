@@ -26,6 +26,7 @@ from config.default import DEFAULT_NODE_ID, DEFAULT_RS_CODE_N, DEFAULT_RS_CODE_K
 #         if hasattr(BHExecutionNodeGlobalConfig, key):
 #             setattr(BHExecutionNodeGlobalConfig, key, value)
 
+# TODO @SD 这里需要全局的所有节点address和master本质上一样
 class BHExecutionNodeGlobalConfig:
     DEBUG = False  # 全局调试模式，默认关闭
     NODE_ID = DEFAULT_NODE_ID
