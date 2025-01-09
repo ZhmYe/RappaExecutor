@@ -5,6 +5,8 @@ from typing import List
 from config.config import BHExecutionNodeGlobalConfig
 from paradigm.mod import ModelOutputType
 from paradigm.replicate import ReplicateChunk
+from utils.cryptography.commitment.commitment_computer import CommitmentComputer, CommitmentType
+from utils.cryptography.commitment.kzg.kzg_commitment import KZGCommitment
 
 """
     NOTE: 这里是关于存储的部分
@@ -16,13 +18,13 @@ from paradigm.replicate import ReplicateChunk
 # 表示一个将被存储的文件块
 # 需要记录的是: 1. 是哪个任务的第几个slot; 2. 是第几个chunk; 3. 存储的路径是什么
 class StoredChunk:
-    def __init__(self, storage_path, chunk_to_store: ReplicateChunk):
+    def __init__(self, storage_path, sign, slot, slot_hash, row_index, chunk_to_store: ReplicateChunk):
         # self.node_id = node_id #这个不重要
-        self.sign = chunk_to_store.sign
-        self.slot = chunk_to_store.slot
-        self.row_index = chunk_to_store.row_index
+        self.sign = sign
+        self.slot = slot
+        self.row_index = row_index
         self.col_index = chunk_to_store.col_index
-        self.slot_hash = chunk_to_store.slot_hash # Master为每个 CommitSlotItem赋予了slot_hash，这里记录，方便作为索引
+        self.slot_hash = slot_hash # Master为每个 CommitSlotItem赋予了slot_hash，这里记录，方便作为索引
         self.store_path = self.generate_file_store_path(storage_path)
     def generate_file_store_path(self, storage_path):
         # 构建分级存储路径
@@ -82,17 +84,18 @@ class ErasureCodeChunks:
         self.n = n
         self.k = k # 这两个参数暂时放在这里，考虑后面是否可以动态调整 todo
         self.padding_size = padding_size
-        self.encoded_chunks = []
-        self.commitment = "" # 这里设置KZG承诺 todo
+        self.encoded_chunks: List[ErasureCodeChunk] = []
+        self.kzg_commitment: KZGCommitment = KZGCommitment()# 这里设置KZG承诺 todo
         self.output_type = output_type
     def add_chunk(self, chunk: ErasureCodeChunk):
         self.encoded_chunks.append(chunk) # 这边就简单的插入即可
     def add_chunks(self, chunks: List[ErasureCodeChunk]):
         for chunk in chunks:
             self.add_chunk(chunk)
-    def compute_commitment(self):
+    def compute_kzg_commitment(self):
         # TODO 这里计算纠删码的KZG承诺 @YZM
-        pass
+        commitment_computer = CommitmentComputer()
+        self.kzg_commitment = commitment_computer.compute_commitment([chunk.chunk for chunk in self.encoded_chunks], commitment_type=CommitmentType.KZG)
     def check(self) -> ErasureCodeRecoverError:
         # 在check之前一定要先去重
         if len(self.encoded_chunks) < self.k:

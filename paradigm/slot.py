@@ -46,7 +46,7 @@ class CommitSlotItem:
         self.process = 0 # 这里的process是最后完成的process，在状态被设置为Undetermined的时候会更新process
         self.is_reliable = False
         self.params: CommitSlotModelParams = params # 输入模型参数
-        self.commitment = "" # todo 这里还有一个commitment
+        self.commitment = None # todo 这里还有一个commitment
         self.hash = ""
         self.replicate_records: List[ChunkReplicateRecord] = []
         self.nb_chunks = -1
@@ -69,7 +69,7 @@ class CommitSlotItem:
         self.state = SlotState.FINALIZED
     def is_finalized(self) -> bool:
         return self.state == SlotState.FINALIZED
-    def set_commitment(self, commitment):
+    def set_commitment(self, commitment: bytes):
         self.commitment = commitment
     # def has_been_commit(self):
     #     return self.hash != ""
