@@ -13,7 +13,7 @@ from utils.cryptography.hash.hasher import Hasher, HashFunction
 
 class Chunker:
     def __init__(self, hasher:Hasher):
-        self.num_row_in_chunk = 1 # 从config中读取 TODO @XQ 在config里补上这个
+        self.num_row_in_chunk = 5 # 从config中读取 TODO @XQ 在config里补上这个
         self.hasher: Hasher = hasher
 
     def chunk(self, data):

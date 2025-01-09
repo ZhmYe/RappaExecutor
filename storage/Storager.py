@@ -9,13 +9,14 @@ from django.contrib.messages.constants import SUCCESS
 from logger.logger import logWriter as log
 from paradigm.channel import Channel
 from paradigm.model import ModelFormatOutput
-from paradigm.replicate import ChunkReplicateRecord, ReplicateState
+from paradigm.replicate import ChunkReplicateRecord, ReplicateState, ReplicatePackage
 from paradigm.slot import CommitSlotItem
 from paradigm.storage import ErasureCodeChunks, ErasureCodeChunk, ErasureCodeRecoverError, ReplicateChunk
 from storage.chunker.chunker import Chunker
 from storage.encoder.rs_decoder import ReedSolomonDecoder
 from storage.encoder.rs_encoder import ReedSolomonEncoder
 from utils.cryptography.commitment.kzg.kzg_commitment import KZGCommitment, KZGProof
+from utils.cryptography.commitment.merkle.merkle_root import MerkleCommitment
 from utils.cryptography.hash.hasher import Hasher
 
 """
@@ -73,8 +74,8 @@ class Storager:
                 slot: CommitSlotItem = packed_slot_output[0]
                 output: ModelFormatOutput = packed_slot_output[1]
                 # commitment = self.compute_model_output_commitment(output) # 计算输出文件的承诺（和ec无关）
-                commitment = self.process_unprocess_slot(slot, output.output) # 这里要完成全部的任务： 1. commitment的计算; 2. 分发
-                slot.set_commitment(commitment)
+                commitment: MerkleCommitment = self.process_unprocess_slot(slot, output.output) # 这里要完成全部的任务： 1. commitment的计算; 2. 分发
+                slot.set_commitment(commitment.commitment)
                 # 数据块已经备份，可恢复,将状态置为UNDETERMINED，然后交还给slotManager
                 # self.channel.to_slot_manager_channel.put(slot)
                 # 这里将slot标记为pending，等待转发结果
@@ -83,7 +84,6 @@ class Storager:
                 raise RuntimeError(e)
     def process_unprocess_slot(self, slot: CommitSlotItem, output):
         # 计算output的commitment
-        # todo 这里应该是先分块，然后计算commitment，然后用ec，这里框架要修改，暂时先跑通原状 @YZM
         hasher = Hasher()
         chunker = Chunker(hasher=hasher)
         chunks, commitment = chunker.chunk(output) # 对输出进行分块，得到chunks和commitment
@@ -91,7 +91,6 @@ class Storager:
         merkle_proofs = [commitment.open(chunk) for chunk in chunks]
         ec_encoder = ReedSolomonEncoder()
         encoded_packed_chunks:List[ErasureCodeChunks] = [ec_encoder.encode(chunk) for chunk in chunks] # 对每个分块进行ec冗余，这里每一个chunk是ErasureCodeChunks
-        replicate_encode_chunks = []
         # TODO @YZM 这里先写成把每个chunk分开来发，后面要改成每个节点一下子发k块
         # 这里单独只给一个块的话，节点无法恢复行块，也就无法判断数据的commitment proof是否正确，因此需要将kzg commitment和merkle proof以及k块数据都发过去 todo
         slot.set_nb_chunks(len(encoded_packed_chunks))
@@ -99,21 +98,26 @@ class Storager:
         # print(self.pending_slot_waiting_record.get(slot.hash), slot.hash)
         for (row, item) in enumerate(encoded_packed_chunks):
             item_kzg_commitment = item.kzg_commitment
-            local_index = random.randint(0, len(item.encoded_chunks) - 1)
+            # local_index = random.randint(0, len(item.encoded_chunks) - 1)
             # todo 这里的逻辑需要考量 现在只是简单实现
+            kzg_proofs: List[KZGProof] = []
+            replicate_encode_chunks = []
             for (col, chunk) in enumerate(item.encoded_chunks):
-                if col == local_index:
-                    self.store_local(slot.sign, slot.slot, item.encoded_chunks[col], slot.hash, row, col)
-                else:
-                    # todo 这里需要k个kzg Proof，发送k个块和这一行的merkle proof
-                    kzg_proof = item_kzg_commitment.open(chunk.chunk)
-                    replicate_encode_chunk = ReplicateChunk(sign=slot.sign, slot=slot.slot, row_index=row, col_index=col, slot_hash=slot.hash, chunk=chunk.chunk)
-                    replicate_encode_chunk.set_kzg_proof(proof=kzg_proof)
-                    replicate_encode_chunks.append(replicate_encode_chunk)
+                # if col == local_index:
+                #     self.store_local(chunk=item.encoded_chunks[col], col_index=col)
+                # else:
+                # todo 这里需要k个kzg Proof，发送k个块和这一行的merkle proof
+                kzg_proof = item_kzg_commitment.open(chunk.chunk)
+                kzg_proofs.append(kzg_proof)
+                replicate_encode_chunk = ReplicateChunk(col_index=col, chunk=chunk.chunk)
+                replicate_encode_chunk.set_kzg_proof(proof=kzg_proof)
+                replicate_encode_chunks.append(replicate_encode_chunk)
                     # send_indices.append(i)
                     # send_chunks.append(item.encoded_chunks[i].chunk)
             # self.grpc_engine.replicate_encoded_chunks(slot.sign, slot.slot,send_chunks, send_indices, item.padding_size, False)
-            record = ChunkReplicateRecord(slot_hash=slot.hash, index=row, nb_chunk=len(replicate_encode_chunks), merkle_proof= merkle_proofs[row],padding_size=item.padding_size)
+            record = ChunkReplicateRecord(sign=slot.sign, slot= slot.slot, slot_hash=slot.hash, index=row, nb_chunk=len(replicate_encode_chunks), merkle_proof= merkle_proofs[row],padding_size=item.padding_size)
+            # record.set_kzg_commitment(item_kzg_commitment.commitment)
+            # record.set_kzg_proofs(kzg_proofs)
             self.channel.to_grpc_replicate_channel.put((record, replicate_encode_chunks))
 
         # 这里为了测试collect,将slot和output传递到MockerCollector
@@ -123,9 +127,9 @@ class Storager:
 
 
     # store_local 将分块存在本地，构建一个新的ReplicateChunk
-    def store_local(self, sign, slot, chunk: ErasureCodeChunk, slot_hash, row_index, col_index):
-        local_replicate_chunk = ReplicateChunk(sign, slot, row_index, col_index, slot_hash, chunk=chunk.chunk)
-        self.channel.to_receiver_chunk_store_channel.put(local_replicate_chunk) # 交给receiver处理
+    def store_local(self, replicate_package: ReplicatePackage):
+        # local_replicate_chunk = ReplicateChunk(col_index=col_index, chunk=chunk.chunk)
+        self.channel.to_receiver_chunk_store_channel.put(replicate_package) # 交给receiver处理
 
 
     # todo 同上

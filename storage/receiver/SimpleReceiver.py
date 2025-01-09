@@ -8,7 +8,12 @@ from multiprocessing import Process, Queue, Manager
 
 from config.config import BHExecutionNodeGlobalConfig
 from paradigm.channel import Channel
-from paradigm.storage import StoredChunk, ErasureCodeChunk, ReplicateChunk
+from paradigm.replicate import ReplicatePackage
+from paradigm.storage import StoredChunk, ErasureCodeChunk, ReplicateChunk, ErasureCodeChunks, ErasureCodeRecoverError
+from storage.encoder.rs_decoder import ReedSolomonDecoder
+from utils.cryptography.commitment.kzg.kzg_commitment import KZGProof
+from utils.cryptography.commitment.merkle.merkle_root import MerkleProof
+from utils.cryptography.hash.hasher import HashFunction
 from utils.function.func import get_project_root
 from logger.logger import logWriter as log
 
@@ -21,13 +26,13 @@ class SimpleReceiver:
         self.channel = channel
 
 
-    def process_chunk_to_store(self, chunk_to_store: ReplicateChunk):
+    def process_chunk_to_store(self, sign, slot, slot_hash, row_index, chunk_to_store: ReplicateChunk):
         # ec_chunk里index代表索引，chunk是具体的 bytes
         # 索引可以不记录在文件里，就单纯的记录在这里Receiver里，一旦节点崩溃，重启以后可以通过向 Master询问自己是第几个 # TODO @YZM 这个要在 master里加上
-        new_store_chunk_item = StoredChunk(storage_path=self.storage_path, chunk_to_store=chunk_to_store)
+        new_store_chunk_item = StoredChunk(sign=sign, slot=slot, slot_hash=slot_hash, row_index=row_index, storage_path=self.storage_path, chunk_to_store=chunk_to_store)
         data_bytes = chunk_to_store.bytes() # 这里表示纠删码的冗余数据块，bytes直接落盘
         new_store_chunk_item.store(data_bytes) # 存储纠删码
-        self.channel.update_store_chunk(slot_hash=chunk_to_store.slot_hash, new_store_chunk_item=new_store_chunk_item, row_index=chunk_to_store.row_index)
+        self.channel.update_store_chunk(slot_hash=slot_hash, new_store_chunk_item=new_store_chunk_item, row_index=row_index)
         # if not self.channel.store_chunks.get(chunk_to_store.slot_hash):
         #     self.channel.store_chunks[chunk_to_store.slot_hash] = Manager.dict()
         # self.channel.store_chunks[chunk_to_store.slot_hash][chunk_to_store.row_index] = new_store_chunk_item
@@ -48,9 +53,38 @@ class SimpleReceiver:
             if self.channel.to_receiver_chunk_store_channel.empty():
                 continue
             try:
-                chunk_to_store: ReplicateChunk = self.channel.to_receiver_chunk_store_channel.get(timeout=0.01) # 取出grpc带来的复制块
-                self.process_chunk_to_store(chunk_to_store=chunk_to_store) # 开始存储 todo 这里可以多开几个线程并行
-
+                replicate_package: ReplicatePackage = self.channel.to_receiver_chunk_store_channel.get(timeout=0.01)
+                # 首先验证 package的各个 commitment
+                chunks = replicate_package.chunks
+                kzg_commitment = replicate_package.kzg_commitment
+                ec_chunks: ErasureCodeChunks = ErasureCodeChunks(padding_size=replicate_package.padding_size)
+                # 验证每个 chunk的 kzg
+                for replicate_chunk in chunks:
+                    # kzg_proof: KZGProof = replicate_chunk.kzg_proof
+                    # if kzg_proof.verify(replicate_chunk.bytes()) and kzg_proof.commitment == kzg_commitment:
+                    ec_chunks.add_chunk(ErasureCodeChunk(chunk=replicate_chunk.chunk, index=replicate_chunk.col_index))
+                if ec_chunks.check() == ErasureCodeRecoverError.TO_MANY_ERASURE:
+                    # 说明少于 k个块满足 kzg_commitment，那么说明这个 kzg_commitment不被承认
+                    log.write_log("ERROR", "Slot {} Replicate Chunk KZG proof Verify Failed...".format(replicate_package.slot_hash, replicate_package.row_index))
+                else:
+                    # log.write_log("DEBUG", "Slot {} Replicate Chunk {} KZG Proof Verify Success...".format(replicate_package.slot_hash, replicate_package.row_index))
+                    # KZG验证通过，那么按照 index将 ec还原
+                    decoder = ReedSolomonDecoder()
+                    recover_data , err = decoder.decode(encoded_chunks=ec_chunks)
+                    if err != ErasureCodeRecoverError.NONE:
+                        log.write_log("ERROR", "Slot {} Replicate Chunk {} cannot recover...".format(replicate_package.slot_hash, replicate_package.row_index))
+                    else:
+                        # 可以恢复，那么验证 merkle
+                        merkle_proof: MerkleProof = replicate_package.merkle_proof
+                        if not merkle_proof.verify(recover_data, hf=HashFunction.SHA256):
+                            log.write_log("ERROR", "Slot {} Replicate Chunk {} Merkle Proof Verify Failed...".format(replicate_package.slot_hash, replicate_package.row_index))
+                        else:
+                            # 通过检测，可以留下对应的存储块
+                            chunk_to_store: ReplicateChunk = chunks[replicate_package.store_col_index]
+                            self.process_chunk_to_store(sign=replicate_package.sign, slot=replicate_package.slot, slot_hash=replicate_package.slot_hash, row_index=replicate_package.row_index, chunk_to_store=chunk_to_store)
+                # chunk_to_store: ReplicateChunk = self.channel.to_receiver_chunk_store_channel.get(timeout=0.01) # 取出grpc带来的复制块
+                #             self.process_chunk_to_store(chunk_to_store=chunk_to_store) # 开始存储 todo 这里可以多开几个线程并行
+                log.write_log("STORAGE", "Receive slot {} chunk {}, commitment verify Success, finish store in local...".format(replicate_package.slot_hash, replicate_package.row_index))
             except Exception as e:
                 raise RuntimeError(e)
     def process_chunks_to_load(self):

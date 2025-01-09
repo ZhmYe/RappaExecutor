@@ -156,6 +156,7 @@ class ReedSolomonEncoder:
         data_chunks = [
             padded_data[i:i + chunk_size] for i in range(0, padded_length, chunk_size)
         ]
+        # print([len(chunk) for chunk in data_chunks])
         ec_encoded_chunks = ErasureCodeChunks(padding_size=padding_size, output_type=output_type)
         # 使用 zfec 进行编码
         encoder = Encoder(self.k, self.n)
