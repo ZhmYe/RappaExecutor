@@ -84,7 +84,7 @@ class SimpleReceiver:
                             self.process_chunk_to_store(sign=replicate_package.sign, slot=replicate_package.slot, slot_hash=replicate_package.slot_hash, row_index=replicate_package.row_index, chunk_to_store=chunk_to_store)
                 # chunk_to_store: ReplicateChunk = self.channel.to_receiver_chunk_store_channel.get(timeout=0.01) # 取出grpc带来的复制块
                 #             self.process_chunk_to_store(chunk_to_store=chunk_to_store) # 开始存储 todo 这里可以多开几个线程并行
-                log.write_log("STORAGE", "Receive slot {} chunk {}, commitment verify Success, finish store in local...".format(replicate_package.slot_hash, replicate_package.row_index))
+                            log.write_log("STORAGE", "Receive slot {} chunk {}, commitment verify Success, finish store in local...".format(replicate_package.slot_hash, replicate_package.row_index))
             except Exception as e:
                 raise RuntimeError(e)
     def process_chunks_to_load(self):

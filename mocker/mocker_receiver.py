@@ -41,6 +41,7 @@ class MockerReceiver:
             raise ValueError("{} Chunk does not store in this node!!!".format(slot_hash))
         slot_chunks: dict = self.store_chunks[slot_hash]
         if not slot_chunks.get(row_index):
+            print(self.store_chunks)
             raise ValueError("{} Chunk does not store {} chunk in this node!!!".format(slot_hash, row_index))
         store_chunk_item: StoredChunk = self.store_chunks[slot_hash][row_index]
         chunk = store_chunk_item.load()
@@ -79,11 +80,11 @@ class MockerReceiver:
                     #     if not merkle_proof.verify(recover_data, hf=HashFunction.SHA256):
                     #         log.write_log("ERROR", "Slot {} Replicate Chunk {} Merkle Proof Verify Failed...".format(replicate_package.slot_hash, replicate_package.row_index))
                     #     else:
-                    #         # 通过检测，可以留下对应的存储块
                     chunk_to_store: ReplicateChunk = chunks[replicate_package.store_col_index]
                     self.process_chunk_to_store(sign=replicate_package.sign, slot=replicate_package.slot, slot_hash=replicate_package.slot_hash, row_index=replicate_package.row_index, chunk_to_store=chunk_to_store)
 
 
+                    # log.write_log("DEBUG", "Receive slot {} chunk {}, commitment verify Success, finish store in local...".format(replicate_package.slot_hash, replicate_package.row_index))
 
 
                 # chunk_to_store: ReplicateChunk = self.channel.get(timeout=0.01) # 取出grpc带来的复制块

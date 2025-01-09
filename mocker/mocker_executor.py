@@ -1,5 +1,5 @@
 import threading
-from multiprocessing import Process, Queue
+from queue import Queue
 
 from mocker.mocker_receiver import MockerReceiver
 from network.format import BHExecutionAddress

@@ -5,27 +5,14 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="1dc9b31b-c6cf-4b8a-800b-76946d4ab624" name="Changes" comment="update grpc code">
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/config/config.py" beforeDir="false" afterPath="$PROJECT_DIR$/config/config.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mocker/mocker_collector.py" beforeDir="false" afterPath="$PROJECT_DIR$/mocker/mocker_collector.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/mocker/mocker_executor.py" beforeDir="false" afterPath="$PROJECT_DIR$/mocker/mocker_executor.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/mocker/mocker_receiver.py" beforeDir="false" afterPath="$PROJECT_DIR$/mocker/mocker_receiver.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/network/Grpc/grpc_client.py" beforeDir="false" afterPath="$PROJECT_DIR$/network/Grpc/grpc_client.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/network/Grpc/grpc_engine.py" beforeDir="false" afterPath="$PROJECT_DIR$/network/Grpc/grpc_engine.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/paradigm/channel.py" beforeDir="false" afterPath="$PROJECT_DIR$/paradigm/channel.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/paradigm/replicate.py" beforeDir="false" afterPath="$PROJECT_DIR$/paradigm/replicate.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/paradigm/slot.py" beforeDir="false" afterPath="$PROJECT_DIR$/paradigm/slot.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/paradigm/storage.py" beforeDir="false" afterPath="$PROJECT_DIR$/paradigm/storage.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/storage/Storager.py" beforeDir="false" afterPath="$PROJECT_DIR$/storage/Storager.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/storage/chunker/chunker.py" beforeDir="false" afterPath="$PROJECT_DIR$/storage/chunker/chunker.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/storage/encoder/rs_decoder.py" beforeDir="false" afterPath="$PROJECT_DIR$/storage/encoder/rs_decoder.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/storage/encoder/rs_encoder.py" beforeDir="false" afterPath="$PROJECT_DIR$/storage/encoder/rs_encoder.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/storage/receiver/SimpleReceiver.py" beforeDir="false" afterPath="$PROJECT_DIR$/storage/receiver/SimpleReceiver.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/utils/cryptography/commitment/commitment_computer.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/cryptography/commitment/commitment_computer.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/utils/cryptography/commitment/kzg/fields.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/cryptography/commitment/kzg/fields.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/utils/cryptography/commitment/kzg/kzg_commitment.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/cryptography/commitment/kzg/kzg_commitment.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/utils/cryptography/commitment/merkle/merkle_root.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/cryptography/commitment/merkle/merkle_root.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/utils/cryptography/hash/hasher.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/cryptography/hash/hasher.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -93,7 +80,7 @@
       <window_info anchor="bottom" id="HfCacheToolWindow" />
       <window_info anchor="bottom" id="File Transfer" />
       <window_info anchor="bottom" id="Version Control" order="0" weight="0.3202429" />
-      <window_info anchor="bottom" id="Terminal" order="1" weight="0.6805668" />
+      <window_info active="true" anchor="bottom" id="Terminal" order="1" visible="true" weight="0.7186235" />
       <window_info anchor="bottom" id="Problems" order="2" />
       <window_info anchor="bottom" id="Problems View" order="3" weight="0.56643105" />
       <window_info anchor="bottom" id="Services" order="4" />
@@ -256,7 +243,8 @@
       <workItem from="1735618751373" duration="21442000" />
       <workItem from="1735811178861" duration="1556000" />
       <workItem from="1735873986740" duration="88374000" />
-      <workItem from="1736395125380" duration="6369000" />
+      <workItem from="1736395125380" duration="13174000" />
+      <workItem from="1736409389683" duration="1245000" />
     </task>
     <task id="LOCAL-00001" summary="update grpc interface">
       <option name="closed" value="true" />
