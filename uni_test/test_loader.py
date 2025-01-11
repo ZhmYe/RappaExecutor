@@ -10,8 +10,8 @@ class TestLoader(unittest.TestCase):
             model_path = get_model_root()
             print("===========================UNIT TEST LOADER===========================")
             loader = ModelLoader(model_path)
-            instance = loader.load("CTGAN")
-            output = instance.generate_output(1000)
+            instance = loader.load("AGGS")
+            output = instance.generate_output(10)
             print(output.format_json())
         except Exception as e:
             raise RuntimeError("Unit Test Loader Failed.") from e

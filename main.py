@@ -12,6 +12,9 @@ from processor.processor import Processor
 from storage.receiver.SimpleReceiver import SimpleReceiver
 from task.SlotManager import SlotManager
 from task.TaskTracker import TaskTracker
+import warnings
+
+warnings.filterwarnings("ignore")
 
 
 def parse_args():
