@@ -2,3 +2,7 @@ logs/
 meta/
 uni_test/
 __pycache__/
+*.pkl
+*.pt
+*.pickle
+*.txt
