@@ -1,3 +1,5 @@
+from typing import List
+
 import grpc
 from google.protobuf.json_format import MessageToDict
 
@@ -12,7 +14,7 @@ from paradigm.slot import CommitSlotItem
 
 
 #  实现service中节点服务端相关rpc接口
-class GrpcServer(pb2_grpc.NodeExecutorServicer):
+class GrpcServer(pb2_grpc.RappaExecutorServicer):
     def __init__(self, registry: GrpcRegistry):
         self._registry = registry
         self._core_server = None
@@ -92,11 +94,38 @@ class GrpcServer(pb2_grpc.NodeExecutorServicer):
             return pb2.ScheduleResponse(accept=False, nodeId=self._registry.node_id, sign=request.sign,
                                         errorMessage="The Node is not in schedule list.")
 
+
+    # 服务端方法，用于处理收集请求
+    def Collect(self, request: pb2.RecoverRequest, context):
+        # 这里要将请求转给receiver，然后读出来
+        slot_hashs = request.hashs
+        # connect = self._registry.channel.create_connect_channel(str(request.mission)) # 创建传输专用的通道
+        chunks = []
+        # print(slot_hashs, request.mission)
+        # self._registry.channel.collect_pass_receiver_channel.put((list(slot_hashs), str(request.mission))) # 传递hash和通道给receiver
+        # while True:
+        #     if self._registry.channel.collect_connect_channel.empty():
+        #         continue
+        #     try:
+        #         chunks = self._registry.channel.collect_connect_channel.get(timeout=0.01)
+        #         print(chunks)
+        #         if chunks is not None:
+        #             break
+        #     except Exception as e:
+        #         raise RuntimeError(e)
+        # print(chunks)
+        for slot_hash in slot_hashs:
+            chunks.extend(self._registry.channel.load_store_chunk(slot_hash=slot_hash))
+        # self._registry.channel.delete_connect_channel(str(request.mission))
+        return pb2.RecoverResponse(chunks=chunks)
+        # for slot_hash in slot_hashs:
+            # print(self._registry)
+            # chunks.extend(self._registry.channel.load_store_chunk(slot_hash=slot_hash))
     # 开启服务
     def start_server(self):
         self._core_server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
         # 将服务添加到服务器
-        pb2_grpc.add_NodeExecutorServicer_to_server(self, self._core_server)
+        pb2_grpc.add_RappaExecutorServicer_to_server(self, self._core_server)
         self._core_server.add_insecure_port(f"[::]:{self._registry.address.get_port()}")
         # 启动grpc
         self._core_server.start()

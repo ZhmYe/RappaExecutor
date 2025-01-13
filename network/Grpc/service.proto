@@ -4,25 +4,50 @@ package service;
 import "google/protobuf/struct.proto";
 option go_package = "/service";
 
-// 这个是layer端的服务协议
-service Coordinator {
-  // Commit 节点向Coordinator返回自己已经完成的Task Slot
+/***
+  NOTE: 定义Master处的接口
+***/
+service RappaMaster {
+  // CommitSlot Executor向Master提交自己完成的Task Slot
   rpc CommitSlot (SlotCommitRequest) returns (SlotCommitResponse);
-  // TODO: 这里有一个提交proof的接口，先不实现
-  //  rpc CommitProof (ProofCommitRequest) returns (ProofCommitRespnse);
+  //  rpc CommitProof (ProofCommitRequest) returns (ProofCommitResponse); // TODO DataProver向Master提交自己完成的Proof
 }
 
-// 这个是节点端的服务协议
-service NodeExecutor{
+/***
+  NOTE: 定义Executor处的接口
+***/
+service RappaExecutor {
   // Heartbeat 向follower同步slot状态，同时监控节点状态
   rpc Heartbeat (HeartbeatRequest) returns (HeartbeatResponse);
-
   // Schedule 用于向节点发送调度
   rpc Schedule(ScheduleRequest) returns (ScheduleResponse);
-  // 投票包含在heartbeat里
-  //  // EpochVote 投票epoch，用于上链
-  //  rpc EpochVote (EpochVoteRequest) returns (EpochVoteResponse);
+
+  // Collect 用于向节点收集chunk，恢复文件数据
+  rpc Collect(RecoverRequest) returns (RecoverResponse);
 }
+
+
+
+
+
+
+//// 这个是layer端的服务协议
+//service Coordinator {
+//  // Commit 节点向Coordinator返回自己已经完成的Task Slot
+//  rpc CommitSlot (SlotCommitRequest) returns (SlotCommitResponse);
+//  // TODO: 这里有一个提交proof的接口，先不实现
+//  //  rpc CommitProof (ProofCommitRequest) returns (ProofCommitRespnse);
+//
+//}
+//
+//// 这个是节点端的服务协议
+//service NodeExecutor{
+//  // Heartbeat 向follower同步slot状态，同时监控节点状态
+//  rpc Heartbeat (HeartbeatRequest) returns (HeartbeatResponse);
+//
+//  // Schedule 用于向节点发送调度
+//  rpc Schedule(ScheduleRequest) returns (ScheduleResponse);
+//}
 
 // 定义 JustifiedSlot 消息
 message JustifiedSlot {
@@ -101,4 +126,20 @@ message SlotCommitResponse {
   int32 timeout = 3; // 传给节点一个时限，用于说明多少时间后需要传递一个zkp证明以及多久后开始投票，暂定不可变
   //  string sign = 2; //
   //  string slot = 3; // 合法的slot
+}
+
+
+message RecoverRequest {
+  string mission = 1;
+  repeated string hashs = 2; // 所有要收集的slotHash
+}
+// 每个chunk，这里是行块的ec块
+message RecoverSlotChunk {
+  string hash = 1; // slot hash
+  int32 row = 2; // 行块对应的index
+  int32 col = 3; // ec的index
+  bytes chunk =4; // chunk的内容
+}
+message RecoverResponse {
+  repeated RecoverSlotChunk chunks = 1; // 本地的对应的chunks
 }
