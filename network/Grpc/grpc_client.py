@@ -65,8 +65,8 @@ class GrpcClient:
                 commitment=commit_slot.commitment
             )
             # 发送grpc请求
-            stub = pb2_grpc.CoordinatorStub(self._channel)
-            commit_response: pb2.SlotCommitResponse = stub.CommitSlot(commit_request, timeout=5,
+            stub = pb2_grpc.RappaMasterStub(self._channel)
+            commit_response: pb2.SlotCommitResponse = stub.CommitSlot(commit_request, timeout=10,
                                                                         wait_for_ready=True)
             # 对提交结果进行处理
             self._commit_result_process(commit_slot, commit_response)
