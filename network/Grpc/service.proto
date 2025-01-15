@@ -57,6 +57,7 @@ message JustifiedSlot {
   int32 slot = 4;         // 槽位ID
   int32 epoch = 5;        // 提交的epoch
   bytes commitment = 6; // 提交slot的时候向Master承诺，自己生成的数据文件的commitment
+  repeated int32 padding = 7; // 所有的row chunk的padding size
   // state字段省略
 }
 
@@ -117,7 +118,8 @@ message SlotCommitRequest {
   int32 size = 4;
   bytes commitment = 5;
   string hash = 6;
-  string errorMessage = 7;// 可能有一些说明，比如没有完全完成
+  repeated int32 padding = 7;
+  string errorMessage = 8;// 可能有一些说明，比如没有完全完成
 }
 message SlotCommitResponse {
   //  string valid = 1; // 你的提交是否合法，给个枚举,这个感觉没啥必要

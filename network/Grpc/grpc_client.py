@@ -62,7 +62,8 @@ class GrpcClient:
                 slot=commit_slot.slot,
                 size=commit_slot.size,
                 hash=commit_slot.hash,
-                commitment=commit_slot.commitment
+                commitment=commit_slot.commitment,
+                padding=commit_slot.get_padding_sizes()
             )
             # 发送grpc请求
             stub = pb2_grpc.RappaMasterStub(self._channel)

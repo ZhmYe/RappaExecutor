@@ -1,5 +1,6 @@
 from multiprocessing import Queue, Manager
 
+from config.config import BHExecutionNodeGlobalConfig
 from paradigm.replicate import ReplicateChunk, ChunkReplicateRecord, ReplicatePackage
 from paradigm.slot import CommitSlotItem
 from network.Grpc.service.service_pb2 import RecoverSlotChunk
@@ -57,6 +58,35 @@ class Channel:
                 col=chunk.col_index,
                 chunk=chunk.load()
             ))
+            # ===========================截断============================
+            """
+                HINT: 这里因为现在没有多机测试，为了向Master发送所有的chunk（不然master就只能拿到一个chunk）
+                我在这里为了测试写成了在单机上把所有chunk都发过去了，如果是多机场景下，到上面这段代码就结束
+                并且简单期间，因为提前知道了命名格式，我就直接read了
+            """
+            local_col = chunk.col_index
+            storage_path = chunk.store_path
+            for col in range(BHExecutionNodeGlobalConfig.EC_PARAMS_N):
+                if col == local_col:
+                    continue
+                if "-chunk.slot" in storage_path:
+
+                    # 找到最后一个 '-row-' 和后续的部分
+                    prefix, suffix = storage_path.rsplit('-row-', 1)
+                    parts = suffix.split('-chunk.slot', 1)  # 分割成两个部分
+                    new_path = f"{prefix}-row-{parts[0][:-1] + str(col)}-chunk.slot"
+                    # print(new_path)
+                    with open(new_path, "rb") as f:
+                        # json.dump(chunk_data, f, ensure_ascii=False, indent=4)
+                        data = f.read()
+                        chunks.append(RecoverSlotChunk(
+                            hash=chunk.slot_hash,
+                            row=chunk.row_index,
+                            col=col,
+                            chunk=data
+                        ))
+                        f.close()
+
         return chunks
     def update_slot_buff(self):
         pass

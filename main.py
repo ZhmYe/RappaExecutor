@@ -83,7 +83,7 @@ if __name__ == '__main__':
 
 
     # ===================================== Collector, 测试恢复ec块, 仅用于测试 =====================================
-    # collector = MockerCollector(channel=channel)
+    collector = MockerCollector(channel=channel)
 
     processes = [
         Process(target=grpc_engine.start_all),
@@ -91,7 +91,7 @@ if __name__ == '__main__':
         Process(target=processor.start),
         Process(target=task_tracker.start),
         Process(target=slot_manager.start),
-        # Process(target=collector.start),
+        Process(target=collector.start),
         Process(target=receiver.start)
     ]
 
