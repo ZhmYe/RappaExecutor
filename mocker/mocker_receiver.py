@@ -19,7 +19,7 @@ from logger.logger import logWriter as log
 class MockerReceiver:
     def __init__(self, channel: Queue):
         self.storage_path = os.path.join(get_project_root(), BHExecutionNodeGlobalConfig.STORAGE_PATH) # 存储冗余数据块的路径
-        # log.write_log("DEBUG", "Init Storage Receiver from config, storage_path: {}".format(self.storage_path))
+        log.write_log("DEBUG", "Init Storage Receiver from config, storage_path: {}".format(self.storage_path))
         self.store_chunks: dict = {} # 存储 chunk，通过 slot_hash作为 key
         # self.store_chunk_channel = store_chunk_channel # 通过这一通道传递要存储的 slot
         self.channel = channel
@@ -35,6 +35,8 @@ class MockerReceiver:
         if not self.store_chunks.get(slot_hash):
             self.store_chunks[slot_hash] = {}
         self.store_chunks[slot_hash][row_index] = new_store_chunk_item
+
+
     def process_chunk_to_load(self, slot_hash, row_index)->ErasureCodeChunk:
         # 读取根据 slot_hash来读取
         if not self.store_chunks.get(slot_hash):

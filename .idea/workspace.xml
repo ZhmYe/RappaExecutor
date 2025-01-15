@@ -7,13 +7,12 @@
     <list default="true" id="1dc9b31b-c6cf-4b8a-800b-76946d4ab624" name="Changes" comment="update grpc code">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mocker/mocker_receiver.py" beforeDir="false" afterPath="$PROJECT_DIR$/mocker/mocker_receiver.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/network/Grpc/grpc_client.py" beforeDir="false" afterPath="$PROJECT_DIR$/network/Grpc/grpc_client.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/network/Grpc/grpc_server.py" beforeDir="false" afterPath="$PROJECT_DIR$/network/Grpc/grpc_server.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/network/Grpc/service.proto" beforeDir="false" afterPath="$PROJECT_DIR$/network/Grpc/service.proto" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/network/Grpc/service/service_pb2.py" beforeDir="false" afterPath="$PROJECT_DIR$/network/Grpc/service/service_pb2.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/network/Grpc/service/service_pb2_grpc.py" beforeDir="false" afterPath="$PROJECT_DIR$/network/Grpc/service/service_pb2_grpc.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/paradigm/channel.py" beforeDir="false" afterPath="$PROJECT_DIR$/paradigm/channel.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/storage/receiver/SimpleReceiver.py" beforeDir="false" afterPath="$PROJECT_DIR$/storage/receiver/SimpleReceiver.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/paradigm/slot.py" beforeDir="false" afterPath="$PROJECT_DIR$/paradigm/slot.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -74,7 +73,7 @@
       <window_info id="Commit_Guest" show_stripe_button="false" />
       <window_info id="Pull Requests" />
       <window_info id="Learn" />
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.20859376" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.18151042" />
       <window_info id="Commit" order="1" weight="0.1169465" />
       <window_info id="Structure" order="2" side_tool="true" weight="0.25" />
       <window_info anchor="bottom" id="Database Changes" />
@@ -82,7 +81,7 @@
       <window_info anchor="bottom" id="HfCacheToolWindow" />
       <window_info anchor="bottom" id="File Transfer" />
       <window_info anchor="bottom" id="Version Control" order="0" weight="0.3202429" />
-      <window_info active="true" anchor="bottom" id="Terminal" order="1" visible="true" weight="0.82703483" />
+      <window_info active="true" anchor="bottom" id="Terminal" order="1" visible="true" weight="0.314438" />
       <window_info anchor="bottom" id="Problems" order="2" />
       <window_info anchor="bottom" id="Problems View" order="3" weight="0.82703483" />
       <window_info anchor="bottom" id="Services" order="4" />
@@ -253,7 +252,10 @@
       <workItem from="1736395125380" duration="13174000" />
       <workItem from="1736409389683" duration="41988000" />
       <workItem from="1736687714708" duration="4884000" />
-      <workItem from="1736744013844" duration="13544000" />
+      <workItem from="1736744013844" duration="15225000" />
+      <workItem from="1736828263769" duration="15000" />
+      <workItem from="1736828293877" duration="6442000" />
+      <workItem from="1736912656833" duration="12749000" />
     </task>
     <task id="LOCAL-00001" summary="update grpc interface">
       <option name="closed" value="true" />
