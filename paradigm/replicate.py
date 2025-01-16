@@ -1,6 +1,7 @@
 from typing import List
 from enum import Enum, auto
 
+from config.config import STORE_METHOD_ENUM
 from utils.cryptography.commitment.kzg.kzg_commitment import KZGProof
 from utils.cryptography.commitment.merkle.merkle_root import MerkleCommitment, MerkleProof
 
@@ -36,6 +37,9 @@ class ReplicatePackage:
         self.kzg_commitment = kzg_commitment # 这里就只需要一个值，类似 root
         self.chunks: List[ReplicateChunk] = []
         self.padding_size = padding_size
+        self.store_method = STORE_METHOD_ENUM.EC
+    def set_store_method(self, store_method: STORE_METHOD_ENUM):
+        self.store_method = store_method
     def add_chunk(self, chunk: ReplicateChunk):
         self.chunks.append(chunk)
     def add_chunks(self, chunks: List[ReplicateChunk]):

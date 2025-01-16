@@ -1,24 +1,15 @@
-import os
-from multiprocessing import Process, Queue
+from multiprocessing import Process
 import random
 from typing import Optional, List
-
-import pandas as pd
-
-from config.config import BHExecutionNodeGlobalConfig
+from config.config import BHExecutionNodeGlobalConfig, STORE_METHOD_ENUM
 from logger.logger import logWriter as log
-from mocker.mocker_executor import MockerExecutor
 from network.Grpc.grpc_client import GrpcClient
 from network.Grpc.grpc_registry import GrpcRegistry
 from network.Grpc.grpc_server import GrpcServer
 
 from network.format import BHExecutionAddress
 from paradigm.channel import Channel
-from paradigm.replicate import ReplicateChunk, ChunkReplicateRecord, ReplicatePackage
-from paradigm.slot import CommitSlotItem
-from paradigm.storage import ErasureCodeChunks, ErasureCodeChunk, ErasureCodeRecoverError
-from storage.encoder.rs_decoder import ReedSolomonDecoder
-from utils.function.func import get_project_root
+from paradigm.replicate import ReplicateChunk, ReplicatePackage
 
 
 class GrpcEngine:
@@ -29,16 +20,7 @@ class GrpcEngine:
         self.server: Optional[GrpcServer] = None
         # 当前的grpc客户端
         self.client: Optional[GrpcClient] = None
-
         self.redundancy=False # todo @SD 这个加到config里
-        # # 所有的通道
-        # self.registry.to_grpc_slot_channel= to_grpc_replicate_channel # 这个是那些需要grpc提交的slot
-        # self.registry.to_grpc_replicate_channel = to_grpc_replicate_channel # 这些是需要grpc转发的chunk
-        # self.registry.to_slot_manager_channel= None # 需要将一些slot传递给slotManager
-
-    def check_channel_connect(self)->bool:
-        # todo
-        pass
 
     # 加载配置
     def load_config(self):
@@ -59,9 +41,6 @@ class GrpcEngine:
             node_id = BHExecutionNodeGlobalConfig.NODE_ID + i + 1
             self.registry.others_address[node_id] = BHExecutionAddress("127.0.0.1",
                                                                        port=self.registry.address.get_port() + 1 + i)
-            # self.mocker_executors[node_id] = MockerExecutor(node_id, self.registry.others_address[node_id], self.registry.channel) # 存储冗余数据块的路径
-            # self.fake_other_nodes[node_id] = MockerNode(node_id, self.registry.others_address[node_id],
-            #                                             self.fake_layer2_node)
         log.write_log("NETWORK", "GrpcEngine load config")
 
     def start_all(self):
@@ -71,15 +50,6 @@ class GrpcEngine:
             Process(target=self.client.start_client),
             Process(target=self.process_replicate_encoded_chunks)
         ]
-        # server_thread = threading.Thread(target=self.server.start_server)
-        # 启动服务端线程
-        # server_thread.start()
-        # 启动客户端
-        # self.client.start_client()
-        # for node_id in self.mocker_executors:
-        #     mocker_executor = self.mocker_executors[node_id]
-        #     mocker_executor.start() # 这里方便测试就是在同一个进程里
-            # processes.append(Process(target=mocker_executor.start))
         for process in processes:
             process.start()
         # self.process_test_collect()
@@ -110,9 +80,9 @@ class GrpcEngine:
         self.registry.channel.test_replicate_mocker_executor_channel.put((node_id, replicate_chunk))
         # mocker_executor.replicate_chunk(replicate_chunk=replicate_chunk)
         return True # 如果分发有错误，要在这里返回
-
+    # todo 这里是只写了ec的，还要考虑多副本
     def process_replicate_encoded_chunks(self):
-        # 发送数据块，redundancy表示是否需要额外冗余存储（纠删码一般不需要，多副本需要）
+        # 发送数据块
         # chunks是数据块，indices表示数据块位置索引
         # padding_size是填充0的数量
         """
@@ -136,6 +106,7 @@ class GrpcEngine:
                 for chunk_index in range(len(replicate_encoded_chunks)):
                     # idx = chunk_index % len(node_id_list)
                     replicate_package = ReplicatePackage(sign= iter_chunk_replicate_record.sign, slot=iter_chunk_replicate_record.slot, row_index=iter_chunk_replicate_record.index, store_col_index=0, slot_hash=iter_chunk_replicate_record.slot_hash, merkle_proof=iter_chunk_replicate_record.merkle_proof, kzg_commitment=iter_chunk_replicate_record.kzg_commitment, padding_size=iter_chunk_replicate_record.padding_size)
+                    replicate_package.set_store_method(STORE_METHOD_ENUM.EC)
                     for i in range(BHExecutionNodeGlobalConfig.EC_PARAMS_K):
                         package_chunk_index = (chunk_index + i) % len(replicate_encoded_chunks) # 这里要存的块在第一个，因此上面 store_col_index = 0
                         chunk: ReplicateChunk = replicate_encoded_chunks[package_chunk_index]
@@ -154,48 +125,3 @@ class GrpcEngine:
                 self.registry.channel.to_storager_record_channel.put(iter_chunk_replicate_record)
             except Exception as e:
                 raise RuntimeError(e)
-        # node_id_list: List[MockerExecutor] = [node_id for node_id in self.mocker_executors] # 这里简单起见这么先写
-        # for (i, chunk) in enumerate(replicate_encoded_chunks):
-        #     idx = i % len(node_id_list)
-        #     node_idx = node_id_list[idx]
-        #     # todo 这里要改成并行
-        #     if self.process_replicate_chunk(node_idx, chunk):
-        #        iter_chunk_replicate_record.record_success_replicate(i, self.mocker_executors[node_idx].ip.get_address())
-        # return iter_chunk_replicate_record
-
-
-
-
-
-    # """
-    #     NOTE: 这里是测试collect
-    # """
-    # def process_test_collect(self):
-    #     while True:
-    #         if self.registry.channel.test_collect_pass_grpc_channel.empty():
-    #             continue
-    #         try:
-    #             item = self.registry.channel.test_collect_pass_grpc_channel.get(timeout=0.01)
-    #             slot: CommitSlotItem = item[0]
-    #             output, nbchunks = item[1], item[2]
-    #             restored_test_data_merge = pd.DataFrame()
-    #             print(111)
-    #             for row_index in range(nbchunks):
-    #                 # 收集所有的其他块
-    #                 ec_chunks = ErasureCodeChunks(padding_size=slot.replicate_records[row_index].padding_size)
-    #                 # ec_chunks.add_chunk(local_chunks[row_index])
-    #                 for node_id in self.mocker_executors:
-    #                     mocker_executor: MockerExecutor = self.mocker_executors[node_id]
-    #                     chunk = mocker_executor.load(slot.hash, row_index)
-    #                     ec_chunks.add_chunk(chunk)
-    #                 decoder = ReedSolomonDecoder()
-    #                 restored_test_data, error = decoder.decode(ec_chunks)
-    #                 if error != ErasureCodeRecoverError.NONE:
-    #                     raise ValueError("ERROR", "Recover data error: {}".format(error.name))
-    #                 restored_test_data_merge= pd.concat([restored_test_data_merge, restored_test_data], axis=0, ignore_index=True)
-    #             pd.testing.assert_frame_equal(restored_test_data_merge, output, check_dtype=False, obj="Decoded Dataframe does not match the origin Dataframe")
-    #             print(restored_test_data_merge)
-    #             log.write_log("DEBUG", "{} recover test success!!!".format(slot.hash))
-    #             log.write_log("DEBUG", "recover result: \n{}".format(restored_test_data_merge))
-    #         except Exception as e:
-    #             raise RuntimeError(e)

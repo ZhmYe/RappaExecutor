@@ -1,6 +1,6 @@
 from multiprocessing import Queue, Manager
 
-from config.config import BHExecutionNodeGlobalConfig
+from config.config import BHExecutionNodeGlobalConfig, STORE_METHOD_ENUM
 from paradigm.replicate import ReplicateChunk, ChunkReplicateRecord, ReplicatePackage
 from paradigm.slot import CommitSlotItem
 from network.Grpc.service.service_pb2 import RecoverSlotChunk
@@ -52,6 +52,7 @@ class Channel:
         if not self.store_chunks.get(slot_hash):
             return []
         for row_index, chunk in self.store_chunks[slot_hash].items():
+
             chunks.append(RecoverSlotChunk(
                 hash=chunk.slot_hash,
                 row=chunk.row_index,
@@ -76,16 +77,26 @@ class Channel:
                     parts = suffix.split('-chunk.slot', 1)  # 分割成两个部分
                     new_path = f"{prefix}-row-{parts[0][:-1] + str(col)}-chunk.slot"
                     # print(new_path)
-                    with open(new_path, "rb") as f:
-                        # json.dump(chunk_data, f, ensure_ascii=False, indent=4)
-                        data = f.read()
-                        chunks.append(RecoverSlotChunk(
-                            hash=chunk.slot_hash,
-                            row=chunk.row_index,
-                            col=col,
-                            chunk=data
-                        ))
-                        f.close()
+                    try:
+                        with open(new_path, "rb") as f:
+                            # json.dump(chunk_data, f, ensure_ascii=False, indent=4)
+                            data = f.read()
+                            chunks.append(RecoverSlotChunk(
+                                hash=chunk.slot_hash,
+                                row=chunk.row_index,
+                                col=col,
+                                chunk=data
+                            ))
+                            f.close()
+                    except FileNotFoundError:
+                        # 如果是文件不存在的情况，跳过
+                        continue
+                    except Exception as e:
+                        # 其他错误时打印错误信息
+                        # print(f"Error processing file {new_path}: {e}")
+                        raise RuntimeError(f"Error processing file {new_path}: {e}")
+
+
 
         return chunks
     def update_slot_buff(self):

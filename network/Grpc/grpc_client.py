@@ -63,6 +63,7 @@ class GrpcClient:
                 size=commit_slot.size,
                 hash=commit_slot.hash,
                 commitment=commit_slot.commitment,
+                store=commit_slot.store_method.value,
                 padding=commit_slot.get_padding_sizes()
             )
             # 发送grpc请求

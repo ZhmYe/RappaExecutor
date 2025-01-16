@@ -4,12 +4,13 @@
     最终的代码中不应该有collector，应该是前后端向Master发起collect，然后Master将collect要的slot_hash通过grpc/heartbeat传递给所有节点，然后节点将自己本地的对应部分发给master
     master将结果拼回
 """
+import json
 import threading
 import time
 from typing import List
 
 import pandas as pd
-from config.config import BHExecutionNodeGlobalConfig
+from config.config import BHExecutionNodeGlobalConfig, STORE_METHOD_ENUM
 from mocker.mocker_executor import MockerExecutor
 from network.format import BHExecutionAddress
 from paradigm.channel import Channel
@@ -75,30 +76,47 @@ class MockerCollector:
                 output, local_chunks = item[1], item[2]
                 restored_test_data_merge = pd.DataFrame()
                 time.sleep(5)
-                for row_index in range(len(local_chunks)):
-                    # 收集所有的其他块
-                    ec_chunks = ErasureCodeChunks(padding_size=slot.replicate_records[row_index].padding_size)
-                    ec_chunks.add_chunk(local_chunks[row_index])
-                    for mocker_executor in self.mocker_executors:
-                        # mocker_executor: MockerExecutor = self.mocker_executors[node_id]
-                        chunk = mocker_executor.load(slot.hash, row_index)
-                        ec_chunks.add_chunk(chunk)
-                    decoder = ReedSolomonDecoder()
-                    restored_test_data, error = decoder.decode(ec_chunks)
-                    if error != ErasureCodeRecoverError.NONE:
-                        raise ValueError("ERROR", "Recover data error: {}".format(error.name))
-                    restored_test_data_merge= pd.concat([restored_test_data_merge, restored_test_data], axis=0, ignore_index=True)
-                pd.testing.assert_frame_equal(restored_test_data_merge, output, check_dtype=False, obj="Decoded Dataframe does not match the origin Dataframe")
+                if BHExecutionNodeGlobalConfig.STORE_METHOD == STORE_METHOD_ENUM.EC:
+                    for row_index in range(len(local_chunks)):
+                        # 收集所有的其他块
+                        ec_chunks = ErasureCodeChunks(padding_size=slot.replicate_records[row_index].padding_size)
+                        ec_chunks.add_chunk(local_chunks[row_index])
+                        for mocker_executor in self.mocker_executors:
+                            # mocker_executor: MockerExecutor = self.mocker_executors[node_id]
+                            chunk = mocker_executor.load(slot.hash, row_index)
+                            ec_chunks.add_chunk(chunk)
+                        decoder = ReedSolomonDecoder()
+                        restored_test_data, error = decoder.decode(ec_chunks)
+                        if error != ErasureCodeRecoverError.NONE:
+                            raise ValueError("ERROR", "Recover data error: {}".format(error.name))
+                        restored_test_data_merge= pd.concat([restored_test_data_merge, restored_test_data], axis=0, ignore_index=True)
+                    pd.testing.assert_frame_equal(restored_test_data_merge, output, check_dtype=False, obj="Decoded Dataframe does not match the origin Dataframe")
+                if BHExecutionNodeGlobalConfig.STORE_METHOD == STORE_METHOD_ENUM.LOCAL:
+                    # 如果是本地，那么本地存的就是全部
+                    for row_index in range(len(local_chunks)):
+                        decoded_data = b''.join(local_chunks[row_index].chunk)
+                        json_str = decoded_data.decode('utf-8')  # 从字节流解码为 JSON 字符串
+                            # print(json_str)
+                        pd_json = json.loads(json_str.strip())
+                        restored_df = pd.DataFrame(pd_json)
+                        restored_test_data_merge= pd.concat([restored_test_data_merge, restored_df], axis=0, ignore_index=True)
+
+
                 log.write_log("DEBUG", "{} recover test success!!!".format(slot.hash))
                 log.write_log("DEBUG", "recover result: \n{}".format(restored_test_data_merge))
             except Exception as e:
                 raise RuntimeError(e)
     def start(self):
-        for i in range(BHExecutionNodeGlobalConfig.EC_PARAMS_N - 1):
-            node_id = BHExecutionNodeGlobalConfig.NODE_ID + i + 1
-            address = BHExecutionAddress("127.0.0.1", port=int(BHExecutionNodeGlobalConfig.GRPC_PORT) + 1 + i)
-            self.mocker_executors.append(MockerExecutor(node_id, address, self.channel)) # 存储冗余数据块的路径
-            self.mocker_executors[i].start()
+        if BHExecutionNodeGlobalConfig.STORE_METHOD == STORE_METHOD_ENUM.LOCAL:
+            log.write_log("DEBUG", "Store Method is local, does not need to start mocker executor...")
+            # 如果是本地存储，那么不需要启动，这里为了测试
+        else:
+            # 如果是纠删码/多副本，目前只有纠删码，那么需要开启mocker receiver模拟下
+            for i in range(BHExecutionNodeGlobalConfig.EC_PARAMS_N - 1):
+                node_id = BHExecutionNodeGlobalConfig.NODE_ID + i + 1
+                address = BHExecutionAddress("127.0.0.1", port=int(BHExecutionNodeGlobalConfig.GRPC_PORT) + 1 + i)
+                self.mocker_executors.append(MockerExecutor(node_id, address, self.channel)) # 存储冗余数据块的路径
+                self.mocker_executors[i].start()
         # for node_id in self.mocker_executors:
         # mocker_executor = self.mocker_executors[node_id]
         # mocker_executor.start() # 这里方便测试就是在同一个进程里
