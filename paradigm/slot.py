@@ -3,7 +3,7 @@ from typing import List
 
 from click import UNPROCESSED
 
-from config.config import BHExecutionNodeGlobalConfig
+from config.config import BHExecutionNodeGlobalConfig, STORE_METHOD_ENUM
 from paradigm.model import CommitSlotModelParams
 from paradigm.replicate import ChunkReplicateRecord
 
@@ -50,6 +50,7 @@ class CommitSlotItem:
         self.hash = ""
         self.replicate_records: List[ChunkReplicateRecord] = []
         self.nb_chunks = -1
+        self.store_method = STORE_METHOD_ENUM.EC
         # self.set_hash("{}_{}_{}".format(self.sign, self.slot, self.node_id)) # TODO @YZM 这里要改master的hash，应该是在分配任务的时候就给一个唯一标识
     def set_index(self, index):
         self.index = index
@@ -88,3 +89,5 @@ class CommitSlotItem:
 
     def get_padding_sizes(self) -> List[int]:
         return [record.padding_size for record in self.replicate_records]
+    def set_store_method(self, method: STORE_METHOD_ENUM):
+        self.store_method = method

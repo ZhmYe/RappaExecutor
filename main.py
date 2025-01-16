@@ -14,47 +14,19 @@ from task.SlotManager import SlotManager
 from task.TaskTracker import TaskTracker
 import warnings
 
+from utils.function.func import parse_args
+
 warnings.filterwarnings("ignore")
 
-
-def parse_args():
-    """
-    解析命令行参数
-    """
-    parser = argparse.ArgumentParser(description="BHExecutionNode Configuration")
-    parser.add_argument(
-        "--debug",
-        action="store_true",
-        help="Enable debug mode. Logs will not be saved to files."
-    )
-    # add by zhmye
-    # 这里将config.json作为参数传入
-    parser.add_argument(
-        "--config",
-        default="config.json",
-        type=str,
-        help="Enable config loading. Loading Config from the given path."
-    )
-    return parser.parse_args()
-
-
-def load_config(config_path):
-    BHExecutionNodeGlobalConfig.load_config(config_path)
+def load_config(args):
+    BHExecutionNodeGlobalConfig.load_config(args)
     log.init()
-
-
-def init_pool() -> Queue:
-    return Queue()
-
-
 
 if __name__ == '__main__':
 
 # 解析命令行参数
     args = parse_args()
-    load_config(args.config)  # 解析参数
-    # 根据命令行参数设置全局调试模式
-    BHExecutionNodeGlobalConfig.set_debug(args.debug)
+    load_config(args)  # 解析参数
     # 定义所有的channel
     manager = Manager()
     channel = Channel(manager)
