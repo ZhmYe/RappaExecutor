@@ -35,6 +35,8 @@ class MockerReceiver:
         if not self.store_chunks.get(slot_hash):
             self.store_chunks[slot_hash] = {}
         self.store_chunks[slot_hash][row_index] = new_store_chunk_item
+
+
     def process_chunk_to_load(self, slot_hash, row_index)->ErasureCodeChunk:
         # 读取根据 slot_hash来读取
         if not self.store_chunks.get(slot_hash):
