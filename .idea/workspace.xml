@@ -6,13 +6,13 @@
   <component name="ChangeListManager">
     <list default="true" id="1dc9b31b-c6cf-4b8a-800b-76946d4ab624" name="Changes" comment="update grpc code">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/config/config.py" beforeDir="false" afterPath="$PROJECT_DIR$/config/config.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mocker/mocker_collector.py" beforeDir="false" afterPath="$PROJECT_DIR$/mocker/mocker_collector.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mocker/mocker_executor.py" beforeDir="false" afterPath="$PROJECT_DIR$/mocker/mocker_executor.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/mocker/mocker_receiver.py" beforeDir="false" afterPath="$PROJECT_DIR$/mocker/mocker_receiver.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/network/Grpc/grpc_engine.py" beforeDir="false" afterPath="$PROJECT_DIR$/network/Grpc/grpc_engine.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/network/Grpc/grpc_client.py" beforeDir="false" afterPath="$PROJECT_DIR$/network/Grpc/grpc_client.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/network/Grpc/service.proto" beforeDir="false" afterPath="$PROJECT_DIR$/network/Grpc/service.proto" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/network/Grpc/service/service_pb2.py" beforeDir="false" afterPath="$PROJECT_DIR$/network/Grpc/service/service_pb2.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/paradigm/channel.py" beforeDir="false" afterPath="$PROJECT_DIR$/paradigm/channel.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/storage/receiver/SimpleReceiver.py" beforeDir="false" afterPath="$PROJECT_DIR$/storage/receiver/SimpleReceiver.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/paradigm/slot.py" beforeDir="false" afterPath="$PROJECT_DIR$/paradigm/slot.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -52,6 +52,7 @@
     &quot;Python tests.Python tests for test_loader.TestLoader.executor&quot;: &quot;Run&quot;,
     &quot;Python tests.Python tests for test_simple_storager.TestSimpleStorager.executor&quot;: &quot;Run&quot;,
     &quot;Python tests.Python tests for uni_test.test_EC_handler.TestECEncoder.executor&quot;: &quot;Run&quot;,
+    &quot;Python 测试.test_loader.TestLoader 的 Python 测试.executor&quot;: &quot;Run&quot;,
     &quot;Python.main.executor&quot;: &quot;Run&quot;,
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
@@ -72,7 +73,7 @@
       <window_info id="Commit_Guest" show_stripe_button="false" />
       <window_info id="Pull Requests" />
       <window_info id="Learn" />
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.14503643" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.18151042" />
       <window_info id="Commit" order="1" weight="0.1169465" />
       <window_info id="Structure" order="2" side_tool="true" weight="0.25" />
       <window_info anchor="bottom" id="Database Changes" />
@@ -80,16 +81,16 @@
       <window_info anchor="bottom" id="HfCacheToolWindow" />
       <window_info anchor="bottom" id="File Transfer" />
       <window_info anchor="bottom" id="Version Control" order="0" weight="0.3202429" />
-      <window_info active="true" anchor="bottom" id="Terminal" order="1" visible="true" weight="0.7186235" />
+      <window_info active="true" anchor="bottom" id="Terminal" order="1" visible="true" weight="0.314438" />
       <window_info anchor="bottom" id="Problems" order="2" />
-      <window_info anchor="bottom" id="Problems View" order="3" weight="0.56643105" />
+      <window_info anchor="bottom" id="Problems View" order="3" weight="0.82703483" />
       <window_info anchor="bottom" id="Services" order="4" />
       <window_info anchor="bottom" id="Python Packages" order="5" weight="0.1" />
       <window_info anchor="bottom" id="Python Console" order="6" weight="0.81603336" />
-      <window_info anchor="bottom" id="Run" order="7" weight="0.19083585" />
+      <window_info anchor="bottom" id="Run" order="7" weight="0.82712555" />
       <window_info anchor="bottom" id="TODO" order="8" weight="0.81603336" />
       <window_info anchor="bottom" id="Debug" order="9" weight="0.18198134" />
-      <window_info anchor="bottom" id="Find" order="10" weight="0.82712555" />
+      <window_info anchor="bottom" id="Find" order="10" weight="0.82703483" />
       <window_info anchor="right" id="Endpoints" />
       <window_info anchor="right" id="Coverage" side_tool="true" />
       <window_info anchor="right" id="SciView" />
@@ -103,14 +104,14 @@
   </component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/model" />
       <recent name="$PROJECT_DIR$/utils/cryptography/commitment/kzg" />
       <recent name="$PROJECT_DIR$/utils/cryptography/commitment/merkle" />
       <recent name="$PROJECT_DIR$/storage/chunker" />
       <recent name="$PROJECT_DIR$/utils/cryptography/hash" />
-      <recent name="$PROJECT_DIR$/network/Http" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.main">
+  <component name="RunManager" selected="Python 测试.test_loader.TestLoader 的 Python 测试">
     <configuration name="main" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
       <module name="BHExecutionNode" />
       <option name="ENV_FILES" value="" />
@@ -198,6 +199,11 @@
       <option name="_new_targetType" value="&quot;PYTHON&quot;" />
       <method v="2" />
     </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Python 测试.test_loader.TestLoader 的 Python 测试" />
+      </list>
+    </recent_temporary>
   </component>
   <component name="SharedIndexes">
     <attachedChunks>
@@ -244,7 +250,12 @@
       <workItem from="1735811178861" duration="1556000" />
       <workItem from="1735873986740" duration="88374000" />
       <workItem from="1736395125380" duration="13174000" />
-      <workItem from="1736409389683" duration="1245000" />
+      <workItem from="1736409389683" duration="41988000" />
+      <workItem from="1736687714708" duration="4884000" />
+      <workItem from="1736744013844" duration="15225000" />
+      <workItem from="1736828263769" duration="15000" />
+      <workItem from="1736828293877" duration="6442000" />
+      <workItem from="1736912656833" duration="12749000" />
     </task>
     <task id="LOCAL-00001" summary="update grpc interface">
       <option name="closed" value="true" />
@@ -285,7 +296,7 @@
     <option name="LAST_COMMIT_MESSAGE" value="update grpc code" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/BHExecutionNode$.coverage" NAME=" Coverage Results" MODIFIED="1732167367653" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/uni_test" />
+    <SUITE FILE_PATH="coverage/BHExecutionNode$.coverage" NAME=" 覆盖结果" MODIFIED="1736583269793" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/uni_test" />
     <SUITE FILE_PATH="coverage/BHExecutionNode$main.coverage" NAME="main 覆盖结果" MODIFIED="1735108873402" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
 </project>

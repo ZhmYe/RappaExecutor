@@ -5,6 +5,7 @@
 import os
 import threading
 from multiprocessing import Process, Queue, Manager
+from typing import List
 
 from config.config import BHExecutionNodeGlobalConfig
 from paradigm.channel import Channel
@@ -47,6 +48,18 @@ class SimpleReceiver:
         chunk = store_chunk_item.load()
         ec_chunk = ErasureCodeChunk(chunk, store_chunk_item.col_index)
         return ec_chunk
+    def process_chunk_to_load_without_row_index(self, slot_hash)->List[ErasureCodeChunk]:
+        # 读取根据 slot_hash来读取
+        chunks = []
+        if not self.channel.store_chunks.get(slot_hash):
+            raise ValueError("{} Chunk does not store in this node!!!".format(slot_hash))
+        # slot_chunks = dict(self.channel.store_chunks[slot_hash])
+        for row_index, store_chunk_item in self.channel.store_chunks[slot_hash].items():
+            chunk = store_chunk_item.load()
+            ec_chunk = ErasureCodeChunk(bytes(chunk), int(store_chunk_item.col_index))
+            chunks.append(ec_chunk)
+        print(len(chunks))
+        return chunks
     def process_chunks_to_store(self):
         while True:
             # Get a task from the task pool (blocking)
@@ -87,7 +100,7 @@ class SimpleReceiver:
                             log.write_log("STORAGE", "Receive slot {} chunk {}, commitment verify Success, finish store in local...".format(replicate_package.slot_hash, replicate_package.row_index))
             except Exception as e:
                 raise RuntimeError(e)
-    def process_chunks_to_load(self):
+    def process_chunks_to_load_test(self):
         while True:
             if self.channel.test_collect_pass_receiver_channel.empty():
                 continue
@@ -101,9 +114,26 @@ class SimpleReceiver:
                 self.channel.test_collect_pass_grpc_channel.put((slot, output, local_chunks)) # 传递给grpc
             except Exception as e:
                 raise RuntimeError(e)
+    # def process_chunks_to_load(self):
+    #     while True:
+    #         if self.channel.collect_pass_receiver_channel.empty():
+    #             continue
+    #         try:
+    #             item = self.channel.collect_pass_receiver_channel.get(timeout=0.01)
+    #             slot_hashs, mission = item[0], item[1]
+    #             print(slot_hashs, mission)
+    #             # connect = self.channel.get_connect_channel(mission)
+    #             result = []
+    #             for slot_hash in slot_hashs:
+    #                 ec_chunks = self.process_chunk_to_load_without_row_index(slot_hash)
+    #                 result.extend(ec_chunks)
+    #             self.channel.collect_connect_channel.put(result) # 传递给grpc
+    #         except Exception as e:
+    #             raise RuntimeError(e)
     def start(self):
         processes = [
-            Process(target=self.process_chunks_to_load),
+            # Process(target=self.process_chunks_to_load),
+            Process(target=self.process_chunks_to_load_test),
             Process(target=self.process_chunks_to_store)
         ]
         for process in processes:

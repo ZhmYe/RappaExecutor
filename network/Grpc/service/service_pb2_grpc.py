@@ -5,8 +5,10 @@ import grpc
 from . import service_pb2 as service__pb2
 
 
-class CoordinatorStub(object):
-    """这个是layer端的服务协议
+class RappaMasterStub(object):
+    """**
+    NOTE: 定义Master处的接口
+    *
     """
 
     def __init__(self, channel):
@@ -16,27 +18,28 @@ class CoordinatorStub(object):
             channel: A grpc.Channel.
         """
         self.CommitSlot = channel.unary_unary(
-                '/service.Coordinator/CommitSlot',
+                '/service.RappaMaster/CommitSlot',
                 request_serializer=service__pb2.SlotCommitRequest.SerializeToString,
                 response_deserializer=service__pb2.SlotCommitResponse.FromString,
                 )
 
 
-class CoordinatorServicer(object):
-    """这个是layer端的服务协议
+class RappaMasterServicer(object):
+    """**
+    NOTE: 定义Master处的接口
+    *
     """
 
     def CommitSlot(self, request, context):
-        """Commit 节点向Coordinator返回自己已经完成的Task Slot
-        TODO: 这里有一个提交proof的接口，先不实现
-        rpc CommitProof (ProofCommitRequest) returns (ProofCommitRespnse);
+        """CommitSlot Executor向Master提交自己完成的Task Slot
+        rpc CommitProof (ProofCommitRequest) returns (ProofCommitResponse); // TODO DataProver向Master提交自己完成的Proof
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
 
-def add_CoordinatorServicer_to_server(servicer, server):
+def add_RappaMasterServicer_to_server(servicer, server):
     rpc_method_handlers = {
             'CommitSlot': grpc.unary_unary_rpc_method_handler(
                     servicer.CommitSlot,
@@ -45,13 +48,15 @@ def add_CoordinatorServicer_to_server(servicer, server):
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
-            'service.Coordinator', rpc_method_handlers)
+            'service.RappaMaster', rpc_method_handlers)
     server.add_generic_rpc_handlers((generic_handler,))
 
 
  # This class is part of an EXPERIMENTAL API.
-class Coordinator(object):
-    """这个是layer端的服务协议
+class RappaMaster(object):
+    """**
+    NOTE: 定义Master处的接口
+    *
     """
 
     @staticmethod
@@ -65,15 +70,17 @@ class Coordinator(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/service.Coordinator/CommitSlot',
+        return grpc.experimental.unary_unary(request, target, '/service.RappaMaster/CommitSlot',
             service__pb2.SlotCommitRequest.SerializeToString,
             service__pb2.SlotCommitResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
 
-class NodeExecutorStub(object):
-    """这个是节点端的服务协议
+class RappaExecutorStub(object):
+    """**
+    NOTE: 定义Executor处的接口
+    *
     """
 
     def __init__(self, channel):
@@ -83,19 +90,26 @@ class NodeExecutorStub(object):
             channel: A grpc.Channel.
         """
         self.Heartbeat = channel.unary_unary(
-                '/service.NodeExecutor/Heartbeat',
+                '/service.RappaExecutor/Heartbeat',
                 request_serializer=service__pb2.HeartbeatRequest.SerializeToString,
                 response_deserializer=service__pb2.HeartbeatResponse.FromString,
                 )
         self.Schedule = channel.unary_unary(
-                '/service.NodeExecutor/Schedule',
+                '/service.RappaExecutor/Schedule',
                 request_serializer=service__pb2.ScheduleRequest.SerializeToString,
                 response_deserializer=service__pb2.ScheduleResponse.FromString,
                 )
+        self.Collect = channel.unary_unary(
+                '/service.RappaExecutor/Collect',
+                request_serializer=service__pb2.RecoverRequest.SerializeToString,
+                response_deserializer=service__pb2.RecoverResponse.FromString,
+                )
 
 
-class NodeExecutorServicer(object):
-    """这个是节点端的服务协议
+class RappaExecutorServicer(object):
+    """**
+    NOTE: 定义Executor处的接口
+    *
     """
 
     def Heartbeat(self, request, context):
@@ -107,16 +121,20 @@ class NodeExecutorServicer(object):
 
     def Schedule(self, request, context):
         """Schedule 用于向节点发送调度
-        投票包含在heartbeat里
-        // EpochVote 投票epoch，用于上链
-        rpc EpochVote (EpochVoteRequest) returns (EpochVoteResponse);
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def Collect(self, request, context):
+        """Collect 用于向节点收集chunk，恢复文件数据
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
 
-def add_NodeExecutorServicer_to_server(servicer, server):
+def add_RappaExecutorServicer_to_server(servicer, server):
     rpc_method_handlers = {
             'Heartbeat': grpc.unary_unary_rpc_method_handler(
                     servicer.Heartbeat,
@@ -128,15 +146,22 @@ def add_NodeExecutorServicer_to_server(servicer, server):
                     request_deserializer=service__pb2.ScheduleRequest.FromString,
                     response_serializer=service__pb2.ScheduleResponse.SerializeToString,
             ),
+            'Collect': grpc.unary_unary_rpc_method_handler(
+                    servicer.Collect,
+                    request_deserializer=service__pb2.RecoverRequest.FromString,
+                    response_serializer=service__pb2.RecoverResponse.SerializeToString,
+            ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
-            'service.NodeExecutor', rpc_method_handlers)
+            'service.RappaExecutor', rpc_method_handlers)
     server.add_generic_rpc_handlers((generic_handler,))
 
 
  # This class is part of an EXPERIMENTAL API.
-class NodeExecutor(object):
-    """这个是节点端的服务协议
+class RappaExecutor(object):
+    """**
+    NOTE: 定义Executor处的接口
+    *
     """
 
     @staticmethod
@@ -150,7 +175,7 @@ class NodeExecutor(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/service.NodeExecutor/Heartbeat',
+        return grpc.experimental.unary_unary(request, target, '/service.RappaExecutor/Heartbeat',
             service__pb2.HeartbeatRequest.SerializeToString,
             service__pb2.HeartbeatResponse.FromString,
             options, channel_credentials,
@@ -167,8 +192,25 @@ class NodeExecutor(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/service.NodeExecutor/Schedule',
+        return grpc.experimental.unary_unary(request, target, '/service.RappaExecutor/Schedule',
             service__pb2.ScheduleRequest.SerializeToString,
             service__pb2.ScheduleResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def Collect(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/service.RappaExecutor/Collect',
+            service__pb2.RecoverRequest.SerializeToString,
+            service__pb2.RecoverResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

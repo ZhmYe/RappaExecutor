@@ -85,3 +85,6 @@ class CommitSlotItem:
         return not any(record is None for record in self.replicate_records)
     # def set_replicate_record(self, record: ChunkReplicateRecord):
     #     self.replicate_records = record
+
+    def get_padding_sizes(self) -> List[int]:
+        return [record.padding_size for record in self.replicate_records]
