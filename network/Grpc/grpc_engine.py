@@ -1,4 +1,6 @@
+import multiprocessing
 import os
+import signal
 from multiprocessing import Process, Queue
 import random
 from typing import Optional, List
@@ -30,13 +32,13 @@ class GrpcEngine:
         # 当前的grpc客户端
         self.client: Optional[GrpcClient] = None
 
-        self.redundancy=False # todo @SD 这个加到config里
+        self.redundancy = False  # todo @SD 这个加到config里
         # # 所有的通道
         # self.registry.to_grpc_slot_channel= to_grpc_replicate_channel # 这个是那些需要grpc提交的slot
         # self.registry.to_grpc_replicate_channel = to_grpc_replicate_channel # 这些是需要grpc转发的chunk
         # self.registry.to_slot_manager_channel= None # 需要将一些slot传递给slotManager
 
-    def check_channel_connect(self)->bool:
+    def check_channel_connect(self) -> bool:
         # todo
         pass
 
@@ -66,6 +68,9 @@ class GrpcEngine:
 
     def start_all(self):
         self.load_config()
+        # 监听父进程状态，捕获结束信号
+        signal.signal(signal.SIGTERM, self._terminate_children)
+        signal.signal(signal.SIGINT, self._terminate_children)
         processes = [
             Process(target=self.server.start_server),
             Process(target=self.client.start_client),
@@ -79,18 +84,21 @@ class GrpcEngine:
         # for node_id in self.mocker_executors:
         #     mocker_executor = self.mocker_executors[node_id]
         #     mocker_executor.start() # 这里方便测试就是在同一个进程里
-            # processes.append(Process(target=mocker_executor.start))
+        # processes.append(Process(target=mocker_executor.start))
         for process in processes:
             process.start()
         # self.process_test_collect()
         for process in processes:
             process.join()
 
+    # 结束所有子进程
+    def _terminate_children(*args, **kwargs):
+        for p in multiprocessing.active_children():
+            p.terminate()
+        os._exit(0)
 
+        # todo ===============================暂未实现的GRPC服务====================================
 
-
-
-    # todo ===============================暂未实现的GRPC服务====================================
     # todo @XQ 下面的内容要实现到grpc_client中去，主要就是分发数据块和收集数据块
 
     def process_replicate_package(self, node_id, replicate_package: ReplicatePackage):
@@ -99,7 +107,8 @@ class GrpcEngine:
         # mocker_executor: MockerExecutor = self.mocker_executors[node_id]
         self.registry.channel.test_replicate_mocker_executor_channel.put((node_id, replicate_package))
         # mocker_executor.replicate_package(replicate_package=replicate_package) # TODO @XQ 这里要修改成真正的grpc,如果最后还原回 replicate_chunk，那么是修改下面那个函数
-        return True # 如果分发有错误，要在这里返回
+        return True  # 如果分发有错误，要在这里返回
+
     # 这里要实现的是将冗余数据块分发到对应的节点,这是老版本的写法，上面那个是最新版本
     def process_replicate_chunk(self, node_id, replicate_chunk: ReplicateChunk) -> bool:
         """
@@ -109,7 +118,7 @@ class GrpcEngine:
         # log.write_log("DEBUG", "fake request is sent to {}".format(mocker_executor.ip.get_address()))
         self.registry.channel.test_replicate_mocker_executor_channel.put((node_id, replicate_chunk))
         # mocker_executor.replicate_chunk(replicate_chunk=replicate_chunk)
-        return True # 如果分发有错误，要在这里返回
+        return True  # 如果分发有错误，要在这里返回
 
     def process_replicate_encoded_chunks(self):
         # 发送数据块，redundancy表示是否需要额外冗余存储（纠删码一般不需要，多副本需要）
@@ -126,29 +135,40 @@ class GrpcEngine:
                 continue
             try:
                 # ChunkReplicateRecord, List[ReplicateChunk]
-                iter_chunk_replicate_record,  replicate_encoded_chunks = self.registry.channel.to_grpc_replicate_channel.get(timeout=0.01)
+                iter_chunk_replicate_record, replicate_encoded_chunks = self.registry.channel.to_grpc_replicate_channel.get(
+                    timeout=0.01)
                 local_index = random.randint(0, len(replicate_encoded_chunks) - 1)
-            # TODO 这边先简单写一下，其实现在的写法是没法保证上述要求的
-            #     node_id_list: List[MockerExecutor] = [node_id for node_id in self.mocker_executors] # 这里简单起见这么先写
+                # TODO 这边先简单写一下，其实现在的写法是没法保证上述要求的
+                #     node_id_list: List[MockerExecutor] = [node_id for node_id in self.mocker_executors] # 这里简单起见这么先写
                 mocker_executor_idx_list: List[int] = list(range(len(self.registry.others_address)))
                 # 初始化 ReplicatePackage，下面针对要分发的 chunk进行 k个连续 chunk的打包
                 node_idx = 0
                 for chunk_index in range(len(replicate_encoded_chunks)):
                     # idx = chunk_index % len(node_id_list)
-                    replicate_package = ReplicatePackage(sign= iter_chunk_replicate_record.sign, slot=iter_chunk_replicate_record.slot, row_index=iter_chunk_replicate_record.index, store_col_index=0, slot_hash=iter_chunk_replicate_record.slot_hash, merkle_proof=iter_chunk_replicate_record.merkle_proof, kzg_commitment=iter_chunk_replicate_record.kzg_commitment, padding_size=iter_chunk_replicate_record.padding_size)
+                    replicate_package = ReplicatePackage(sign=iter_chunk_replicate_record.sign,
+                                                         slot=iter_chunk_replicate_record.slot,
+                                                         row_index=iter_chunk_replicate_record.index, store_col_index=0,
+                                                         slot_hash=iter_chunk_replicate_record.slot_hash,
+                                                         merkle_proof=iter_chunk_replicate_record.merkle_proof,
+                                                         kzg_commitment=iter_chunk_replicate_record.kzg_commitment,
+                                                         padding_size=iter_chunk_replicate_record.padding_size)
                     for i in range(BHExecutionNodeGlobalConfig.EC_PARAMS_K):
-                        package_chunk_index = (chunk_index + i) % len(replicate_encoded_chunks) # 这里要存的块在第一个，因此上面 store_col_index = 0
+                        package_chunk_index = (chunk_index + i) % len(
+                            replicate_encoded_chunks)  # 这里要存的块在第一个，因此上面 store_col_index = 0
                         chunk: ReplicateChunk = replicate_encoded_chunks[package_chunk_index]
                         replicate_package.add_chunk(chunk=chunk)
                     # 下面转发的是整个 replicate_package
                     # todo 这里要改成并行
                     if chunk_index == local_index:
                         self.registry.channel.to_receiver_chunk_store_channel.put(replicate_package)
-                        iter_chunk_replicate_record.record_success_replicate(chunk_index, BHExecutionNodeGlobalConfig.NODE_IP) # TODO 这里给自己的默认是已经完成的，然后这里的 ip要改
+                        iter_chunk_replicate_record.record_success_replicate(chunk_index,
+                                                                             BHExecutionNodeGlobalConfig.NODE_IP)  # TODO 这里给自己的默认是已经完成的，然后这里的 ip要改
                     else:
-                        if self.process_replicate_package(mocker_executor_idx_list[node_idx], replicate_package=replicate_package):
-                            iter_chunk_replicate_record.record_success_replicate(chunk_index, BHExecutionNodeGlobalConfig.NODE_IP) # todo 这里简单起见就直接写node_ip，正常来说应该是真正的节点对应的ip，这里还需要一个config
-                            node_idx+=1
+                        if self.process_replicate_package(mocker_executor_idx_list[node_idx],
+                                                          replicate_package=replicate_package):
+                            iter_chunk_replicate_record.record_success_replicate(chunk_index,
+                                                                                 BHExecutionNodeGlobalConfig.NODE_IP)  # todo 这里简单起见就直接写node_ip，正常来说应该是真正的节点对应的ip，这里还需要一个config
+                            node_idx += 1
                 # 至此,本次转发完成，可以根据record的state()判断是否完成
                 # 将转发结果发还给Storager，在storager处，如果record.state()==success那么说明完成了可以将这一slot发给slotmanager，反之要继续
                 self.registry.channel.to_storager_record_channel.put(iter_chunk_replicate_record)
@@ -162,10 +182,6 @@ class GrpcEngine:
         #     if self.process_replicate_chunk(node_idx, chunk):
         #        iter_chunk_replicate_record.record_success_replicate(i, self.mocker_executors[node_idx].ip.get_address())
         # return iter_chunk_replicate_record
-
-
-
-
 
     # """
     #     NOTE: 这里是测试collect
