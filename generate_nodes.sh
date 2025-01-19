@@ -58,7 +58,7 @@ for (( i=0; i<NODES_NUM; i++ )); do
   "EC_PARAMS_N": 9,
   "EC_PARAMS_K": 6,
   "NODE_IP": "127.0.0.1",
-  "GRPC_PORT": $((1234 + i*2)),
+  "GRPC_PORT": 50051,
   "LAYER2_ADDRESS_IP": "127.0.0.1",
   "LAYER_ADDRESS_PORT": $((1235 + i*2)),
   "STORAGE_PATH": "meta"
