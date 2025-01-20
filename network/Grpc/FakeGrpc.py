@@ -31,7 +31,7 @@ class FakeGrpcEngine:
         log.write_log("DEBUG", "FakeGrpcEngine load config")
         # 这里就简单的随机生成几个ip和port
         self.fake_layer2_node = MockerLayer2nNode()
-        for i in range(BHExecutionNodeGlobalConfig.EC_PARAMS_N - 1):
+        for i in range(BHExecutionNodeGlobalConfig.ALL_NODE_NUM - 1):
             # self.ips.append(BHExecutionGrpcAddress("127.0.0.1", port=self.address.get_port() + 1))
             node_id = BHExecutionNodeGlobalConfig.NODE_ID + i + 1
             self.fake_other_nodes[node_id] = MockerNode(node_id, BHExecutionAddress("127.0.0.1", port=self.address.get_port() + 1 + i), self.fake_layer2_node)
