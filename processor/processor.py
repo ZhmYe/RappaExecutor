@@ -4,6 +4,7 @@
 """
 from multiprocessing import Process
 
+from config.config import BHExecutionNodeGlobalConfig
 from model.loader import ModelLoader
 from paradigm.channel import Channel
 from paradigm.model import CommitSlotModelParams
@@ -15,8 +16,8 @@ from logger.logger import logWriter as log
 
 class Processor:
     def __init__(self, channel: Channel):
-        # self.num_workers = BHExecutionNodeGlobalConfig.NUM_PROCESS_WORKER TODO @SD 这里补上这个然后把下面一行注释掉
-        self.num_workers = 1
+        self.num_workers = BHExecutionNodeGlobalConfig.NUM_PROCESS_WORKER
+        # self.num_workers = 1
         # self.storager: Storager = None
         self.channel = channel
         # self.slot_channel = slot_channel # 传递给slotManager 这里不需要传递，是storager传递
