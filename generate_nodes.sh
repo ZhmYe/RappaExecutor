@@ -5,14 +5,14 @@ set -e
 ###############################################################################
 # 1. 参数解析
 ###############################################################################
-code_path="$(cd "$(dirname "$0")" && pwd)"  # 获取Executor代码的绝对路径。
+code_path="$(cd "$(dirname "$0")" && pwd)" # 获取Executor代码的绝对路径。
 NODES_NUM="$1"                             # 第一个参数：节点数量
 if [ -z "$NODES_NUM" ]; then
   echo "use: $0 <NODES_NUM> [OUTPUT_DIR]"
   exit 1
 fi
 
-OUTPUT_DIR="$2"                            # 第二个参数：输出目录
+OUTPUT_DIR="$2" # 第二个参数：输出目录
 # 如果用户没有指定输出目录，则默认使用当前工作目录
 if [ -z "$OUTPUT_DIR" ]; then
   OUTPUT_DIR="$PWD"
@@ -42,32 +42,51 @@ echo "节点主目录：$(pwd)"
 ###############################################################################
 # 3. 为每个节点创建目录结构，复制代码并覆盖 config.json、生成启动/终止脚本
 ###############################################################################
-for (( i=0; i<NODES_NUM; i++ )); do
-  node_folder="node${i}"
-  # echo "-----------------------------"
-  # echo "创建节点目录：$node_folder"
-  mkdir -p "$node_folder"
+GENERATE_F=$((($NODES_NUM - 1) / 3))
 
-  # 3.1 复制 RappaExecutor 目录到节点目录下
+for ((i = 0; i < NODES_NUM; i++)); do
+  node_folder="node${i}"
+  mkdir -p "$node_folder"
   cp -r "${code_path}" "${node_folder}/"
-  
-  # 3.2 生成新的 config.json（如果源目录里原本就有 config.json，将被下面操作覆盖）
-  cat <<EOF > "${node_folder}/RappaExecutor/config.json"
+
+  # 创建 config.json
+  config_path="${node_folder}/RappaExecutor/config.json"
+  cat <<EOF >$config_path
 {
   "NODE_ID": $i,
-  "EC_PARAMS_N": 9,
-  "EC_PARAMS_K": 6,
+  "EC_PARAMS_N": $((2 * $GENERATE_F + 1)),
+  "EC_PARAMS_K": $(($GENERATE_F + 1)),
   "NODE_IP": "127.0.0.1",
-  "GRPC_PORT": 50051,
+  "GRPC_PORT": $((1234 + i * 2)),
   "LAYER2_ADDRESS_IP": "127.0.0.1",
-  "LAYER_ADDRESS_PORT": $((1235 + i*2)),
-  "STORAGE_PATH": "meta"
-}
+  "LAYER_ADDRESS_PORT": 50051,
+  "NUM_PROCESS_WORKER": 1,
+  "STORAGE_PATH": "meta",
+  "OTHER_NODE_GRPC_ADDRESSES": {
 EOF
-  # echo "已生成并覆盖配置文件：${node_folder}/RappaExecutor/config.json"
 
-  # 3.3 创建单个节点的启动脚本 start.sh
-  cat <<EOF > "${node_folder}/start.sh"
+  # 生成NODE_ADDRESSES，排除当前节点
+  first=true
+  for ((j = 0; j < NODES_NUM; j++)); do
+    if [ $j -ne $i ]; then
+      cat<<EOF >>$config_path
+    "$j": {
+      "IP": "127.0.0.1",
+      "PORT": $((1234 + j * 2))
+    },
+EOF
+    fi
+  done
+
+  # 处理末尾格式
+  sed -i '$s/,//' $config_path
+  cat<<EOL >>$config_path
+  }
+}
+EOL
+
+  # 创建单个节点的启动脚本 start.sh
+  cat <<EOF >"${node_folder}/start.sh"
 #!/bin/bash
 
 # 读取第一个参数，判断是否为 --debug
@@ -91,10 +110,9 @@ fi
 echo "\$!" > "../node.pid"
 EOF
   chmod +x "${node_folder}/start.sh"
-  # echo "已生成启动脚本：${node_folder}/start.sh"
 
-  # 3.4 创建单个节点的停止脚本 stop.sh
-cat <<EOF > "${node_folder}/stop.sh"
+  # 创建单个节点的停止脚本 stop.sh
+  cat <<EOF >"${node_folder}/stop.sh"
 #!/bin/bash
 
 # 切换到当前脚本所在目录（nodeX）
@@ -131,13 +149,13 @@ done
 echo "【WARN】停止 \${node_name} 超时，请手动检查或使用 kill -9。"
 exit 1
 EOF
-chmod +x "${node_folder}/stop.sh"
+  chmod +x "${node_folder}/stop.sh"
 done
 
 ###############################################################################
 # 4. 生成一键启动脚本：start_all.sh
 ###############################################################################
-cat <<EOF > "./start_all.sh"
+cat <<EOF >"./start_all.sh"
 #!/bin/bash
 
 # 1) 获取脚本所在目录绝对路径（确保可在任意路径下执行）
@@ -178,7 +196,7 @@ echo "一键启动脚本：${OUTPUT_DIR}/start_all.sh"
 ###############################################################################
 # 5. 生成一键停止脚本：stop_all.sh
 ###############################################################################
-cat <<EOF > "./stop_all.sh"
+cat <<EOF >"./stop_all.sh"
 #!/bin/bash
 
 # 获取脚本所在目录绝对路径

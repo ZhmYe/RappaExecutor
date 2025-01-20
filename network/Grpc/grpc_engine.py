@@ -32,7 +32,7 @@ class GrpcEngine:
         # 当前的grpc客户端
         self.client: Optional[GrpcClient] = None
 
-        self.redundancy = False  # todo @SD 这个加到config里
+        self.redundancy = BHExecutionNodeGlobalConfig.REDUNDANCY
         # # 所有的通道
         # self.registry.to_grpc_slot_channel= to_grpc_replicate_channel # 这个是那些需要grpc提交的slot
         # self.registry.to_grpc_replicate_channel = to_grpc_replicate_channel # 这些是需要grpc转发的chunk
@@ -56,14 +56,18 @@ class GrpcEngine:
         # 配置客户端
         self.client = GrpcClient(self.registry)
         # self.fake_layer2_node = MockerLayer2nNode()
-        # 这里根据N来判断有多少个节点
+        # 这里根据CONFIG来判断有多少个节点
+        # for node_id, ITEM in BHExecutionNodeGlobalConfig.OTHER_NODE_GRPC_ADDRESSES.items():
+        #     self.registry.others_address[int(node_id)] = BHExecutionAddress(ITEM['IP'],
+        #                                                                port=ITEM['PORT'])
+            # self.mocker_executors[node_id] = MockerExecutor(node_id, self.registry.others_address[node_id], self.registry.channel) # 存储冗余数据块的路径
+            # self.fake_other_nodes[node_id] = MockerNode(node_id, self.registry.others_address[node_id],
+            #                                             self.fake_layer2_node)
+
         for i in range(BHExecutionNodeGlobalConfig.EC_PARAMS_N - 1):
             node_id = BHExecutionNodeGlobalConfig.NODE_ID + i + 1
             self.registry.others_address[node_id] = BHExecutionAddress("127.0.0.1",
                                                                        port=self.registry.address.get_port() + 1 + i)
-            # self.mocker_executors[node_id] = MockerExecutor(node_id, self.registry.others_address[node_id], self.registry.channel) # 存储冗余数据块的路径
-            # self.fake_other_nodes[node_id] = MockerNode(node_id, self.registry.others_address[node_id],
-            #                                             self.fake_layer2_node)
         log.write_log("NETWORK", "GrpcEngine load config")
 
     def start_all(self):
