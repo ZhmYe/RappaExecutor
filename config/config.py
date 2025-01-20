@@ -1,8 +1,10 @@
 import json
 import os
-from utils.function.func import  get_project_root
+from utils.function.func import get_project_root
 from config.default import DEFAULT_NODE_ID, DEFAULT_RS_CODE_N, DEFAULT_RS_CODE_K, DEFAULT_GRPC_PORT, DEFAULT_NODE_IP, \
-    DEFAULT_LAYER2NODE_IP, DEFAULT_LAYER2NODE_PORT, DEFAULT_STORAGE_PATH, DEFAULT_LOG_PATH
+    DEFAULT_LAYER2NODE_IP, DEFAULT_LAYER2NODE_PORT, DEFAULT_STORAGE_PATH, DEFAULT_LOG_PATH, DEFAULT_NUM_PROCESS_WORKER, \
+    DEFAULT_REDUNDANCY, DEFAULT_OTHER_NODE_GRPC_ADDRESSES, DEFAULT_ALL_NODE_NUM
+
 
 # def load_config(config_file_path):
 #     """
@@ -34,11 +36,21 @@ class BHExecutionNodeGlobalConfig:
     EC_PARAMS_N = DEFAULT_RS_CODE_N
     EC_PARAMS_K = DEFAULT_RS_CODE_K
 
+    # 通讯节点地址（不包括自己）
+    OTHER_NODE_GRPC_ADDRESSES = DEFAULT_OTHER_NODE_GRPC_ADDRESSES
+
+    # 节点总数
+    ALL_NODE_NUM = DEFAULT_ALL_NODE_NUM
+
     NODE_IP = DEFAULT_NODE_IP
     GRPC_PORT = DEFAULT_GRPC_PORT
 
     LAYER2_ADDRESS_IP = DEFAULT_LAYER2NODE_IP
     LAYER_ADDRESS_PORT = DEFAULT_LAYER2NODE_PORT
+
+    NUM_PROCESS_WORKER = DEFAULT_NUM_PROCESS_WORKER
+
+    REDUNDANCY = DEFAULT_REDUNDANCY
 
     STORAGE_PATH = DEFAULT_STORAGE_PATH
     LOG_PATH = DEFAULT_LOG_PATH
@@ -64,12 +76,16 @@ class BHExecutionNodeGlobalConfig:
             "GRPC_PORT": cls.GRPC_PORT,
             "LAYER2_ADDRESS_IP": cls.LAYER2_ADDRESS_IP,
             "LAYER_ADDRESS_PORT": cls.LAYER_ADDRESS_PORT,
+            "OTHER_NODE_GRPC_ADDRESSES": cls.OTHER_NODE_GRPC_ADDRESSES,
+            "ALL_NODE_NUM": cls.ALL_NODE_NUM,
+            "NUM_PROCESS_WORKER": cls.NUM_PROCESS_WORKER,
+            "REDUNDANCY": cls.REDUNDANCY,
             "STORAGE_PATH": cls.STORAGE_PATH,
-            "LOG_PATH":cls.LOG_PATH
+            "LOG_PATH": cls.LOG_PATH
         }
 
         print("BHExecutionNodeGlobalConfig info:")
-        print("="*50)
+        print("=" * 50)
         for key, value in config_info.items():
             print(f"{key}: {value}")
 
@@ -87,6 +103,8 @@ class BHExecutionNodeGlobalConfig:
             for key, value in config_data.items():
                 if hasattr(cls, key):
                     setattr(cls, key, value)
+
+            setattr(cls, 'ALL_NODE_NUM', len(cls.OTHER_NODE_GRPC_ADDRESSES) + 1)
 
             print(f"Configuration loaded from {config_file_path}")
         except Exception as e:
