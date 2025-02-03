@@ -18,7 +18,7 @@ from paradigm.storage import ErasureCodeChunks, ErasureCodeChunk
     要注意，编码成bytes以后可能len(bytes)无法被nb_chunk也就是K整除，那么需要填充字段，padding_size记录这一填充长度，最后恢复的时候需要去掉
 """
 class ReedSolomonEncoder:
-    def __init__(self, k=BHExecutionNodeGlobalConfig.EC_PARAMS_K, n=BHExecutionNodeGlobalConfig.EC_PARAMS_N):
+    def __init__(self, k, n):
         self.n = n  # 总块数（n）
         self.k = k  # 数据块数（k）
         # self.load_config(config)
