@@ -4,7 +4,9 @@ from multiprocessing import Process
 from typing import List
 
 import pandas as pd
-from django.contrib.messages.constants import SUCCESS
+
+from config.config import BHExecutionNodeGlobalConfig
+# from django.contrib.messages.constants import SUCCESS
 
 from config.config import BHExecutionNodeGlobalConfig, STORE_METHOD_ENUM
 from logger.logger import logWriter as log
@@ -106,7 +108,7 @@ class Storager:
         chunks, commitment = chunker.chunk(output) # 对输出进行分块，得到chunks和commitment
         # 得到每个chunk的merkle proof
         merkle_proofs = [commitment.open(chunk) for chunk in chunks]
-        ec_encoder = ReedSolomonEncoder()
+        ec_encoder = ReedSolomonEncoder(BHExecutionNodeGlobalConfig.EC_PARAMS_N,BHExecutionNodeGlobalConfig.EC_PARAMS_K)
         encoded_packed_chunks:List[ErasureCodeChunks] = [ec_encoder.encode(chunk) for chunk in chunks] # 对每个分块进行ec冗余，这里每一个chunk是ErasureCodeChunks
         # TODO @YZM 这里先写成把每个chunk分开来发，后面要改成每个节点一下子发k块
         # 这里单独只给一个块的话，节点无法恢复行块，也就无法判断数据的commitment proof是否正确，因此需要将kzg commitment和merkle proof以及k块数据都发过去 todo

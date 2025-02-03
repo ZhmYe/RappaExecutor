@@ -1,4 +1,7 @@
 import argparse
+import multiprocessing
+import os
+import signal
 from multiprocessing import Process, Queue, Manager
 
 from mocker.mocker_collector import MockerCollector
@@ -21,6 +24,18 @@ warnings.filterwarnings("ignore")
 def load_config(args):
     BHExecutionNodeGlobalConfig.load_config(args)
     log.init()
+
+
+def init_pool() -> Queue:
+    return Queue()
+
+# 结束所有子进程
+def terminate_children(*args, **kwargs):
+    for p in multiprocessing.active_children():
+        p.terminate()
+    os._exit(0)
+
+
 
 if __name__ == '__main__':
 
@@ -56,6 +71,10 @@ if __name__ == '__main__':
 
     # ===================================== Collector, 测试恢复ec块, 仅用于测试 =====================================
     collector = MockerCollector(channel=channel)
+
+    #监听父进程状态，捕获结束信号
+    signal.signal(signal.SIGTERM, terminate_children)
+    signal.signal(signal.SIGINT, terminate_children)
 
     processes = [
         Process(target=grpc_engine.start_all),

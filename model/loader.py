@@ -7,6 +7,7 @@ from paradigm.model import ModelEnum, ModelInstance, load_model_args
 from tqdm import tqdm
 from logger.logger import logWriter as log
 
+
 class ModelLoader:
     def __init__(self, path):
         """
@@ -16,6 +17,7 @@ class ModelLoader:
             path (str): 模型文件所在目录路径。
         """
         self.path = path  # 模型文件路径
+
     def load_all_model_support(self):
         instances = {}
 
@@ -25,16 +27,21 @@ class ModelLoader:
         #                     bar_format="{l_bar}{bar:30}{r_bar}",  # 美化进度条
         #                     ncols=80)
 
-        for model_enum in [member.name for member in ModelEnum]:
-            # 根据模型名称设置不同的描述
-            # progress_bar.set_description(f"Loading {model_enum}")
-            # tqdm.write(f"Loading model: {model_enum}")
-            # 加载模型
-            instance = self.load(model_enum)
-            instances[model_enum] = instance
+        # for model_enum in [member.name for member in ModelEnum]:
+        #     # 根据模型名称设置不同的描述
+        #     # progress_bar.set_description(f"Loading {model_enum}")
+        #     # tqdm.write(f"Loading model: {model_enum}")
+        #     # 加载模型
+        #     instance = self.load(model_enum)
+        #     instances[model_enum] = instance
+        # TODO 这里先只加载CTGAN
+        model_enum = 'CTGAN'
+        instance = self.load(model_enum)
+        instances[model_enum] = instance
         log.write_log("INFO", "Load All Supported Model Success...")
 
         return instances
+
     def load(self, model_type):
         """
         加载指定类型的模型实例。
@@ -54,12 +61,12 @@ class ModelLoader:
         # config = ["CTGAN"]  # 如果有新模型类型，需要在此处扩展
 
         # 校验模型类型
-        assert model_type in [member.name for member in ModelEnum], f"Unsupported model type: {model_type}. Supported types: {[member.name for member in ModelEnum]}"
+        assert model_type in [member.name for member in
+                              ModelEnum], f"Unsupported model type: {model_type}. Supported types: {[member.name for member in ModelEnum]}"
 
         # 校验文件名格式
         # assert model_pth_name.endswith(".pth"), f"Invalid model file name: {model_pth_name}. Only '.pth' files are supported."
         # torch.manual_seed(0)
-
 
         # todo 这里需要写的规范一点，放到utils/function/func.py去
         # 根据模型类型加载实例
