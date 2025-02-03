@@ -12,7 +12,7 @@ from utils.cryptography.commitment.kzg.kzg_commitment import KZGCommitment
     NOTE: 这里是关于存储的部分
 """
 
-
+# TODO: 这里目前是在内存里记录了所有的storedChunk并且它的路径是可以得到的，是否可以用数据库？不然节点down了怎么办
 
 
 # 表示一个将被存储的文件块

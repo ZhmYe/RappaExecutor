@@ -1,3 +1,5 @@
+import time
+
 from model.loader import ModelLoader
 import unittest
 import os
@@ -11,6 +13,7 @@ class TestLoader(unittest.TestCase):
             print("===========================UNIT TEST LOADER===========================")
             loader = ModelLoader(model_path)
             instance = loader.load("AGGS")
+            start = time.time()
             output = instance.generate_output(10)
             print(output.format_json())
         except Exception as e:
