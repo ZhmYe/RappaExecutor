@@ -1,26 +1,19 @@
+
 import multiprocessing
 import os
 import signal
 from multiprocessing import Process, Queue
 import random
 from typing import Optional, List
-
-import pandas as pd
-
-from config.config import BHExecutionNodeGlobalConfig
+from config.config import BHExecutionNodeGlobalConfig, STORE_METHOD_ENUM
 from logger.logger import logWriter as log
-from mocker.mocker_executor import MockerExecutor
 from network.Grpc.grpc_client import GrpcClient
 from network.Grpc.grpc_registry import GrpcRegistry
 from network.Grpc.grpc_server import GrpcServer
 
 from network.format import BHExecutionAddress
 from paradigm.channel import Channel
-from paradigm.replicate import ReplicateChunk, ChunkReplicateRecord, ReplicatePackage
-from paradigm.slot import CommitSlotItem
-from paradigm.storage import ErasureCodeChunks, ErasureCodeChunk, ErasureCodeRecoverError
-from storage.encoder.rs_decoder import ReedSolomonDecoder
-from utils.function.func import get_project_root
+from paradigm.replicate import ReplicateChunk, ReplicatePackage
 
 
 class GrpcEngine:
@@ -125,7 +118,7 @@ class GrpcEngine:
         return True  # 如果分发有错误，要在这里返回
 
     def process_replicate_encoded_chunks(self):
-        # 发送数据块，redundancy表示是否需要额外冗余存储（纠删码一般不需要，多副本需要）
+        # 发送数据块
         # chunks是数据块，indices表示数据块位置索引
         # padding_size是填充0的数量
         """
@@ -178,6 +171,7 @@ class GrpcEngine:
                 self.registry.channel.to_storager_record_channel.put(iter_chunk_replicate_record)
             except Exception as e:
                 raise RuntimeError(e)
+
         # node_id_list: List[MockerExecutor] = [node_id for node_id in self.mocker_executors] # 这里简单起见这么先写
         # for (i, chunk) in enumerate(replicate_encoded_chunks):
         #     idx = i % len(node_id_list)

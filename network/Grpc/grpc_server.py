@@ -5,6 +5,7 @@ from google.protobuf.json_format import MessageToDict
 
 import network.Grpc.service.service_pb2_grpc as pb2_grpc
 import network.Grpc.service.service_pb2 as pb2
+from config.config import BHExecutionNodeGlobalConfig
 from network.Grpc.grpc_registry import GrpcRegistry
 from logger.logger import logWriter as log, logWriter
 from concurrent import futures
@@ -86,6 +87,7 @@ class GrpcServer(pb2_grpc.RappaExecutorServicer):
 
             )
             new_slot.set_hash(request.hash)
+            new_slot.set_store_method(BHExecutionNodeGlobalConfig.STORE_METHOD)
             log.write_log("NETWORK", f"receive Task {request.sign} Slot {request.slot} Schedule {request.hash}")
             self._registry.channel.to_slot_manager_channel.put(new_slot)
             return pb2.ScheduleResponse(accept=True, nodeId=self._registry.node_id, sign=request.sign)
