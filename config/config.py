@@ -1,32 +1,16 @@
 import json
 import os
+from enum import Enum, auto
 from utils.function.func import get_project_root
 from config.default import DEFAULT_NODE_ID, DEFAULT_RS_CODE_N, DEFAULT_RS_CODE_K, DEFAULT_GRPC_PORT, DEFAULT_NODE_IP, \
     DEFAULT_LAYER2NODE_IP, DEFAULT_LAYER2NODE_PORT, DEFAULT_STORAGE_PATH, DEFAULT_LOG_PATH, DEFAULT_NUM_PROCESS_WORKER, \
     DEFAULT_REDUNDANCY, DEFAULT_OTHER_NODE_GRPC_ADDRESSES, DEFAULT_ALL_NODE_NUM
 
 
-# def load_config(config_file_path):
-#     """
-#     从指定的 (JSON 或 INI)配置文件加载配置到全局配置类
-#     """
-#     if not os.path.exists(config_file_path):
-#         raise FileNotFoundError(f"config file not exists: {config_file_path}")
-
-#     ext = os.path.splitext(config_file_path)[-1].lower()
-#     if ext == ".json":
-#         with open(config_file_path, "r") as config_file:
-#             config_data = json.load(config_file)
-#     elif ext == ".ini":
-#         config = configparser.ConfigParser()
-#         config.read(config_file_path)
-#         config_data = {key: _convert_value(value) for key, value in config["DEFAULT"].items()}
-#     else:
-#         raise ValueError("Unsupported configuration file format. Please use a .json or .ini file.")
-
-#     for key, value in config_data.items():
-#         if hasattr(BHExecutionNodeGlobalConfig, key):
-#             setattr(BHExecutionNodeGlobalConfig, key, value)
+class STORE_METHOD_ENUM(Enum):
+    LOCAL = auto()
+    REPLICAS = auto()
+    EC = auto()
 
 # TODO @SD 这里需要全局的所有节点address和master本质上一样
 class BHExecutionNodeGlobalConfig:
@@ -54,6 +38,8 @@ class BHExecutionNodeGlobalConfig:
 
     STORAGE_PATH = DEFAULT_STORAGE_PATH
     LOG_PATH = DEFAULT_LOG_PATH
+    STORE_METHOD = STORE_METHOD_ENUM.EC
+    IS_CUDA = False
 
     @classmethod
     def set_debug(cls, debug):
@@ -61,12 +47,26 @@ class BHExecutionNodeGlobalConfig:
         根据命令行参数设置全局调试模式
         """
         cls.DEBUG = debug
-
+    @classmethod
+    def enable_cuda(cls):
+        cls.IS_CUDA = True
+    @classmethod
+    def set_store_method(cls, method):
+        if method == "ec":
+            cls.STORE_METHOD = STORE_METHOD_ENUM.EC
+        elif method == "local":
+            cls.STORE_METHOD = STORE_METHOD_ENUM.LOCAL
+        elif method == "replicas":
+            cls.STORE_METHOD = STORE_METHOD_ENUM.REPLICAS
+        else:
+            # 默认为ec
+            cls.STORE_METHOD = STORE_METHOD_ENUM.EC
     @classmethod
     def print_config(cls):
         """
         打印所有全局配置信息
         """
+
         config_info = {
             "DEBUG": cls.DEBUG,
             "NODE_ID": cls.NODE_ID,
@@ -90,12 +90,12 @@ class BHExecutionNodeGlobalConfig:
             print(f"{key}: {value}")
 
     @classmethod
-    def load_config(cls, config_file_path):
+    def load_config(cls, args):
         """
         从配置文件加载并更新全局配置
         """
         try:
-            config_file_path = os.path.join(get_project_root(), config_file_path)
+            config_file_path = os.path.join(get_project_root(), args.config)
             with open(config_file_path, 'r') as f:
                 config_data = json.load(f)
 
@@ -109,3 +109,9 @@ class BHExecutionNodeGlobalConfig:
             print(f"Configuration loaded from {config_file_path}")
         except Exception as e:
             print(f"Error loading configuration: {e},use default configuration")
+        cls.set_store_method(args.store)
+        cls.set_debug(args.debug)
+        if args.cuda:
+            cls.enable_cuda()
+        cls.print_config()
+
