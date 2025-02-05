@@ -54,7 +54,7 @@ def parse_args():
     # 这里将config.json作为参数传入
     parser.add_argument(
         "--config",
-        default="~/rappa/RappaMaster/config.json",
+        default="config.json",
         type=str,
         help="Enable config loading. Loading Config from the given path."
     )
