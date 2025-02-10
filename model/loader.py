@@ -27,19 +27,20 @@ class ModelLoader:
         #                     bar_format="{l_bar}{bar:30}{r_bar}",  # 美化进度条
         #                     ncols=80)
 
-        # for model_enum in [member.name for member in ModelEnum]:
+        for model_enum in [member.name for member in ModelEnum]:
         #     # 根据模型名称设置不同的描述
         #     # progress_bar.set_description(f"Loading {model_enum}")
         #     # tqdm.write(f"Loading model: {model_enum}")
-        #     log.write_log("INFO", "Start Load Model {}...".format(model_enum))
-
+            log.write_log("INFO", "Start Load Model {}...".format(model_enum))
+            if model_enum == "AGGS":
+                continue
         #     # 加载模型
-        #     instance = self.load(model_enum)
-        #     instances[model_enum] = instance
+            instance = self.load(model_enum)
+            instances[model_enum] = instance
         # TODO 这里先只加载CTGAN
-        model_enum = 'CTGAN'
-        instance = self.load(model_enum)
-        instances[model_enum] = instance
+        # model_enum = 'CTGAN'
+        # instance = self.load(model_enum)
+        # instances[model_enum] = instance
         log.write_log("INFO", "Load All Supported Model Success...")
 
         return instances
