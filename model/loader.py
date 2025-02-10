@@ -31,6 +31,8 @@ class ModelLoader:
         #     # 根据模型名称设置不同的描述
         #     # progress_bar.set_description(f"Loading {model_enum}")
         #     # tqdm.write(f"Loading model: {model_enum}")
+        #     log.write_log("INFO", "Start Load Model {}...".format(model_enum))
+
         #     # 加载模型
         #     instance = self.load(model_enum)
         #     instances[model_enum] = instance
