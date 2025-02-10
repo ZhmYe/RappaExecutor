@@ -53,11 +53,14 @@ class GrpcServer(pb2_grpc.RappaExecutorServicer):
                 del self._registry.channel.slot_buffer_share_dict[slot_hash]
                 # self._registry.slot_buffer[slot_hash] = slot
         # 简单获取一个内存占用
-        total_memory, used_memory, memory_usage = sys_monitor.get_memory_info()
-        status['memory_usage'] = str(memory_usage)
-        status['total_memory'] = str(total_memory)
-        status['used_memory'] = str(used_memory)
-
+        # TODO 这里要获取节点本地的状态信息： cpu使用情况， 磁盘使用情况，这里先写死
+        # total_memory, used_memory, memory_usage = sys_monitor.get_memory_info()
+        # status['memory_usage'] = str(memory_usage)
+        # status['total_memory'] = str(total_memory)
+        # status['used_memory'] = str(used_memory)
+        status["cpu"] = str(10)
+        status["disk"] = str(1)
+        status["total"] = str(2)
         return pb2.HeartbeatResponse(
             nodeId=int(self._registry.node_id),
             nodeStatus=status,
