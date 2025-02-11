@@ -2,6 +2,7 @@ import os
 
 from model.AGGS.instance import AGGS_MODEL_INSTANCE
 from model.CTGAN.instance import CTGAN_Model_Instance
+from model.FINKAN.instance import FINKAN_MODEL_INSTANCE
 from utils.function.func import get_model_params_dict
 from paradigm.model import ModelEnum, ModelInstance, load_model_args
 from tqdm import tqdm
@@ -82,6 +83,10 @@ class ModelLoader:
             instance = AGGS_MODEL_INSTANCE(model_args=model_args)
             return instance
             # 模型文件完整路径
+        if model_type == "FINKAN":
+            model_args = load_model_args(model=ModelEnum.FINKAN)
+            instance = FINKAN_MODEL_INSTANCE(model_args=model_args)
+            return instance
 
 
         else:

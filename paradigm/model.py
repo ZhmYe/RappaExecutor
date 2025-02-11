@@ -16,8 +16,9 @@ from utils.function.func import get_project_root
 
 
 class ModelEnum(Enum):
-    CTGAN = auto()
+    CTGAN = auto() # 测试用的ctgan模型
     AGGS  = auto() # 生成图数据的模型
+    FINKAN = auto() # 生成表格数据的模型
 
 class ModelArgs:
     def __init__(self, model_root, dataset, model_path, args_path, checkpoint_path):
@@ -53,6 +54,8 @@ def load_default_dataset(model: ModelEnum):
         return "elliptic"
     if model == ModelEnum.CTGAN:
         return "test"
+    if model == ModelEnum.FINKAN:
+        return "default of credit card clients"
 
 def load_model_args(model: ModelEnum, dataset=None, checkpoint=None) -> ModelArgs:
     project_root = get_project_root()
@@ -74,6 +77,14 @@ def load_model_args(model: ModelEnum, dataset=None, checkpoint=None) -> ModelArg
         path_args = None
         path_check = "{}/ctgan_model.pth".format(model_path)
         return ModelArgs(model_root,dataset, model_path, path_args, path_check)
+    if model == ModelEnum.FINKAN:
+        model_root = os.path.join(project_root, "model/FINKAN")
+        model_path = os.path.join(model_root, "model/")
+        path_args = os.path.join(model_root, "data")
+        # path_check = "{}/synthesizer_model.pth".format(model_path)
+        path_check = "{}/test.pth".format(model_path)
+
+        return ModelArgs(model_root, dataset, model_path, path_args, path_check)
 
 
 

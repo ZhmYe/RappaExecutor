@@ -46,7 +46,7 @@ def parse_args():
     )
     parser.add_argument(
         "--store",
-        default="ec",
+        default="local",
         type=str,
         help="Given file storage method: ec, local, replicas"
     )
