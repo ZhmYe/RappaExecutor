@@ -18,9 +18,7 @@ from task.TaskTracker import TaskTracker
 import warnings
 
 from utils.function.func import parse_args
-
 warnings.filterwarnings("ignore")
-
 def load_config(args):
     BHExecutionNodeGlobalConfig.load_config(args)
     log.init()

@@ -5,13 +5,27 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="a82bfccb-85f9-4672-96b4-dd064011af39" name="更改" comment="">
+      <change afterPath="$PROJECT_DIR$/model/FINKAN/component.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/model/FINKAN/instance.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/model/FINKAN/test.py" beforeDir="false" afterPath="$PROJECT_DIR$/model/FINKAN/test.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/model/loader.py" beforeDir="false" afterPath="$PROJECT_DIR$/model/loader.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/paradigm/model.py" beforeDir="false" afterPath="$PROJECT_DIR$/paradigm/model.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/uni_test/test_loader.py" beforeDir="false" afterPath="$PROJECT_DIR$/uni_test/test_loader.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/function/func.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/function/func.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Python Script" />
+      </list>
+    </option>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -31,7 +45,7 @@
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
     &quot;git-widget-placeholder&quot;: &quot;master&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/root/zkml_test/BHExecutionNode/model/AGGS&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/root/rappa/RappaExecutor/model/FINKAN/data&quot;,
     &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
     &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
     &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
@@ -47,7 +61,7 @@
       <window_info id="Commit_Guest" show_stripe_button="false" />
       <window_info id="Pull Requests" />
       <window_info id="Learn" />
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.096641935" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.22745022" />
       <window_info id="Commit" order="1" weight="0.25" />
       <window_info id="Structure" order="2" side_tool="true" weight="0.25" />
       <window_info anchor="bottom" id="Database Changes" />
@@ -55,10 +69,11 @@
       <window_info anchor="bottom" id="TODO" />
       <window_info anchor="bottom" id="HfCacheToolWindow" />
       <window_info anchor="bottom" id="File Transfer" />
+      <window_info anchor="bottom" id="Find" />
       <window_info anchor="bottom" id="Version Control" order="0" />
       <window_info anchor="bottom" id="Problems" order="1" />
-      <window_info anchor="bottom" id="Problems View" order="2" />
-      <window_info active="true" anchor="bottom" id="Terminal" order="3" visible="true" weight="0.5072917" />
+      <window_info anchor="bottom" id="Problems View" order="2" weight="0.5072917" />
+      <window_info anchor="bottom" id="Terminal" order="3" weight="0.5072917" />
       <window_info anchor="bottom" id="Services" order="4" />
       <window_info anchor="bottom" id="Python Packages" order="5" weight="0.1" />
       <window_info anchor="bottom" id="Python Console" order="6" weight="0.1" />
@@ -76,7 +91,11 @@
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/model/FINKAN/data" />
       <recent name="$PROJECT_DIR$/model/AGGS" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/model/FINKAN/model" />
     </key>
   </component>
   <component name="RunManager">
@@ -121,7 +140,9 @@
       <workItem from="1738659592174" duration="1823000" />
       <workItem from="1739178161058" duration="295000" />
       <workItem from="1739178461633" duration="964000" />
-      <workItem from="1739179759030" duration="323000" />
+      <workItem from="1739179759030" duration="7743000" />
+      <workItem from="1739259802944" duration="635000" />
+      <workItem from="1739260455877" duration="6953000" />
     </task>
     <servers />
   </component>
@@ -130,6 +151,6 @@
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/BHExecutionNode$.coverage" NAME=" 覆盖结果" MODIFIED="1739179294662" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/uni_test" />
-    <SUITE FILE_PATH="coverage/RappaExecutor$.coverage" NAME=" 覆盖结果" MODIFIED="1739180028672" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/uni_test" />
+    <SUITE FILE_PATH="coverage/RappaExecutor$.coverage" NAME=" 覆盖结果" MODIFIED="1739267183340" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/uni_test" />
   </component>
 </project>
