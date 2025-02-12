@@ -1,6 +1,7 @@
 import os
 
-from model.AGGS.instance import AGGS_MODEL_INSTANCE
+from model.ABM.instance import ABM_MODEL_INSTANCE
+from model.BAED.instance import BAED_MODEL_INSTANCE
 from model.CTGAN.instance import CTGAN_Model_Instance
 from model.FINKAN.instance import FINKAN_MODEL_INSTANCE
 from utils.function.func import get_model_params_dict
@@ -33,7 +34,7 @@ class ModelLoader:
         #     # progress_bar.set_description(f"Loading {model_enum}")
         #     # tqdm.write(f"Loading model: {model_enum}")
             log.write_log("INFO", "Start Load Model {}...".format(model_enum))
-            if model_enum == "AGGS":
+            if model_enum == "BAED":
                 continue
         #     # 加载模型
             instance = self.load(model_enum)
@@ -78,16 +79,19 @@ class ModelLoader:
             model_args = load_model_args(model=ModelEnum.CTGAN)
             instance = CTGAN_Model_Instance(model_args=model_args)
             return instance
-        if model_type == "AGGS":
-            model_args = load_model_args(model=ModelEnum.AGGS)
-            instance = AGGS_MODEL_INSTANCE(model_args=model_args)
+        if model_type == "BAED":
+            model_args = load_model_args(model=ModelEnum.BAED)
+            instance = BAED_MODEL_INSTANCE(model_args=model_args)
             return instance
             # 模型文件完整路径
         if model_type == "FINKAN":
             model_args = load_model_args(model=ModelEnum.FINKAN)
             instance = FINKAN_MODEL_INSTANCE(model_args=model_args)
             return instance
-
+        if model_type == "ABM":
+            model_args = load_model_args(model=ModelEnum.ABM)
+            instance = ABM_MODEL_INSTANCE(model_args=model_args)
+            return instance
 
         else:
             raise ValueError(f"Model type '{model_type}' is not implemented.")  # 理论上不会到这里

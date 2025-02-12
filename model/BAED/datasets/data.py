@@ -8,11 +8,11 @@ import random
 from utils.function.func import get_project_root
 from .data_utils import EmpiricalEmptyGraphGenerator, NeuralEmptyGraphGenerator, preprocess, collate_fn, FEATURE_EXTRACTOR
 from .evaluator import NetworkEvaluator, GenericGraphEvaluator
-from model.AGGS.gae.encoder import GCNEncoder
+from model.BAED.gae.encoder import GCNEncoder
 from torch_geometric.nn import GCNConv
 from torch_geometric.nn.models import GAE
 import sys
-sys.path.append(os.path.join(get_project_root(), "model/AGGS/gae"))
+sys.path.append(os.path.join(get_project_root(), "model/BAED/gae"))
 class NetworkDataset(Dataset):
     def __init__(self, pyg_graph, num_iter, transform=None):
         super().__init__()
@@ -186,7 +186,7 @@ def get_data(args):
 
         max_degree = max([max([d for n, d in train_nx_graph.degree()]) for train_nx_graph in train_nx_graphs])
         # # 加载GAE模型
-        # model = torch.load("/root/zkml_test/BHExecutionNode/AGGS/gae/weight/dgraph_gae_relu_32.pt")
+        # model = torch.load("/root/zkml_test/BHExecutionNode/BAED/gae/weight/dgraph_gae_relu_32.pt")
         model=None
 
         # 增加子图的节点特征属性

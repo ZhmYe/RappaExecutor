@@ -7,7 +7,7 @@ import sklearn
 import dgl
 from sklearn.preprocessing import StandardScaler
 
-from model.AGGS.eval_utils.evaluation.models.gin.gin import GIN
+from model.BAED.eval_utils.evaluation.models.gin.gin import GIN
 
 
 def load_feature_extractor(
