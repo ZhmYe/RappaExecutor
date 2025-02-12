@@ -1,15 +1,15 @@
 import pickle
 import torch
-from model.AGGS.datasets.data import get_data
-from model.AGGS.model import get_model
+from model.BAED.datasets.data import get_data
+from model.BAED.model import get_model
 from paradigm.model import ModelArgs, ModelFormatOutput, ModelEnum
 import torch_geometric as pyg
 import networkx as nx
 from logger.logger import logWriter as log
 
-class AGGS_MODEL_INSTANCE:
+class BAED_MODEL_INSTANCE:
     def __init__(self, model_args: ModelArgs):
-        self.name = ModelEnum.AGGS.name
+        self.name = ModelEnum.BAED.name
         self.model_args = model_args
         self.device = self._get_device()
         self.args = self._load_args()

@@ -1,7 +1,7 @@
-from model.AGGS.diffusion.diffusion_base import cosine_beta_schedule, linear_beta_schedule, Tt1_beta_schedule
-from model.AGGS.diffusion.diffusion_binomial_vanilla import BinomialDiffusionVanilla
-from model.AGGS.diffusion.diffusion_binomial_active import BinomialDiffusionActive
-from model.AGGS.layers.layers import *
+from model.BAED.diffusion.diffusion_base import cosine_beta_schedule, linear_beta_schedule, Tt1_beta_schedule
+from model.BAED.diffusion.diffusion_binomial_vanilla import BinomialDiffusionVanilla
+from model.BAED.diffusion.diffusion_binomial_active import BinomialDiffusionActive
+from model.BAED.layers.layers import *
 from functools import partial
 
 def add_model_args(parser):

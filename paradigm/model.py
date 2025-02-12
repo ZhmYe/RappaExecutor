@@ -17,8 +17,9 @@ from utils.function.func import get_project_root
 
 class ModelEnum(Enum):
     CTGAN = auto() # 测试用的ctgan模型
-    AGGS  = auto() # 生成图数据的模型
+    BAED  = auto() # 生成图数据的模型
     FINKAN = auto() # 生成表格数据的模型
+    ABM = auto() # 生成时序数据的模型
 
 class ModelArgs:
     def __init__(self, model_root, dataset, model_path, args_path, checkpoint_path):
@@ -43,19 +44,21 @@ class LoadModelParams:
 
 
 def load_default_checkpoint(model: ModelEnum):
-    if model == ModelEnum.AGGS:
+    if model == ModelEnum.BAED:
         return 49
     if model == ModelEnum.CTGAN:
         return -1
 
 
 def load_default_dataset(model: ModelEnum):
-    if model == ModelEnum.AGGS:
+    if model == ModelEnum.BAED:
         return "elliptic"
     if model == ModelEnum.CTGAN:
         return "test"
     if model == ModelEnum.FINKAN:
         return "default of credit card clients"
+    if model == ModelEnum.ABM:
+        return "SHL2_TAQ_600519_202401-202402_defreq"
 
 def load_model_args(model: ModelEnum, dataset=None, checkpoint=None) -> ModelArgs:
     project_root = get_project_root()
@@ -63,10 +66,10 @@ def load_model_args(model: ModelEnum, dataset=None, checkpoint=None) -> ModelArg
         dataset = load_default_dataset(model)
     if checkpoint is None:
         checkpoint = load_default_checkpoint(model)
-    if model == ModelEnum.AGGS:
-        # 参考AGGS/evaluate.py
+    if model == ModelEnum.BAED:
+        # 参考BAED/evaluate.py
         # TODO @YZM 这里需要有个check,判断checkpoint和dataset是否符合要求
-        model_root = os.path.join(project_root, "model/AGGS")
+        model_root = os.path.join(project_root, "model/BAED")
         model_path = os.path.join(model_root, "wandb/{}/multinomial_diffusion/multistep/{}".format(dataset, "2024-12-26_11-48-15")) # todo
         path_args = "{}/args.pickle".format(model_path)
         path_check = "{}/check/checkpoint_{}.pt".format(model_path, checkpoint)
@@ -83,7 +86,12 @@ def load_model_args(model: ModelEnum, dataset=None, checkpoint=None) -> ModelArg
         path_args = os.path.join(model_root, "data")
         # path_check = "{}/synthesizer_model.pth".format(model_path)
         path_check = "{}/test.pth".format(model_path)
-
+        return ModelArgs(model_root, dataset, model_path, path_args, path_check)
+    if model == ModelEnum.ABM:
+        model_root = os.path.join(project_root, "model/ABM")
+        model_path = os.path.join(model_root, "model/")
+        path_args = os.path.join(model_root, "data")
+        path_check = "{}/model_params.tsf".format(model_path)
         return ModelArgs(model_root, dataset, model_path, path_args, path_check)
 
 
