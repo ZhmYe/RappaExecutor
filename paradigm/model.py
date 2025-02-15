@@ -22,13 +22,13 @@ class ModelEnum(Enum):
     ABM = auto() # 生成时序数据的模型
 
 class ModelArgs:
-    def __init__(self, model_root, dataset, model_path, args_path, checkpoint_path):
+    def __init__(self, model_root, dataset, model_path, args_path, checkpoint_path, is_cuda=False):
         self.model_root = model_root
         self.dataset = dataset
         self.model_path = model_path
         self.args_path = args_path
         self.checkpoint_path = checkpoint_path
-        self.is_cuda = False
+        self.is_cuda = is_cuda
 
 
 class LoadModelParams:
@@ -60,7 +60,7 @@ def load_default_dataset(model: ModelEnum):
     if model == ModelEnum.ABM:
         return "SHL2_TAQ_600519_202401-202402_defreq"
 
-def load_model_args(model: ModelEnum, dataset=None, checkpoint=None) -> ModelArgs:
+def load_model_args(model: ModelEnum, dataset=None, checkpoint=None, is_cuda=False) -> ModelArgs:
     project_root = get_project_root()
     if dataset is None:
         dataset = load_default_dataset(model)
@@ -73,26 +73,26 @@ def load_model_args(model: ModelEnum, dataset=None, checkpoint=None) -> ModelArg
         model_path = os.path.join(model_root, "wandb/{}/multinomial_diffusion/multistep/{}".format(dataset, "2024-12-26_11-48-15")) # todo
         path_args = "{}/args.pickle".format(model_path)
         path_check = "{}/check/checkpoint_{}.pt".format(model_path, checkpoint)
-        return ModelArgs(model_root, dataset, model_path, path_args, path_check)
+        return ModelArgs(model_root, dataset, model_path, path_args, path_check, is_cuda=is_cuda)
     if model == ModelEnum.CTGAN:
         model_root = os.path.join(project_root, "model/CTGAN")
         model_path = os.path.join(model_root, "test")
         path_args = None
         path_check = "{}/ctgan_model.pth".format(model_path)
-        return ModelArgs(model_root,dataset, model_path, path_args, path_check)
+        return ModelArgs(model_root,dataset, model_path, path_args, path_check, is_cuda=is_cuda)
     if model == ModelEnum.FINKAN:
         model_root = os.path.join(project_root, "model/FINKAN")
         model_path = os.path.join(model_root, "model/")
         path_args = os.path.join(model_root, "data")
         # path_check = "{}/synthesizer_model.pth".format(model_path)
         path_check = "{}/test.pth".format(model_path)
-        return ModelArgs(model_root, dataset, model_path, path_args, path_check)
+        return ModelArgs(model_root, dataset, model_path, path_args, path_check, is_cuda=is_cuda)
     if model == ModelEnum.ABM:
         model_root = os.path.join(project_root, "model/ABM")
         model_path = os.path.join(model_root, "model/")
         path_args = os.path.join(model_root, "data")
         path_check = "{}/model_params.tsf".format(model_path)
-        return ModelArgs(model_root, dataset, model_path, path_args, path_check)
+        return ModelArgs(model_root, dataset, model_path, path_args, path_check, is_cuda=is_cuda)
 
 
 
