@@ -100,10 +100,10 @@ echo "启动节点：node${i}"
 # 以后台方式启动，并将进程 PID 写入 node.pid（放到上一级目录 nodeX 下）
 if [ "\$MODE" = "--debug" ]; then
   echo "节点 node${i}：进入调试模式..."
-  python main.py --debug &
+  python3 main.py --debug &
 else
   echo "节点 node${i}：进入生产模式..."
-  python main.py &
+  python3 main.py &
 fi
 
 # 将后台进程的 PID 写入 ../node.pid 文件
