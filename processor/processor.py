@@ -31,7 +31,7 @@ class Processor:
         model_path = get_model_root()
         log.write_log("INFO", "Init Processor with model from {}".format(model_path))
         loader = ModelLoader(model_path)
-        self.model_instances = loader.load_all_model_support()
+        self.model_instances = loader.load_all_model_support(is_cuda=BHExecutionNodeGlobalConfig.IS_CUDA)
     def process_unprocessed_slot(self):
         while True:
             try:

@@ -6,7 +6,6 @@ from model.CTGAN.instance import CTGAN_Model_Instance
 from model.FINKAN.instance import FINKAN_MODEL_INSTANCE
 from utils.function.func import get_model_params_dict
 from paradigm.model import ModelEnum, ModelInstance, load_model_args
-from tqdm import tqdm
 from logger.logger import logWriter as log
 
 
@@ -20,7 +19,7 @@ class ModelLoader:
         """
         self.path = path  # 模型文件路径
 
-    def load_all_model_support(self):
+    def load_all_model_support(self, is_cuda: bool):
         instances = {}
 
         # 初始化 tqdm 进度条
@@ -33,11 +32,11 @@ class ModelLoader:
         #     # 根据模型名称设置不同的描述
         #     # progress_bar.set_description(f"Loading {model_enum}")
         #     # tqdm.write(f"Loading model: {model_enum}")
-            log.write_log("INFO", "Start Load Model {}...".format(model_enum))
+            log.write_log("INFO", "Start Load Model {}, CUDA:{}...".format(model_enum, "true" if is_cuda else "false"))
             if model_enum == "BAED":
                 continue
         #     # 加载模型
-            instance = self.load(model_enum)
+            instance = self.load(model_enum, is_cuda)
             instances[model_enum] = instance
         # TODO 这里先只加载CTGAN
         # model_enum = 'CTGAN'
@@ -47,7 +46,7 @@ class ModelLoader:
 
         return instances
 
-    def load(self, model_type):
+    def load(self, model_type, is_cuda: bool):
         """
         加载指定类型的模型实例。
 
@@ -76,20 +75,20 @@ class ModelLoader:
         # todo 这里需要写的规范一点，放到utils/function/func.py去
         # 根据模型类型加载实例
         if model_type == "CTGAN":
-            model_args = load_model_args(model=ModelEnum.CTGAN)
+            model_args = load_model_args(model=ModelEnum.CTGAN, is_cuda=is_cuda)
             instance = CTGAN_Model_Instance(model_args=model_args)
             return instance
         if model_type == "BAED":
-            model_args = load_model_args(model=ModelEnum.BAED)
+            model_args = load_model_args(model=ModelEnum.BAED, is_cuda=is_cuda)
             instance = BAED_MODEL_INSTANCE(model_args=model_args)
             return instance
             # 模型文件完整路径
         if model_type == "FINKAN":
-            model_args = load_model_args(model=ModelEnum.FINKAN)
+            model_args = load_model_args(model=ModelEnum.FINKAN, is_cuda=is_cuda)
             instance = FINKAN_MODEL_INSTANCE(model_args=model_args)
             return instance
         if model_type == "ABM":
-            model_args = load_model_args(model=ModelEnum.ABM)
+            model_args = load_model_args(model=ModelEnum.ABM, is_cuda=is_cuda)
             instance = ABM_MODEL_INSTANCE(model_args=model_args)
             return instance
 
