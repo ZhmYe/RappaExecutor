@@ -92,9 +92,10 @@ class Storager:
             self._store_local(replicate_package) # 存在本地
         # 存完以后这个slot被标记为processed
         slot.sign_as_processed()
+        slot.set_commitment(commitment=commitment.commitment)
         self.channel.test_collect_output_channel.put((slot, output, 1))
         self.channel.to_slot_manager_channel.put(slot)
-        log.write_log("STORAGE", "finish store the data from {}".format(slot.hash))
+        log.write_log("STORAGE", "finish store the data from {}, commitment: {}".format(slot.hash, commitment.commitment))
         return commitment
 
     """
@@ -138,7 +139,7 @@ class Storager:
             # record.set_kzg_commitment(item_kzg_commitment.commitment)
             # record.set_kzg_proofs(kzg_proofs)
             self.channel.to_grpc_replicate_channel.put((record, replicate_encode_chunks))
-
+        slot.set_commitment(commitment=commitment.commitment)
         # 这里为了测试collect,将slot和output传递到MockerCollector
         self.channel.test_collect_output_channel.put((slot, output, len(encoded_packed_chunks)))
         log.write_log("STORAGE", "finish pass the data from Task {} Slot {} to grpc_engine".format(slot.sign, slot.slot))
