@@ -12,11 +12,14 @@ class GrpcRegistry:
         self.address = None
         # 当前layer2node的ip和端口
         self.layer2_address = None
+        # 节点数
+        self.node_num = 0
         # 其他节点的ip和端口
         self.others_address = {}
         # self.slot_hash = {}
-        self.slot_buffer = {} # 这里暂时先这样缓存一下 todo @YZM
+        self.slot_buffer = {}  # 这里暂时先这样缓存一下 todo @YZM
         self.channel: Channel = channel
+
     def check_channel_connect(self):
-        #todo
+        # todo
         pass
