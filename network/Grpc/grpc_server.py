@@ -12,6 +12,7 @@ from concurrent import futures
 import utils.system.sys_monitor as sys_monitor
 from paradigm.model import CommitSlotModelParams
 from paradigm.slot import CommitSlotItem
+from utils.system.sys_monitor import get_storage_info
 
 
 #  实现service中节点服务端相关rpc接口
@@ -52,15 +53,20 @@ class GrpcServer(pb2_grpc.RappaExecutorServicer):
                 # 删除buffer
                 del self._registry.channel.slot_buffer_share_dict[slot_hash]
                 # self._registry.slot_buffer[slot_hash] = slot
-        # 简单获取一个内存占用
+        # 简单获取一个磁盘占用
+        disk_used, disk_space = get_storage_info()
         # TODO 这里要获取节点本地的状态信息： cpu使用情况， 磁盘使用情况，这里先写死
         # total_memory, used_memory, memory_usage = sys_monitor.get_memory_info()
         # status['memory_usage'] = str(memory_usage)
         # status['total_memory'] = str(total_memory)
         # status['used_memory'] = str(used_memory)
+        # 这里先平均分配一下
+        node_num = self._registry.node_num
+        avg_disk_used = disk_used // node_num
+        avg_disk_space = disk_space // node_num
         status["cpu"] = str(10)
-        status["disk"] = str(1)
-        status["total"] = str(2)
+        status["disk"] = str(avg_disk_used // (1024 ** 3))
+        status["total"] = str(avg_disk_space // (1024 ** 3))
         return pb2.HeartbeatResponse(
             nodeId=int(self._registry.node_id),
             nodeStatus=status,
@@ -71,8 +77,8 @@ class GrpcServer(pb2_grpc.RappaExecutorServicer):
     def Schedule(self, request: pb2.ScheduleRequest, context):
         # print(request.nodeID, self._registry.node_id, request.nodeID == self._registry.node_id)
         if int(request.nodeID) == int(self._registry.node_id):
-        #
-        # if request.schedule.get(self._registry.node_id, 0) != 0:
+            #
+            # if request.schedule.get(self._registry.node_id, 0) != 0:
             # 节点在其调度内，将任务加入当前任务的队列中
             # new_task = PendingTaskPoolItem(
             #     request.sign, int(request.slot), request.schedule[self._registry.node_id], request.model,
@@ -99,7 +105,6 @@ class GrpcServer(pb2_grpc.RappaExecutorServicer):
             return pb2.ScheduleResponse(accept=False, nodeId=self._registry.node_id, sign=request.sign,
                                         errorMessage="The Node is not in schedule list.")
 
-
     # 服务端方法，用于处理收集请求
     def Collect(self, request: pb2.RecoverRequest, context):
         # 这里要将请求转给receiver，然后读出来
@@ -124,8 +129,9 @@ class GrpcServer(pb2_grpc.RappaExecutorServicer):
         # self._registry.channel.delete_connect_channel(str(request.mission))
         return pb2.RecoverResponse(chunks=chunks)
         # for slot_hash in slot_hashs:
-            # print(self._registry)
-            # chunks.extend(self._registry.channel.load_store_chunk(slot_hash=slot_hash))
+        # print(self._registry)
+        # chunks.extend(self._registry.channel.load_store_chunk(slot_hash=slot_hash))
+
     # 开启服务
     def start_server(self):
         self._core_server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))

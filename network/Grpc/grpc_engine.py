@@ -42,6 +42,7 @@ class GrpcEngine:
                                                    BHExecutionNodeGlobalConfig.GRPC_PORT)
         self.registry.layer2_address = BHExecutionAddress(BHExecutionNodeGlobalConfig.LAYER2_ADDRESS_IP,
                                                           BHExecutionNodeGlobalConfig.LAYER_ADDRESS_PORT)
+        self.registry.node_num=BHExecutionNodeGlobalConfig.ALL_NODE_NUM
         # 导入节点id
         self.registry.node_id = str(BHExecutionNodeGlobalConfig.NODE_ID)
         # 配置服务端
