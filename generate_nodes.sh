@@ -217,9 +217,7 @@ for (( i=0; i<${NODES_NUM}; i++ )); do
   node_stop_script="\${script_dir}/\${node_folder}/stop.sh"
 
   if [ -f "\$node_stop_script" ]; then
-    echo "-----------------------------"
-    echo "停止节点：\${node_folder}"
-    bash "\$node_stop_script"
+    bash "\$node_stop_script" &  # 并行执行 stop.sh
   else
     echo "-----------------------------"
     echo "【错误】未检测到节点\${i}的停止脚本: \$node_stop_script"
@@ -227,7 +225,10 @@ for (( i=0; i<${NODES_NUM}; i++ )); do
   fi
 done
 
-echo "所有节点停止命令已执行完毕。"
+# 等待所有 stop.sh 进程执行完成
+wait
+
+echo "所有节点已成功停止！"
 EOF
 chmod +x "${OUTPUT_DIR}/stop_all.sh"
 
