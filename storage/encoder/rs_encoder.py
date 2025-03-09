@@ -33,6 +33,7 @@ class ReedSolomonEncoder:
         if isinstance(data, pd.DataFrame):
             return self._process_dataframe_with_json(data)
         else:
+            # todo 这里还需要改
             raise ValueError("Unsupported data type. Only Pandas DataFrame is supported.")
 
     def decode(self, encoded_chunks, chunk_indices, padding_size) -> pd.DataFrame:

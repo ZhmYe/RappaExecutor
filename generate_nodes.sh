@@ -46,6 +46,13 @@ GENERATE_F=$((($NODES_NUM - 1) / 3))
 
 for ((i = 0; i < NODES_NUM; i++)); do
   node_folder="node${i}"
+
+  # 如果节点目录已存在，则跳过该节点
+  if [ -d "$node_folder" ]; then
+    echo "节点 ${node_folder} 已存在，跳过创建。"
+    continue  # 跳过当前循环，处理下一个节点
+  fi
+
   mkdir -p "$node_folder"
   cp -r "${code_path}" "${node_folder}/"
 

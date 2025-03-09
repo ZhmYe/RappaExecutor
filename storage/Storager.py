@@ -3,6 +3,8 @@ import threading
 from multiprocessing import Process
 from typing import List
 
+import networkx as nx
+import json
 import pandas as pd
 
 from config.config import BHExecutionNodeGlobalConfig
@@ -21,6 +23,7 @@ from storage.encoder.rs_encoder import ReedSolomonEncoder
 from utils.cryptography.commitment.kzg.kzg_commitment import KZGCommitment, KZGProof
 from utils.cryptography.commitment.merkle.merkle_root import MerkleCommitment
 from utils.cryptography.hash.hasher import Hasher
+from pandas import DataFrame
 
 """
     NOTE: Storager 2024-12-31 14:13 Version 0.1
@@ -42,7 +45,8 @@ class Storager:
         # 另外，冗余数据块索引还需要进行持久化，不然down了就没有索引了，用追加日志的方式 todo
         self.index = {}
         self.channel: Channel = channel
-        self.pending_slot_waiting_record = {} # 这里要记录那些在grpc转发的slot，等待返回的record
+        self.pending_slot_waiting_record = {}  # 这里要记录那些在grpc转发的slot，等待返回的record
+
     def process_unprocess_slot(self):
         while True:
             # Get a task from the task pool (blocking)
@@ -53,10 +57,12 @@ class Storager:
                 slot: CommitSlotItem = packed_slot_output[0]
                 output: ModelFormatOutput = packed_slot_output[1]
                 # commitment = self.compute_model_output_commitment(output) # 计算输出文件的承诺（和ec无关）
-                commitment: MerkleCommitment = self._commit_and_replicate(slot, output.output) # 这里要完成全部的任务： 1. commitment的计算; 2. 分发
+                commitment: MerkleCommitment = self._commit_and_replicate(slot,
+                                                                          output.output)  # 这里要完成全部的任务： 1. commitment的计算; 2. 分发
                 slot.set_commitment(commitment.commitment)
             except Exception as e:
                 raise RuntimeError(e)
+
     def _commit_and_replicate(self, slot: CommitSlotItem, output):
         # 如果是纠删码冗余存储
         if BHExecutionNodeGlobalConfig.STORE_METHOD == STORE_METHOD_ENUM.EC:
@@ -66,51 +72,60 @@ class Storager:
             return self._process_unprocess_slot_in_local(slot, output)
         if BHExecutionNodeGlobalConfig.STORE_METHOD == STORE_METHOD_ENUM.REPLICAS:
             raise RuntimeError("Replicas Store has not been impl...")
+
     """
         NOTE: 本地存储，不考虑节点崩溃容错，性能上肯定是最好的，无需通信和编码
         用于测试
     """
+
     # store_local 将分块存在本地，构建一个新的ReplicateChunk
     def _store_local(self, replicate_package: ReplicatePackage):
         # local_replicate_chunk = ReplicateChunk(col_index=col_index, chunk=chunk.chunk)
-        self.channel.to_receiver_chunk_store_channel.put(replicate_package) # 交给receiver处理
+        self.channel.to_receiver_chunk_store_channel.put(replicate_package)  # 交给receiver处理
+
     def _process_unprocess_slot_in_local(self, slot: CommitSlotItem, output):
         hasher = Hasher()
         chunker = Chunker(hasher=hasher)
-        chunks, commitment = chunker.chunk(output) # 对输出进行分块，得到chunks和commitment
+        chunks, commitment = chunker.chunk(output)  # 对输出进行分块，得到chunks和commitment
         # 得到每个chunk的merkle proof
-        merkle_proofs = [commitment.open(chunk) for chunk in chunks] # 这里的merkle proof考虑就是进行完整性的校验 todo 是否有必要？直接算一个哈希也行
+        merkle_proofs = [commitment.open(chunk) for chunk in chunks]  # 这里的merkle proof考虑就是进行完整性的校验 todo 是否有必要？直接算一个哈希也行
         for (row, chunk) in enumerate(chunks):
             # record = ChunkReplicateRecord(sign=slot.sign, slot=slot.slot, slot_hash=slot.hash, index=row, nb_chunk=1, merkle_proof= merkle_proofs[row],padding_size=0)
             # record.record_success_replicate(0, BHExecutionNodeGlobalConfig.NODE_IP)
-            replicate_package = ReplicatePackage(sign=slot.sign,slot=slot.slot, row_index=row, store_col_index=0, slot_hash=slot.hash, merkle_proof=merkle_proofs[row], kzg_commitment=None, padding_size=0)
+            replicate_package = ReplicatePackage(sign=slot.sign, slot=slot.slot, row_index=row, store_col_index=0,
+                                                 slot_hash=slot.hash, merkle_proof=merkle_proofs[row],
+                                                 kzg_commitment=None, padding_size=0)
             replicate_package.set_store_method(STORE_METHOD_ENUM.LOCAL)
-            serialized_df = chunk.to_json()
+            serialized_df = self.chunk2json(chunk)
             serialized_df_bytes = serialized_df.encode('utf-8')  # Convert JSON to bytes
             replicate_chunk = ReplicateChunk(col_index=0, chunk=serialized_df_bytes)
             replicate_package.add_chunk(replicate_chunk)
-            self._store_local(replicate_package) # 存在本地
+            self._store_local(replicate_package)  # 存在本地
         # 存完以后这个slot被标记为processed
         slot.sign_as_processed()
         slot.set_commitment(commitment=commitment.commitment)
         self.channel.test_collect_output_channel.put((slot, output, 1))
         self.channel.to_slot_manager_channel.put(slot)
-        log.write_log("STORAGE", "finish store the data from {}, commitment: {}".format(slot.hash, commitment.commitment))
+        log.write_log("STORAGE",
+                      "finish store the data from {}, commitment: {}".format(slot.hash, commitment.commitment))
         return commitment
 
     """
         NOTE: 纠删码冗余存储，将slot按行分块，然后每个行块进行纠删码编码
         保证每个行块的n个数据块，只要能收到k个就可以恢复
     """
+
     def _process_unprocess_slot_in_ec(self, slot: CommitSlotItem, output):
         # 计算output的commitment
         hasher = Hasher()
         chunker = Chunker(hasher=hasher)
-        chunks, commitment = chunker.chunk(output) # 对输出进行分块，得到chunks和commitment
+        chunks, commitment = chunker.chunk(output)  # 对输出进行分块，得到chunks和commitment
         # 得到每个chunk的merkle proof
         merkle_proofs = [commitment.open(chunk) for chunk in chunks]
-        ec_encoder = ReedSolomonEncoder(BHExecutionNodeGlobalConfig.EC_PARAMS_K,BHExecutionNodeGlobalConfig.EC_PARAMS_N)
-        encoded_packed_chunks:List[ErasureCodeChunks] = [ec_encoder.encode(chunk) for chunk in chunks] # 对每个分块进行ec冗余，这里每一个chunk是ErasureCodeChunks
+        ec_encoder = ReedSolomonEncoder(BHExecutionNodeGlobalConfig.EC_PARAMS_K,
+                                        BHExecutionNodeGlobalConfig.EC_PARAMS_N)
+        encoded_packed_chunks: List[ErasureCodeChunks] = [ec_encoder.encode(chunk) for chunk in
+                                                          chunks]  # 对每个分块进行ec冗余，这里每一个chunk是ErasureCodeChunks
         # TODO @YZM 这里先写成把每个chunk分开来发，后面要改成每个节点一下子发k块
         # 这里单独只给一个块的话，节点无法恢复行块，也就无法判断数据的commitment proof是否正确，因此需要将kzg commitment和merkle proof以及k块数据都发过去 todo
         slot.set_nb_chunks(len(encoded_packed_chunks))
@@ -132,17 +147,20 @@ class Storager:
                 replicate_encode_chunk = ReplicateChunk(col_index=col, chunk=chunk.chunk)
                 replicate_encode_chunk.set_kzg_proof(proof=kzg_proof)
                 replicate_encode_chunks.append(replicate_encode_chunk)
-                    # send_indices.append(i)
-                    # send_chunks.append(item.encoded_chunks[i].chunk)
+                # send_indices.append(i)
+                # send_chunks.append(item.encoded_chunks[i].chunk)
             # self.grpc_engine.replicate_encoded_chunks(slot.sign, slot.slot,send_chunks, send_indices, item.padding_size, False)
-            record = ChunkReplicateRecord(sign=slot.sign, slot= slot.slot, slot_hash=slot.hash, index=row, nb_chunk=len(replicate_encode_chunks), merkle_proof= merkle_proofs[row],padding_size=item.padding_size)
+            record = ChunkReplicateRecord(sign=slot.sign, slot=slot.slot, slot_hash=slot.hash, index=row,
+                                          nb_chunk=len(replicate_encode_chunks), merkle_proof=merkle_proofs[row],
+                                          padding_size=item.padding_size)
             # record.set_kzg_commitment(item_kzg_commitment.commitment)
             # record.set_kzg_proofs(kzg_proofs)
             self.channel.to_grpc_replicate_channel.put((record, replicate_encode_chunks))
         slot.set_commitment(commitment=commitment.commitment)
         # 这里为了测试collect,将slot和output传递到MockerCollector
         self.channel.test_collect_output_channel.put((slot, output, len(encoded_packed_chunks)))
-        log.write_log("STORAGE", "finish pass the data from Task {} Slot {} to grpc_engine".format(slot.sign, slot.slot))
+        log.write_log("STORAGE",
+                      "finish pass the data from Task {} Slot {} to grpc_engine".format(slot.sign, slot.slot))
         return commitment
 
     def _waiting_slot_to_be_replicate(self):
@@ -152,12 +170,14 @@ class Storager:
             if self.channel.to_storager_record_channel.empty():
                 continue
             try:
-                iter_chunk_replicate_record: ChunkReplicateRecord = self.channel.to_storager_record_channel.get(timeout=0.01)
+                iter_chunk_replicate_record: ChunkReplicateRecord = self.channel.to_storager_record_channel.get(
+                    timeout=0.01)
                 if iter_chunk_replicate_record.check() != ReplicateState.SUCCESS:
                     # 没有转发成功，这里暂时处理为直接报错 todo @YZM
                     raise ValueError("EC Params should be justified...")
                 if not self.pending_slot_waiting_record.get(iter_chunk_replicate_record.slot_hash):
-                    raise ValueError("{} does not been pending in Storager!!!".format(iter_chunk_replicate_record.slot_hash))
+                    raise ValueError(
+                        "{} does not been pending in Storager!!!".format(iter_chunk_replicate_record.slot_hash))
                 slot: CommitSlotItem = self.pending_slot_waiting_record[iter_chunk_replicate_record.slot_hash]
                 slot.update_record(iter_chunk_replicate_record)
                 self.pending_slot_waiting_record[iter_chunk_replicate_record.slot_hash] = slot
@@ -165,16 +185,26 @@ class Storager:
                     slot.sign_as_processed()
                     del self.pending_slot_waiting_record[iter_chunk_replicate_record.slot_hash]
                     self.channel.to_slot_manager_channel.put(slot)
-                    log.write_log("STORAGE", "finish replicate the data from Task {} Slot {}".format(slot.sign, slot.slot))
+                    log.write_log("STORAGE",
+                                  "finish replicate the data from Task {} Slot {}".format(slot.sign, slot.slot))
             except Exception as e:
                 raise RuntimeError(e)
-
 
     # todo 同上
     # 这里读出chunk的内容，自己先检查一遍完整性（其实也不需要，外面可能还要检查一遍？）
     def load_local(self, slot_hash, row_index):
-        self.channel.to_receiver_chunk_load_channel.put((slot_hash, row_index)) # 这里暂时先这样写 todo
+        self.channel.to_receiver_chunk_load_channel.put((slot_hash, row_index))  # 这里暂时先这样写 todo
         # return self.receiver.process_chunk_to_load(slot_hash=slot_hash, row_index=row_index)
+
+    # 将结果转换为json
+    def chunk2json(self, chunk):
+        if isinstance(chunk, DataFrame):
+            return chunk.to_json()
+        elif isinstance(chunk, list) and isinstance(chunk[0], nx.Graph):
+            json_chunk = []
+            for item in chunk:
+                json_chunk.append(nx.node_link_data(item))
+            return json.dumps(json_chunk)
 
     def start(self):
         # TODO 这里还有接收其它块的逻辑
@@ -187,8 +217,6 @@ class Storager:
 
     # def set_grpc(self, grpc_engine):
     #     self.grpc_engine = grpc_engine
-
-
 
     # # 模拟下一个collect的过程，为了拿到本地的就在这边简单模拟下
     # # 模拟下要收集这个节点在sign slot里合成的数据块

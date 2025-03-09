@@ -37,13 +37,13 @@ class BAED_MODEL_INSTANCE:
         pyg_datas = sampled_pygraph.to_data_list()
         generated_nxgraphs = []
 
+        # 这里把pyg转为json list
         for pyg_data in pyg_datas:
             g_gen = pyg.utils.to_networkx(pyg_data, to_undirected=True)
             largest_cc = max(nx.connected_components(g_gen), key=len)
             g_gen = g_gen.subgraph(largest_cc)
             generated_nxgraphs.append(g_gen)
 
-        # print("generated_nxgraphs:",generated_nxgraphs)
         return ModelFormatOutput(
             model_name=self.name,
             _input=_input,

@@ -2,7 +2,6 @@
     NOTE: Processor 对那些unprocessed的slot进行处理
     可以使用worker来进行并行
 """
-from multiprocessing import Process
 
 from config.config import BHExecutionNodeGlobalConfig
 from model.loader import ModelLoader

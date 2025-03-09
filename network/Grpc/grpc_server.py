@@ -134,7 +134,13 @@ class GrpcServer(pb2_grpc.RappaExecutorServicer):
 
     # 开启服务
     def start_server(self):
-        self._core_server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
+        self._core_server = grpc.server(
+            futures.ThreadPoolExecutor(max_workers=10),
+            options=[
+                ('grpc.max_receive_message_length', 1024 * 1024 * 1024),
+                ('grpc.max_send_message_length', 1024 * 1024 * 1024)
+            ]
+        )
         # 将服务添加到服务器
         pb2_grpc.add_RappaExecutorServicer_to_server(self, self._core_server)
         self._core_server.add_insecure_port(f"[::]:{self._registry.address.get_port()}")
