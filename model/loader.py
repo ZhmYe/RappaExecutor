@@ -33,8 +33,8 @@ class ModelLoader:
         #     # progress_bar.set_description(f"Loading {model_enum}")
         #     # tqdm.write(f"Loading model: {model_enum}")
             log.write_log("INFO", "Start Load Model {}, CUDA:{}...".format(model_enum, "true" if is_cuda else "false"))
-            if model_enum == "BAED":
-                continue
+            # if model_enum == "BAED":
+            #     continue
         #     # 加载模型
             instance = self.load(model_enum, is_cuda)
             instances[model_enum] = instance
