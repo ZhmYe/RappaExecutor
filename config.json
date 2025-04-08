@@ -2,6 +2,7 @@
   "GrpcPort": 50051,
   "HttpPort": 8080,
   "MaxEpochDelay ": 1,
+  "IS_CUDA": true,
   "MaxUnprocessedTaskPoolSize": 100,
   "MaxPendingSchedulePoolSize": 100,
   "MaxScheduledTasksPoolSize": 100,

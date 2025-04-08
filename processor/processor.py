@@ -2,6 +2,7 @@
     NOTE: Processor 对那些unprocessed的slot进行处理
     可以使用worker来进行并行
 """
+import torch.cuda
 
 from config.config import BHExecutionNodeGlobalConfig
 from model.loader import ModelLoader
@@ -23,6 +24,7 @@ class Processor:
         # self.unprocessed_queue = Queue()
         # self.model_instances = []
         self.model_instances = {}
+
     # def set_storager(self, storager: Storager):
     #     self.storager = storager
     def load_model_instance(self):
@@ -31,6 +33,7 @@ class Processor:
         log.write_log("INFO", "Init Processor with model from {}".format(model_path))
         loader = ModelLoader(model_path)
         self.model_instances = loader.load_all_model_support(is_cuda=BHExecutionNodeGlobalConfig.IS_CUDA)
+
     def process_unprocessed_slot(self):
         while True:
             try:
@@ -54,6 +57,7 @@ class Processor:
                 self.channel.to_storager_slot_channel.put((slot, output))
             except Exception as e:
                 raise RuntimeError(e)
+
     def start(self):
         self.load_model_instance()
         self.process_unprocessed_slot()
@@ -97,4 +101,3 @@ class Processor:
     #
     #         except Exception as e:
     #             log.write_log("ERROR", f"Worker encountered an error: {e}")
-

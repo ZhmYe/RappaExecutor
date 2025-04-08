@@ -18,6 +18,7 @@ class CTGAN_Model_Instance:
         self.model_args = model_args
         self.device = self._get_device()
         self.model = self.load()
+
     def _get_device(self):
         if self.model_args.is_cuda:
             return torch.device("cuda:0")
@@ -39,7 +40,8 @@ class CTGAN_Model_Instance:
                 batch_size=metadata['batch_size'],
                 epochs=metadata['epochs'],
                 generator_lr=metadata['generator_lr'],
-                discriminator_lr=metadata['discriminator_lr']
+                discriminator_lr=metadata['discriminator_lr'],
+                cuda=self.model_args.is_cuda,
             )
 
             # 恢复 _transformer
@@ -73,6 +75,7 @@ class CTGAN_Model_Instance:
         except Exception as e:
             log.write_log("ERROR", "Failed to load model from {}: {}".format(self.model_args.model_path, str(e)))
             raise RuntimeError("Failed to load CTGAN model.") from e
+
     def generate_input(self, params: dict = None):
         if params is None:
             return None, None
@@ -80,7 +83,8 @@ class CTGAN_Model_Instance:
             return params["condition_column"], params["condition_value"]
         else:
             return None, None
-    def generate_output(self, num_samples=1, params: dict=None) -> ModelFormatOutput:
+
+    def generate_output(self, num_samples=1, params: dict = None) -> ModelFormatOutput:
         """
         使用模型生成输出数据。
 

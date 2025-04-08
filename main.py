@@ -1,5 +1,4 @@
 import argparse
-import multiprocessing
 import os
 import signal
 from multiprocessing import Process, Queue, Manager
@@ -16,6 +15,7 @@ from storage.receiver.SimpleReceiver import SimpleReceiver
 from task.SlotManager import SlotManager
 from task.TaskTracker import TaskTracker
 import warnings
+import multiprocessing
 
 from utils.function.func import parse_args
 warnings.filterwarnings("ignore")
@@ -36,8 +36,11 @@ def terminate_children(*args, **kwargs):
 
 
 if __name__ == '__main__':
+    #监听父进程状态，捕获结束信号
+    signal.signal(signal.SIGTERM, terminate_children)
+    signal.signal(signal.SIGINT, terminate_children)
 
-# 解析命令行参数
+    # 解析命令行参数
     args = parse_args()
     load_config(args)  # 解析参数
     # 定义所有的channel
@@ -70,14 +73,10 @@ if __name__ == '__main__':
     # ===================================== Collector, 测试恢复ec块, 仅用于测试 =====================================
     collector = MockerCollector(channel=channel)
 
-    #监听父进程状态，捕获结束信号
-    signal.signal(signal.SIGTERM, terminate_children)
-    signal.signal(signal.SIGINT, terminate_children)
-
     processes = [
         Process(target=grpc_engine.start_all),
         Process(target=storager.start),
-        Process(target=processor.start),
+        # Process(target=processor.start),
         Process(target=task_tracker.start),
         Process(target=slot_manager.start),
         Process(target=collector.start),
@@ -88,6 +87,9 @@ if __name__ == '__main__':
     for process in processes:
         process.start()
 
-    # 等待所有进程完成
-    for process in processes:
-        process.join()
+    #TODO pytorch cuda放到子进程会有很多问题，这里暂时在主进程操作
+    processor.start()
+
+    # # 等待所有进程完成
+    # for process in processes:
+    #     process.join()
