@@ -1,9 +1,12 @@
+import os
 from multiprocessing import Queue, Manager
 
-from config.config import BHExecutionNodeGlobalConfig, STORE_METHOD_ENUM
-from paradigm.replicate import ReplicateChunk, ChunkReplicateRecord, ReplicatePackage
+from config.config import BHExecutionNodeGlobalConfig
+from utils.multiprocessing.dict import SuperSharedDict
+from paradigm.replicate import ReplicatePackage
 from paradigm.slot import CommitSlotItem
 from network.Grpc.service.service_pb2 import RecoverSlotChunk
+from utils.function.func import get_project_root
 
 
 class Channel:
@@ -21,7 +24,10 @@ class Channel:
         self.to_storager_record_channel: Queue = manager.Queue()
 
         self.slot_buffer_share_dict = manager.dict()
-        self.store_chunks = manager.dict()
+
+        # 这里加载数据库信息
+        self.store_chunks = SuperSharedDict(manager, os.path.join(get_project_root(), "store_chunks.db"), True,
+                                            BHExecutionNodeGlobalConfig.IS_RECOVERY)
 
         self.test_collect_output_channel = manager.Queue()
         self.test_collect_signal_channel = manager.Queue()
@@ -33,10 +39,15 @@ class Channel:
         # self.collect_pass_grpc_channel = manager.Queue()
 
         self.collect_connect_channel = manager.Queue()
+
     def update_store_chunk(self, slot_hash, new_store_chunk_item, row_index):
         if not self.store_chunks.get(slot_hash):
-            self.store_chunks[slot_hash] = self.manager.dict()
-        self.store_chunks[slot_hash][row_index] = new_store_chunk_item
+            chunks = self.manager.dict()
+        else:
+            chunks=self.store_chunks[slot_hash]
+        chunks[row_index] = new_store_chunk_item
+        self.store_chunks[slot_hash] = chunks
+
     # def create_connect_channel(self, mission):
     #     self.collect_connect_channel[mission] = self.manager.Queue()
     #     return self.collect_connect_channel[mission]
@@ -52,7 +63,6 @@ class Channel:
         if not self.store_chunks.get(slot_hash):
             return []
         for row_index, chunk in self.store_chunks[slot_hash].items():
-
             chunks.append(RecoverSlotChunk(
                 hash=chunk.slot_hash,
                 row=chunk.row_index,
@@ -96,8 +106,7 @@ class Channel:
             #             # print(f"Error processing file {new_path}: {e}")
             #             raise RuntimeError(f"Error processing file {new_path}: {e}")
 
-
-
         return chunks
+
     def update_slot_buff(self):
         pass

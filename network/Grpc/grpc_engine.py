@@ -14,6 +14,7 @@ from network.Grpc.grpc_server import GrpcServer
 from network.format import BHExecutionAddress
 from paradigm.channel import Channel
 from paradigm.replicate import ReplicateChunk, ReplicatePackage
+import threading
 
 
 class GrpcEngine:
@@ -67,13 +68,22 @@ class GrpcEngine:
     def start_all(self):
         self.load_config()
         # 监听父进程状态，捕获结束信号
-        signal.signal(signal.SIGTERM, self._terminate_children)
-        signal.signal(signal.SIGINT, self._terminate_children)
-        processes = [
-            Process(target=self.server.start_server),
-            Process(target=self.client.start_client),
-            Process(target=self.process_replicate_encoded_chunks)
+        # signal.signal(signal.SIGTERM, self._terminate_children)
+        # signal.signal(signal.SIGINT, self._terminate_children)
+        # processes = [
+        #     Thread(target=self.server.start_server),
+        #     Process(target=self.client.start_client),
+        #     Process(target=self.process_replicate_encoded_chunks)
+        # ]
+        threads=[
+            threading.Thread(target=self.server.start_server),
+            threading.Thread(target=self.client.start_client),
+            threading.Thread(target=self.process_replicate_encoded_chunks)
         ]
+        for t in threads:
+            t.start()
+        for t in threads:
+            t.join()
         # server_thread = threading.Thread(target=self.server.start_server)
         # 启动服务端线程
         # server_thread.start()
@@ -83,17 +93,17 @@ class GrpcEngine:
         #     mocker_executor = self.mocker_executors[node_id]
         #     mocker_executor.start() # 这里方便测试就是在同一个进程里
         # processes.append(Process(target=mocker_executor.start))
-        for process in processes:
-            process.start()
-        # self.process_test_collect()
-        for process in processes:
-            process.join()
+        # for process in processes:
+        #     process.start()
+        # # self.process_test_collect()
+        # for process in processes:
+        #     process.join()
 
     # 结束所有子进程
-    def _terminate_children(*args, **kwargs):
-        for p in multiprocessing.active_children():
-            p.terminate()
-        os._exit(0)
+    # def _terminate_children(*args, **kwargs):
+    #     for p in multiprocessing.active_children():
+    #         p.terminate()
+    #     os._exit(0)
 
         # todo ===============================暂未实现的GRPC服务====================================
 

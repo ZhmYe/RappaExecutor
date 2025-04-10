@@ -29,11 +29,18 @@ class GrpcClient:
                     "initialBackoff": "0.1s",
                     "maxBackoff": "2s",
                     "backoffMultiplier": 1.6,
-                    "retryableStatusCodes": ["UNAVAILABLE", "DEADLINE_EXCEEDED"]
+                    "retryableStatusCodes": [
+                        "UNAVAILABLE",
+                        "DEADLINE_EXCEEDED",
+                        "RESOURCE_EXHAUSTED",
+                        "INTERNAL",
+                        "ABORTED"
+                    ]
                 }
             }]
         })
         self._channel: Optional[Channel] = None
+
     # 客户端方法，分发冗余块
     def client_replicate_chunk(self):
         while True:
@@ -68,12 +75,12 @@ class GrpcClient:
                 # 发送grpc请求
                 stub = pb2_grpc.RappaMasterStub(self._channel)
                 commit_response: pb2.SlotCommitResponse = stub.CommitSlot(commit_request, timeout=10,
-                                                                            wait_for_ready=True)
+                                                                          wait_for_ready=True)
                 # 对提交结果进行处理
                 self._commit_result_process(commit_slot, commit_response)
                 # 处理结果,这里暂时只打印日志
                 log.write_log("NETWORK",
-                                f"successfully upload commit slot{commit_request.slot} of task{commit_request.sign}:[size:{commit_request.size}]")
+                              f"successfully upload commit slot{commit_request.slot} of task{commit_request.sign}:[size:{commit_request.size}]")
 
             except Exception as e:
                 log.write_log("ERROR", f"faild to commit slot because of {e}, retry...")
@@ -84,7 +91,7 @@ class GrpcClient:
         # 这里response应该暂时是不涉及invalid的
         # slot_hash = response.hash
         # slot.set_hash(slot_hash)
-        self._registry.channel.slot_buffer_share_dict[slot.hash] = slot # todo 暂时先这样写
+        self._registry.channel.slot_buffer_share_dict[slot.hash] = slot  # todo 暂时先这样写
         # self._registry.slot_hash[slot_hash] = True
         # self._registry.channel.to_slot_manager_channel.put(slot) # 传递到slot_channel
         pass
