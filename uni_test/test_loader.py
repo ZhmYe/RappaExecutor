@@ -12,7 +12,7 @@ class TestLoader(unittest.TestCase):
             model_path = get_model_root()
             print("===========================UNIT TEST LOADER===========================")
             loader = ModelLoader(model_path)
-            instance = loader.load("FINKAN", False)
+            instance = loader.load("BAED",True )
             start = time.time()
             output = instance.generate_output(1000)
             print(output.format_json())

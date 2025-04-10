@@ -69,6 +69,8 @@ for ((i = 0; i < NODES_NUM; i++)); do
   "LAYER_ADDRESS_PORT": 50051,
   "NUM_PROCESS_WORKER": 1,
   "STORAGE_PATH": "meta",
+  "IS_CUDA":true,
+  "IS_RECOVERY":true,
   "OTHER_NODE_GRPC_ADDRESSES": {
 EOF
 
