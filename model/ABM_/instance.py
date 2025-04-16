@@ -49,7 +49,7 @@ class ABM_MODEL_INSTANCE:
             _, _, market = simulate_market(traders, exchange, market, self.args.prices, self.args.dates, self.args.trader_type, self.args.params,
                                            num_samples)
             df_all.append(self._process_data(market))
-        dfs = pd.concat(df_all, axis=1)
+        dfs = pd.concat(df_all, axis=0)
         # print(len(samples_decoded))
         # print("generated_nxgraphs:",generated_nxgraphs)
         return ModelFormatOutput(
