@@ -88,7 +88,7 @@ def load_model_args(model: ModelEnum, dataset=None, checkpoint=None, is_cuda=Fal
         path_check = "{}/test.pth".format(model_path)
         return ModelArgs(model_root, dataset, model_path, path_args, path_check, is_cuda=is_cuda)
     if model == ModelEnum.ABM:
-        model_root = os.path.join(project_root, "model/ABM")
+        model_root = os.path.join(project_root, "model/ABM_")
         model_path = os.path.join(model_root, "model/")
         path_args = os.path.join(model_root, "data")
         path_check = "{}/model_params.tsf".format(model_path)

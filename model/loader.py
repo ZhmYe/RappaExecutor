@@ -1,6 +1,6 @@
 import os
 
-from model.ABM.instance import ABM_MODEL_INSTANCE
+from model.ABM_.instance import ABM_MODEL_INSTANCE
 from model.BAED.instance import BAED_MODEL_INSTANCE
 from model.CTGAN.instance import CTGAN_Model_Instance
 from model.FINKAN.instance import FINKAN_MODEL_INSTANCE
