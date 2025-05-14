@@ -24,6 +24,7 @@ class CTGAN_Model_Instance:
             return torch.device("cuda:0")
         else:
             return torch.device("cpu")
+
     def load(self):
         try:
             checkpoint_path = self.model_args.checkpoint_path
@@ -79,7 +80,7 @@ class CTGAN_Model_Instance:
     def generate_input(self, params: dict = None):
         if params is None:
             return None, None
-        if params["condition_column"] is not None and params["condition_value"] is not None:
+        if "condition_column" in params and "condition_value" in params:
             return params["condition_column"], params["condition_value"]
         else:
             return None, None
@@ -97,7 +98,10 @@ class CTGAN_Model_Instance:
         """
         try:
             condition_column, condition_value = self.generate_input(params)
-            synthetic_data = self.model.sample(num_samples, condition_column, condition_value)
+            if condition_column is not None and condition_value is not None:
+                synthetic_data = self.model.sample(num_samples, condition_column, condition_value)
+            else:
+                synthetic_data = self.model.sample(num_samples)
             log.write_log(
                 "MODEL",
                 "{} generated output, size: {}".format(self.name, len(synthetic_data))
