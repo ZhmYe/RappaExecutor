@@ -42,20 +42,16 @@ class ABM_MODEL_INSTANCE:
         # init samples to be generated
         args = self.args
         _input = self.generate_input()
-        df_all = []
-        for simulate_step in range(num_samples):
-            traders, exchange, market = create_instance(args.params, args.fundamental_value,args.prices)
-            # 市场模拟
-            _, _, market = simulate_market(traders, exchange, market, self.args.prices, self.args.dates, self.args.trader_type, self.args.params,
-                                           num_samples)
-            df_all.append(self._process_data(market))
-        dfs = pd.concat(df_all, axis=0)
+        traders, exchange, market = create_instance(args.params, args.fundamental_value,args.prices)
+        # 市场模拟
+        _, _, market = simulate_market(traders, exchange, market, self.args.prices, self.args.dates, self.args.trader_type, self.args.params,
+                                       num_samples)
         # print(len(samples_decoded))
         # print("generated_nxgraphs:",generated_nxgraphs)
         return ModelFormatOutput(
             model_name=self.name,
             _input=None,
-            output=dfs,
+            output=self._process_data(market),
             params=params
         )
 

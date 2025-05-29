@@ -14,7 +14,7 @@ class TestLoader(unittest.TestCase):
             loader = ModelLoader(model_path)
             instance = loader.load("ABM",True )
             start = time.time()
-            output = instance.generate_output(10)
+            output = instance.generate_output(16)
             print(output.format_json())
         except Exception as e:
             raise RuntimeError("Unit Test Loader Failed.") from e
