@@ -12,9 +12,9 @@ class TestLoader(unittest.TestCase):
             model_path = get_model_root()
             print("===========================UNIT TEST LOADER===========================")
             loader = ModelLoader(model_path)
-            instance = loader.load("FINKAN", False)
+            instance = loader.load("ABM",True )
             start = time.time()
-            output = instance.generate_output(1000)
+            output = instance.generate_output(16)
             print(output.format_json())
         except Exception as e:
             raise RuntimeError("Unit Test Loader Failed.") from e

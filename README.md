@@ -43,6 +43,37 @@ BHExecutionNode/
     └── function/          # 通用工具
         └── func.py        # 工具函数
 ```
+```
+BHExecutionNode/
+├── config/                # 全局配置模块
+├── logger/                # 日志管理模块
+├── mocker/
+├── model/                 # 模型加载和管理模块
+│   ├── ctgan/             # CTGAN 模型具体实现
+│   │   ├── instance.py    # CTGAN 模型实例
+│   │   └── test/          # 测试模型目录，包含权重文件
+│   ├── format.py          # 模型接口标准化
+│   └── loader.py          # 模型加载器
+├── network/               # 网络传输模块
+│   ├── Grpc/              # gRPC 实现
+│   │   ├── FakeGrpc.py    # 模拟 gRPC 服务
+│   │   └── grpc.py        # 实际 gRPC 服务
+│   └── Http/              # HTTP 实现（占位模块）
+├── paradigm/
+├── processor/
+├── storage/               # 数据存储模块
+├── task/
+├── uni_test/              # 单元测试模块
+└── utils/                 # 工具模块
+    ├── chunk/             # 数据分块工具
+    ├── cryptography/      # 加密相关工具
+    │   ├── commitment/    # Merkle 树实现
+    │   └── sha256.py      # 哈希算法实现
+    ├── ec/                # 纠删码实现
+    │   └── RSCode.py      # RS 编码模块
+    └── function/          # 通用工具
+        └── func.py        # 工具函数
+```
 
 ---
 

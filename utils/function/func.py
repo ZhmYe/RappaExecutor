@@ -1,7 +1,10 @@
 import argparse
 import os
 from multiprocessing import Queue
-
+import requests
+import json
+import os
+from logger.logger import logWriter as log
 
 
 # 这里放一些可以修改的用户定义的函数，比如路径什么的
@@ -68,3 +71,49 @@ def parse_args():
 
 def init_pool() -> Queue:
     return Queue()
+
+
+def trigger_zkml_proof(slot, zkml_config):
+    """
+    向 BH-ZKML 服务发送一个异步的证明生成请求 (fire-and-forget)。
+
+    Args:
+        slot (CommitSlotItem): 当前正在处理的 Slot 对象。
+        zkml_config (dict): 包含 ZKML 服务相关配置的字典。
+    """
+    # 需要在config中配置
+    zkml_url = zkml_config.get("url")
+    input_file_path = zkml_config.get("input_file")
+
+    if not zkml_url or not input_file_path:
+        log.write_log("ERROR", "ZKML URL or input file path not configured. Skipping proof trigger.")
+        return
+
+    if not os.path.exists(input_file_path):
+        log.write_log("ERROR", f"ZKML input file not found at: {input_file_path}. Skipping proof trigger.")
+        return
+
+    # 3. 构建请求体 (payload)
+    # ZKML 服务需要 sign 和 slot，从传入的 slot 对象中获取
+    payload = {
+        "input_file_name": input_file_path,
+        "sign": str(slot.sign),
+        "slot": int(slot.slot) 
+    }
+
+    # 4. 发送异步请求
+    try:
+        log.write_log("EXECUTION", f"Triggering ZKML proof for Slot {slot.sign}/{slot.slot} to {zkml_url}")
+        requests.post(
+            zkml_url, 
+            data=json.dumps(payload), 
+            headers={"Content-Type": "application/json"}, 
+            timeout=0.5  # 设置短暂的超时
+        )
+        log.write_log("EXECUTION", f"ZKML proof trigger request completed for Slot {slot.sign}/{slot.slot}.")
+    
+    except requests.exceptions.Timeout:
+        log.write_log("EXECUTION", f"Successfully triggered ZKML proof for Slot {slot.sign}/{slot.slot} (fire-and-forget).")
+    
+    except requests.exceptions.RequestException as e:
+        log.write_log("ERROR", f"Failed to trigger ZKML proof for Slot {slot.sign}/{slot.slot}. Error: {e}")

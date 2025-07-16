@@ -56,6 +56,13 @@ for ((i = 0; i < NODES_NUM; i++)); do
   mkdir -p "$node_folder"
   cp -r "${code_path}" "${node_folder}/"
 
+  # 计算存储路径 - 使用节点ID模7（1-7）来选择hdd目录
+  hdd_num=$((i % 7 + 1))
+  storage_path="/hdd${hdd_num}/node_${i}/meta"
+
+  # 创建实际的存储目录
+  mkdir -p "/hdd${hdd_num}/node_${i}"
+
   # 创建 config.json
   config_path="${node_folder}/RappaExecutor/config.json"
   cat <<EOF >$config_path
@@ -68,7 +75,7 @@ for ((i = 0; i < NODES_NUM; i++)); do
   "LAYER2_ADDRESS_IP": "127.0.0.1",
   "LAYER_ADDRESS_PORT": 50051,
   "NUM_PROCESS_WORKER": 1,
-  "STORAGE_PATH": "meta",
+  "STORAGE_PATH": "$storage_path",
   "IS_CUDA":true,
   "IS_RECOVERY":true,
   "OTHER_NODE_GRPC_ADDRESSES": {
@@ -234,6 +241,4 @@ echo "所有节点已成功停止！"
 EOF
 chmod +x "${OUTPUT_DIR}/stop_all.sh"
 
-echo "一键停止脚本：${OUTPUT_DIR}/stop_all.sh"
-
-echo "所有节点已生成完毕。"
+echo "一键停止脚本：${OUTPUT_DIR}/stop_all.sh

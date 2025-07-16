@@ -23,6 +23,7 @@
   "ErasureCodeParamN": 9,
   "ErasureCodeParamK": 6,
   "DEBUG": false,
+  "IsRecovery": true,
   "BHNodeAddressMap": {
     "0": {
       "NodeIPAddress": "127.0.0.1",
