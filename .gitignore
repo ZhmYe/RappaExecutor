@@ -1,4 +1,5 @@
 logs/
+venv/
 meta/
 uni_test/
 __pycache__/
