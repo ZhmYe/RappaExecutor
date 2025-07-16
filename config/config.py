@@ -42,6 +42,12 @@ class BHExecutionNodeGlobalConfig:
     STORE_METHOD = STORE_METHOD_ENUM.LOCAL
     IS_CUDA = False
 
+    #ZKML相关配置
+    ZKML_CONFIG = {
+        "url": "http://localhost:3000/request",
+        "input_file": ""
+    }
+
     @classmethod
     def set_debug(cls, debug):
         """
