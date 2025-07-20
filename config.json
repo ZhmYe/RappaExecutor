@@ -29,5 +29,9 @@
       "NodeIPAddress": "127.0.0.1",
       "NodeGrpcPort": 1234
     }
+  },
+  "ZKML_CONFIG": {
+    "url": "http://127.0.0.1:3000/request",
+    "input_file": "/root/BH-ZKML/examples/ctgan/example_inp.msgpack"
   }
 }

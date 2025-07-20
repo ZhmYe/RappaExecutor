@@ -5,7 +5,7 @@ import pickle as pkl
 from torch.utils.data import DataLoader, Dataset, ConcatDataset
 import random
 
-from utils.function.func import get_project_root
+from utils.function.path_utils import get_project_root
 from .data_utils import EmpiricalEmptyGraphGenerator, NeuralEmptyGraphGenerator, preprocess, collate_fn, FEATURE_EXTRACTOR
 from .evaluator import NetworkEvaluator, GenericGraphEvaluator
 from model.BAED.gae.encoder import GCNEncoder

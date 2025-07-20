@@ -12,8 +12,8 @@ from model.loader import ModelLoader
 from paradigm.channel import Channel
 from paradigm.model import CommitSlotModelParams
 from paradigm.slot import CommitSlotItem
-
-from utils.function.func import get_model_root, trigger_zkml_proof
+from utils.function.func import trigger_zkml_proof
+from utils.function.path_utils import get_model_root
 from logger.logger import logWriter as log
 
 
@@ -37,35 +37,6 @@ class Processor:
         loader = ModelLoader(model_path)
         self.model_instances = loader.load_all_model_support(is_cuda=BHExecutionNodeGlobalConfig.IS_CUDA)
 
-    def trigger_zkml_proof(slot, input_params):
-        """
-        向 BH-ZKML 服务发送一个异步的证明生成请求。
-        """
-        # 这里的路径需要根据实际部署 BH-ZKML 的位置来调整。
-        zkml_project_root = "/path/to/your/BH-ZKML" # <--- !!! 需要你手动配置这个路径
-        input_file_path = os.path.join(zkml_project_root, "examples/ctgan/example_inp.msgpack")
-
-        if not os.path.exists(input_file_path):
-            log.write_log("ERROR", f"ZKML input file not found at: {input_file_path}. Skipping proof trigger.")
-            return
-
-        # 2. 构建请求体
-        zkml_url = "http://localhost:3000/request"
-        payload = {
-            "input_file_name": input_file_path,
-            "sign": str(slot.sign),
-            "slot": int(slot.slot) 
-        }
-
-        # 3. 发送异步请求
-        try:
-            requests.post(zkml_url, data=json.dumps(payload), headers={"Content-Type": "application/json"}, timeout=0.5)
-            log.write_log("EXECUTION", f"Successfully triggered ZKML proof for Slot {slot.sign}/{slot.slot}.")
-        except requests.exceptions.Timeout:
-            log.write_log("EXECUTION", f"Triggered ZKML proof for Slot {slot.sign}/{slot.slot} (fire-and-forget).")
-        except requests.exceptions.RequestException as e:
-            log.write_log("ERROR", f"Failed to trigger ZKML proof for Slot {slot.sign}/{slot.slot}: {e}")
-
     def process_unprocessed_slot(self):
         while True:
             try:
@@ -86,9 +57,9 @@ class Processor:
                 output = model_instance.generate_output(slot.size, params.condition_params)  # 调用模型得到输出
                 # print(time.time() - startTime)
                 # self.storager.handle_slot_output(slot, output)  # 将输出和slot交给storager
-
+                # log.write_log("INFO", f"Slot {slot.sign}/{slot.slot} - condition_params: {params.condition_params}")
                 # 在将结果发送给 Storager 之前，异步触发 ZKML 证明
-                self.trigger_zkml_proof(slot, params.condition_params)
+                trigger_zkml_proof(slot, BHExecutionNodeGlobalConfig.ZKML_CONFIG)
 
                 self.channel.to_storager_slot_channel.put((slot, output))
             except Exception as e:

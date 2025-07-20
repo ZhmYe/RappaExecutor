@@ -13,7 +13,7 @@ from storage.encoder.rs_decoder import ReedSolomonDecoder
 from utils.cryptography.commitment.kzg.kzg_commitment import KZGProof
 from utils.cryptography.commitment.merkle.merkle_root import MerkleProof
 from utils.cryptography.hash.hasher import HashFunction
-from utils.function.func import get_project_root
+from utils.function.path_utils import get_project_root
 from logger.logger import logWriter as log
 
 class MockerReceiver:

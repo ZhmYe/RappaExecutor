@@ -69,8 +69,12 @@ for ((i = 0; i < NODES_NUM; i++)); do
   "LAYER_ADDRESS_PORT": 50051,
   "NUM_PROCESS_WORKER": 1,
   "STORAGE_PATH": "meta",
-  "IS_CUDA":true,
+  "IS_CUDA":false,
   "IS_RECOVERY":true,
+  "ZKML_CONFIG": {
+    "url": "http://127.0.0.1:3000/request",
+    "input_file": "/root/BH-ZKML/examples/ctgan/example_inp.msgpack"
+  },
   "OTHER_NODE_GRPC_ADDRESSES": {
 EOF
 

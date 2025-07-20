@@ -12,7 +12,7 @@ import os
 from abc import abstractmethod
 from enum import Enum, auto
 
-from utils.function.func import get_project_root
+from utils.function.path_utils import get_project_root
 
 
 class ModelEnum(Enum):

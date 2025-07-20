@@ -1,7 +1,7 @@
 import json
 import os
 from enum import Enum, auto
-from utils.function.func import get_project_root
+from utils.function.path_utils import get_project_root
 from config.default import DEFAULT_NODE_ID, DEFAULT_RS_CODE_N, DEFAULT_RS_CODE_K, DEFAULT_GRPC_PORT, DEFAULT_NODE_IP, \
     DEFAULT_LAYER2NODE_IP, DEFAULT_LAYER2NODE_PORT, DEFAULT_STORAGE_PATH, DEFAULT_LOG_PATH, DEFAULT_NUM_PROCESS_WORKER, \
     DEFAULT_REDUNDANCY, DEFAULT_OTHER_NODE_GRPC_ADDRESSES, DEFAULT_ALL_NODE_NUM, DEFAULT_IS_RECOVERY
@@ -45,7 +45,7 @@ class BHExecutionNodeGlobalConfig:
     #ZKML相关配置
     ZKML_CONFIG = {
         "url": "http://localhost:3000/request",
-        "input_file": ""
+        "input_file": "/root/BH-ZKML/examples/ctgan/example_inp.msgpack"
     }
 
     @classmethod

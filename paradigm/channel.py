@@ -6,7 +6,7 @@ from utils.multiprocessing.dict import SuperSharedDict
 from paradigm.replicate import ReplicatePackage
 from paradigm.slot import CommitSlotItem
 from network.Grpc.service.service_pb2 import RecoverSlotChunk
-from utils.function.func import get_project_root
+from utils.function.path_utils import get_project_root
 
 
 class Channel:

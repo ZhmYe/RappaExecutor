@@ -22,22 +22,29 @@ class ModelLoader:
     def load_all_model_support(self, is_cuda: bool):
         instances = {}
 
+        # 定义要加载的模型列表，目前只有 CTGAN
+        models_to_load = [ModelEnum.CTGAN.name,ModelEnum.ABM.name,ModelEnum.FINKAN.name]
         # 初始化 tqdm 进度条
         # progress_bar = tqdm([member.name for member in ModelEnum],
         #                     desc="Loading models",  # 初始描述
         #                     bar_format="{l_bar}{bar:30}{r_bar}",  # 美化进度条
         #                     ncols=80)
 
-        for model_enum in [member.name for member in ModelEnum]:
+        # for model_enum in [member.name for member in ModelEnum]:
+        for model_enum_name in models_to_load:
         #     # 根据模型名称设置不同的描述
         #     # progress_bar.set_description(f"Loading {model_enum}")
         #     # tqdm.write(f"Loading model: {model_enum}")
-            log.write_log("INFO", "Start Load Model {}, CUDA:{}...".format(model_enum, "true" if is_cuda else "false"))
+            # log.write_log("INFO", "Start Load Model {}, CUDA:{}...".format(model_enum, "true" if is_cuda else "false"))
+            log.write_log("INFO", f"Start Load Model {model_enum_name}, CUDA:{is_cuda}...")
             # if model_enum == "CTGAN":
             #     continue
         #     # 加载模型
-            instance = self.load(model_enum, is_cuda)
-            instances[model_enum] = instance
+            # instance = self.load(model_enum, is_cuda)
+            # instances[model_enum] = instance
+            instance = self.load(model_enum_name, is_cuda)
+            if instance:
+                instances[model_enum_name] = instance
         # TODO 这里先只加载CTGAN
         # model_enum = 'CTGAN'
         # instance = self.load(model_enum)

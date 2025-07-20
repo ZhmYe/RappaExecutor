@@ -1,28 +1,9 @@
 import argparse
-import os
 from multiprocessing import Queue
 import requests
 import json
 import os
 from logger.logger import logWriter as log
-
-
-# 这里放一些可以修改的用户定义的函数，比如路径什么的
-
-def get_project_root():
-    """
-    Get the root directory of the project by searching for a specific marker file.
-    """
-    current_dir = os.path.abspath(os.path.dirname(__file__))
-    while current_dir != os.path.dirname(current_dir):  # Stop at filesystem root
-        if ".project_root" in os.listdir(current_dir):  # Check for marker file
-            return current_dir
-        current_dir = os.path.dirname(current_dir)
-    raise FileNotFoundError("Project root marker file not found.")
-
-def get_model_root():
-    project_root = get_project_root()
-    return os.path.join(project_root, 'model')
 
 def get_model_params_dict(model_name):
     model_dict = {
@@ -35,7 +16,6 @@ def get_model_params_dict(model_name):
     if model_dict.get(model_name) is None:
         raise ValueError("model dict didn't save the model {}, please modify model_dict in utils/function/func.py".format(model_name))
     return model_dict[model_name]
-
 
 def parse_args():
     """
@@ -82,9 +62,11 @@ def trigger_zkml_proof(slot, zkml_config):
         zkml_config (dict): 包含 ZKML 服务相关配置的字典。
     """
     # 需要在config中配置
+    log.write_log("INFO", f"zkml_config: {zkml_config}")
+    
     zkml_url = zkml_config.get("url")
     input_file_path = zkml_config.get("input_file")
-
+    
     if not zkml_url or not input_file_path:
         log.write_log("ERROR", "ZKML URL or input file path not configured. Skipping proof trigger.")
         return
@@ -97,8 +79,8 @@ def trigger_zkml_proof(slot, zkml_config):
     # ZKML 服务需要 sign 和 slot，从传入的 slot 对象中获取
     payload = {
         "input_file_name": input_file_path,
-        "sign": str(slot.sign),
-        "slot": int(slot.slot) 
+        "sign": int(slot.node_id),  # <-- 使用节点的整数 ID 作为 sign
+        "slot": int(slot.slot)
     }
 
     # 4. 发送异步请求

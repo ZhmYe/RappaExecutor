@@ -1,7 +1,7 @@
 import logging
 import os
 from datetime import datetime
-from utils.function.func import  get_project_root
+from utils.function.path_utils import get_project_root
 from config.config import BHExecutionNodeGlobalConfig
 from pathlib import Path
 
