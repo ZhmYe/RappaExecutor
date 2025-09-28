@@ -732,7 +732,7 @@ class H2FDetector_layer(nn.Module):
 
     def message(self, edges):
         src = edges.src
-        src_features = edges.data['sign'].view(-1,1)*src['h']
+        src_features = edges.data['signer'].view(-1,1)*src['h']
         src_features = src_features.view(-1, self.head, self.hd)
         z = torch.cat([src_features, edges.dst['h'].view(-1, self.head, self.hd)], dim=-1)
         alpha = self.atten(z)
@@ -754,7 +754,7 @@ class H2FDetector_layer(nn.Module):
         src = edges.src['feat']
         dst = edges.dst['feat']
         score = self.relation_aware(src, dst)
-        return {'sign':torch.sign(score)}
+        return {'signer':torch.sign(score)}
 
 
 class RelationAware(nn.Module):

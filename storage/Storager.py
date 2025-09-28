@@ -17,6 +17,7 @@ from paradigm.model import ModelFormatOutput
 from paradigm.replicate import ChunkReplicateRecord, ReplicateState, ReplicatePackage
 from paradigm.slot import CommitSlotItem
 from paradigm.storage import ErasureCodeChunks, ErasureCodeChunk, ErasureCodeRecoverError, ReplicateChunk
+from signer.certification import CertificateManager
 from storage.chunker.chunker import Chunker
 from storage.encoder.rs_decoder import ReedSolomonDecoder
 from storage.encoder.rs_encoder import ReedSolomonEncoder
@@ -46,6 +47,8 @@ class Storager:
         self.index = {}
         self.channel: Channel = channel
         self.pending_slot_waiting_record = {}  # 这里要记录那些在grpc转发的slot，等待返回的record
+        # 用于签名
+        self.cert_manager = CertificateManager()
 
     def process_unprocess_slot(self):
         while True:
@@ -89,8 +92,10 @@ class Storager:
         chunks, commitment = chunker.chunk(output)  # 对输出进行分块，得到chunks和commitment
         # 得到每个chunk的merkle proof
         merkle_proofs = [commitment.open(chunk) for chunk in chunks]  # 这里的merkle proof考虑就是进行完整性的校验 todo 是否有必要？直接算一个哈希也行
+        # 一个总bytes,为其签名
+        total_bytes = b''
         for (row, chunk) in enumerate(chunks):
-            # record = ChunkReplicateRecord(sign=slot.sign, slot=slot.slot, slot_hash=slot.hash, index=row, nb_chunk=1, merkle_proof= merkle_proofs[row],padding_size=0)
+            # record = ChunkReplicateRecord(signer=slot.signer, slot=slot.slot, slot_hash=slot.hash, index=row, nb_chunk=1, merkle_proof= merkle_proofs[row],padding_size=0)
             # record.record_success_replicate(0, BHExecutionNodeGlobalConfig.NODE_IP)
             replicate_package = ReplicatePackage(sign=slot.sign, slot=slot.slot, row_index=row, store_col_index=0,
                                                  slot_hash=slot.hash, merkle_proof=merkle_proofs[row],
@@ -99,11 +104,15 @@ class Storager:
             serialized_df = self.chunk2json(chunk)
             serialized_df_bytes = serialized_df.encode('utf-8')  # Convert JSON to bytes
             replicate_chunk = ReplicateChunk(col_index=0, chunk=serialized_df_bytes)
+            total_bytes += serialized_df_bytes
             replicate_package.add_chunk(replicate_chunk)
             self._store_local(replicate_package)  # 存在本地
         # 存完以后这个slot被标记为processed
         slot.sign_as_processed()
         slot.set_commitment(commitment=commitment.commitment)
+        # 对total_bytes进行签名
+        signature = self.cert_manager.sign_data(total_bytes)
+        slot.set_nodeSign(signature)
         self.channel.test_collect_output_channel.put((slot, output, 1))
         self.channel.to_slot_manager_channel.put(slot)
         log.write_log("STORAGE",
@@ -114,7 +123,7 @@ class Storager:
         NOTE: 纠删码冗余存储，将slot按行分块，然后每个行块进行纠删码编码
         保证每个行块的n个数据块，只要能收到k个就可以恢复
     """
-
+    # 这一部分还没有实现签名
     def _process_unprocess_slot_in_ec(self, slot: CommitSlotItem, output):
         # 计算output的commitment
         hasher = Hasher()
@@ -149,7 +158,7 @@ class Storager:
                 replicate_encode_chunks.append(replicate_encode_chunk)
                 # send_indices.append(i)
                 # send_chunks.append(item.encoded_chunks[i].chunk)
-            # self.grpc_engine.replicate_encoded_chunks(slot.sign, slot.slot,send_chunks, send_indices, item.padding_size, False)
+            # self.grpc_engine.replicate_encoded_chunks(slot.signer, slot.slot,send_chunks, send_indices, item.padding_size, False)
             record = ChunkReplicateRecord(sign=slot.sign, slot=slot.slot, slot_hash=slot.hash, index=row,
                                           nb_chunk=len(replicate_encode_chunks), merkle_proof=merkle_proofs[row],
                                           padding_size=item.padding_size)

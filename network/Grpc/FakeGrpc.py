@@ -56,7 +56,7 @@ class FakeGrpcEngine:
         :param request: 模拟的请求数据。
         """
         # 将请求转为任务并放入队列
-        # sign = random.randint(1, 100)
+        # signer = random.randint(1, 100)
         # slot = random.randint(1, 100)
         fake_task = self.generate_fake_request("0x{}".format(self.sign), self.slot)
         self.pending_task_pool.put(fake_task)
@@ -93,7 +93,7 @@ class FakeGrpcEngine:
             index = indices[i]
             message = {
                 "node_id": BHExecutionNodeGlobalConfig.NODE_ID,
-                "sign": sign,
+                "signer": sign,
                 "slot": slot,
                 "index": index,
                 "data": chunk,

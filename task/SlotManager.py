@@ -1,7 +1,7 @@
 """
     NOTE: SlotManager管理节点收到的所有CommitSlotItem，并为他们赋予一个独特的index
 """
-from network.Grpc.grpc_engine import GrpcEngine
+
 from paradigm.channel import Channel
 from paradigm.slot import SlotState
 
@@ -59,7 +59,7 @@ class SlotManager:
                     self.channel.to_grpc_slot_channel.put(slot) # 传递给grpc_engine
                         # self.grpc_engine.process_undetermined_slot(slot)
                     # else:
-                    #     log.write_log("EXECUTION", "Update Undetermined Slot, Sign: {}, Slot: {}, Hash: {}".format(slot.sign, slot.slot, slot.hash))
+                    #     log.write_log("EXECUTION", "Update Undetermined Slot, Sign: {}, Slot: {}, Hash: {}".format(slot.signer, slot.slot, slot.hash))
 
                 if slot.is_justified():
                     # 这里说明slot已经通过投票， 这里暂时考虑为通过投票后才需要进行zkp生成，不然浪费资源 todo

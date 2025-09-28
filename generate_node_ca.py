@@ -36,6 +36,14 @@ def load_go_library(library_path='./libgo.so'):
     ]
     lib.C_GenerateCA.restype = ctypes.c_int
 
+    lib.C_VerifyCA.argtypes = [
+        ctypes.c_char_p, ctypes.c_int,  # publicKey, publicKeyLen
+        ctypes.c_char_p, ctypes.c_int,  # decryptKey, decryptKeyLen
+        ctypes.c_int, ctypes.c_int,  # epochLower, epochUpper
+        ctypes.c_char_p, ctypes.c_int,  # signature, signatureLen
+    ]
+    lib.C_VerifyCA.restype = ctypes.c_int
+
     return lib
 
 

@@ -1,8 +1,6 @@
-import pickle
-
-import networkx as nx
 import pandas as pd
 
+from signer.certification import CertificateManager
 from utils.cryptography.commitment.commitment_computer import CommitmentComputer, CommitmentType
 from utils.cryptography.commitment.merkle.merkle_root import MerkleCommitment
 from utils.cryptography.hash.hasher import Hasher, HashFunction

@@ -64,6 +64,7 @@ class GrpcClient:
             try:
                 commit_request = pb2.SlotCommitRequest(
                     nodeId=int(self._registry.node_id),
+                    nodeSign=commit_slot.node_sign,
                     sign=commit_slot.sign,
                     slot=commit_slot.slot,
                     size=commit_slot.size,
