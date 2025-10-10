@@ -20,7 +20,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   syntax='proto3',
   serialized_options=b'Z\010/service',
   create_key=_descriptor._internal_create_key,
-  serialized_pb=b'\n\rservice.proto\x12\x07service\x1a\x1cgoogle/protobuf/struct.proto\"\x8c\x01\n\rJustifiedSlot\x12\x0b\n\x03nid\x18\x01 \x01(\x05\x12\x0f\n\x07process\x18\x02 \x01(\x05\x12\x0c\n\x04sign\x18\x03 \x01(\t\x12\x0c\n\x04slot\x18\x04 \x01(\x05\x12\r\n\x05\x65poch\x18\x05 \x01(\x05\x12\x12\n\ncommitment\x18\x06 \x01(\x0c\x12\x0f\n\x07padding\x18\x07 \x03(\x05\x12\r\n\x05store\x18\x08 \x01(\x05\"\xd7\x03\n\x10HeartbeatRequest\x12\x37\n\x07\x63ommits\x18\x01 \x03(\x0b\x32&.service.HeartbeatRequest.CommitsEntry\x12=\n\njustifieds\x18\x02 \x03(\x0b\x32).service.HeartbeatRequest.JustifiedsEntry\x12;\n\tfinalizes\x18\x03 \x03(\x0b\x32(.service.HeartbeatRequest.FinalizesEntry\x12\x39\n\x08invalids\x18\x04 \x03(\x0b\x32\'.service.HeartbeatRequest.InvalidsEntry\x12\r\n\x05\x65poch\x18\x05 \x01(\x05\x1a.\n\x0c\x43ommitsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x0c:\x02\x38\x01\x1a\x31\n\x0fJustifiedsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x0c:\x02\x38\x01\x1a\x30\n\x0e\x46inalizesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x0c:\x02\x38\x01\x1a/\n\rInvalidsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x05:\x02\x38\x01\"\xb4\x01\n\x11HeartbeatResponse\x12\x0e\n\x06nodeId\x18\x01 \x01(\x05\x12>\n\nnodeStatus\x18\x02 \x03(\x0b\x32*.service.HeartbeatResponse.NodeStatusEntry\x12\x1c\n\x05votes\x18\x03 \x03(\x0b\x32\r.service.Vote\x1a\x31\n\x0fNodeStatusEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"U\n\x04Vote\x12\x0c\n\x04hash\x18\x01 \x01(\t\x12\x0e\n\x06nodeId\x18\x02 \x01(\x05\x12\x12\n\ncommitment\x18\x03 \x01(\x0c\x12\r\n\x05state\x18\x04 \x01(\x08\x12\x0c\n\x04\x64\x65sp\x18\x05 \x01(\t\"\x91\x01\n\x0fScheduleRequest\x12\x0c\n\x04sign\x18\x01 \x01(\t\x12\x0c\n\x04slot\x18\x02 \x01(\x05\x12\x0e\n\x06nodeID\x18\x03 \x01(\x05\x12\x0c\n\x04size\x18\x04 \x01(\x05\x12\r\n\x05model\x18\x05 \x01(\t\x12\'\n\x06params\x18\x06 \x01(\x0b\x32\x17.google.protobuf.Struct\x12\x0c\n\x04hash\x18\x07 \x01(\t\"V\n\x10ScheduleResponse\x12\x0e\n\x06\x61\x63\x63\x65pt\x18\x01 \x01(\x08\x12\x0e\n\x06nodeId\x18\x02 \x01(\t\x12\x0c\n\x04sign\x18\x03 \x01(\t\x12\x14\n\x0c\x65rrorMessage\x18\x04 \x01(\t\"\xb7\x01\n\x11SlotCommitRequest\x12\x0e\n\x06nodeId\x18\x01 \x01(\x05\x12\x10\n\x08nodeSign\x18\x02 \x01(\t\x12\x0c\n\x04sign\x18\x03 \x01(\t\x12\x0c\n\x04slot\x18\x04 \x01(\x05\x12\x0c\n\x04size\x18\x05 \x01(\x05\x12\x12\n\ncommitment\x18\x06 \x01(\x0c\x12\x0c\n\x04hash\x18\x07 \x01(\t\x12\x0f\n\x07padding\x18\x08 \x03(\x05\x12\r\n\x05store\x18\t \x01(\x05\x12\x14\n\x0c\x65rrorMessage\x18\n \x01(\t\"A\n\x12SlotCommitResponse\x12\x0c\n\x04seed\x18\x01 \x01(\x0c\x12\x0c\n\x04hash\x18\x02 \x01(\t\x12\x0f\n\x07timeout\x18\x03 \x01(\x05\"0\n\x0eRecoverRequest\x12\x0f\n\x07mission\x18\x01 \x01(\t\x12\r\n\x05hashs\x18\x02 \x03(\t\"I\n\x10RecoverSlotChunk\x12\x0c\n\x04hash\x18\x01 \x01(\t\x12\x0b\n\x03row\x18\x02 \x01(\x05\x12\x0b\n\x03\x63ol\x18\x03 \x01(\x05\x12\r\n\x05\x63hunk\x18\x04 \x01(\x0c\"<\n\x0fRecoverResponse\x12)\n\x06\x63hunks\x18\x01 \x03(\x0b\x32\x19.service.RecoverSlotChunk2T\n\x0bRappaMaster\x12\x45\n\nCommitSlot\x12\x1a.service.SlotCommitRequest\x1a\x1b.service.SlotCommitResponse2\xd2\x01\n\rRappaExecutor\x12\x42\n\tHeartbeat\x12\x19.service.HeartbeatRequest\x1a\x1a.service.HeartbeatResponse\x12?\n\x08Schedule\x12\x18.service.ScheduleRequest\x1a\x19.service.ScheduleResponse\x12<\n\x07\x43ollect\x12\x17.service.RecoverRequest\x1a\x18.service.RecoverResponseB\nZ\x08/serviceb\x06proto3'
+  serialized_pb=b'\n\rservice.proto\x12\x07service\x1a\x1cgoogle/protobuf/struct.proto\"\x8c\x01\n\rJustifiedSlot\x12\x0b\n\x03nid\x18\x01 \x01(\x05\x12\x0f\n\x07process\x18\x02 \x01(\x05\x12\x0c\n\x04sign\x18\x03 \x01(\t\x12\x0c\n\x04slot\x18\x04 \x01(\x05\x12\r\n\x05\x65poch\x18\x05 \x01(\x05\x12\x12\n\ncommitment\x18\x06 \x01(\x0c\x12\x0f\n\x07padding\x18\x07 \x03(\x05\x12\r\n\x05store\x18\x08 \x01(\x05\"\xd7\x03\n\x10HeartbeatRequest\x12\x37\n\x07\x63ommits\x18\x01 \x03(\x0b\x32&.service.HeartbeatRequest.CommitsEntry\x12=\n\njustifieds\x18\x02 \x03(\x0b\x32).service.HeartbeatRequest.JustifiedsEntry\x12;\n\tfinalizes\x18\x03 \x03(\x0b\x32(.service.HeartbeatRequest.FinalizesEntry\x12\x39\n\x08invalids\x18\x04 \x03(\x0b\x32\'.service.HeartbeatRequest.InvalidsEntry\x12\r\n\x05\x65poch\x18\x05 \x01(\x05\x1a.\n\x0c\x43ommitsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x0c:\x02\x38\x01\x1a\x31\n\x0fJustifiedsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x0c:\x02\x38\x01\x1a\x30\n\x0e\x46inalizesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x0c:\x02\x38\x01\x1a/\n\rInvalidsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x05:\x02\x38\x01\"\xb4\x01\n\x11HeartbeatResponse\x12\x0e\n\x06nodeId\x18\x01 \x01(\x05\x12>\n\nnodeStatus\x18\x02 \x03(\x0b\x32*.service.HeartbeatResponse.NodeStatusEntry\x12\x1c\n\x05votes\x18\x03 \x03(\x0b\x32\r.service.Vote\x1a\x31\n\x0fNodeStatusEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"U\n\x04Vote\x12\x0c\n\x04hash\x18\x01 \x01(\t\x12\x0e\n\x06nodeId\x18\x02 \x01(\x05\x12\x12\n\ncommitment\x18\x03 \x01(\x0c\x12\r\n\x05state\x18\x04 \x01(\x08\x12\x0c\n\x04\x64\x65sp\x18\x05 \x01(\t\"\x91\x01\n\x0fScheduleRequest\x12\x0c\n\x04sign\x18\x01 \x01(\t\x12\x0c\n\x04slot\x18\x02 \x01(\x05\x12\x0e\n\x06nodeID\x18\x03 \x01(\x05\x12\x0c\n\x04size\x18\x04 \x01(\x05\x12\r\n\x05model\x18\x05 \x01(\t\x12\'\n\x06params\x18\x06 \x01(\x0b\x32\x17.google.protobuf.Struct\x12\x0c\n\x04hash\x18\x07 \x01(\t\"V\n\x10ScheduleResponse\x12\x0e\n\x06\x61\x63\x63\x65pt\x18\x01 \x01(\x08\x12\x0e\n\x06nodeId\x18\x02 \x01(\t\x12\x0c\n\x04sign\x18\x03 \x01(\t\x12\x14\n\x0c\x65rrorMessage\x18\x04 \x01(\t\"\xc3\x01\n\x11SlotCommitRequest\x12\x0e\n\x06nodeId\x18\x01 \x01(\x05\x12\x10\n\x08nodeSign\x18\x02 \x01(\t\x12\n\n\x02\x63\x61\x18\x03 \x01(\t\x12\x0c\n\x04sign\x18\x04 \x01(\t\x12\x0c\n\x04slot\x18\x05 \x01(\x05\x12\x0c\n\x04size\x18\x06 \x01(\x05\x12\x12\n\ncommitment\x18\x07 \x01(\x0c\x12\x0c\n\x04hash\x18\x08 \x01(\t\x12\x0f\n\x07padding\x18\t \x03(\x05\x12\r\n\x05store\x18\n \x01(\x05\x12\x14\n\x0c\x65rrorMessage\x18\x0b \x01(\t\"R\n\x12SlotCommitResponse\x12\x0c\n\x04seed\x18\x01 \x01(\x0c\x12\x0c\n\x04hash\x18\x02 \x01(\t\x12\x0f\n\x07timeout\x18\x03 \x01(\x05\x12\x0f\n\x07isValid\x18\x04 \x01(\x08\"0\n\x0eRecoverRequest\x12\x0f\n\x07mission\x18\x01 \x01(\t\x12\r\n\x05hashs\x18\x02 \x03(\t\"I\n\x10RecoverSlotChunk\x12\x0c\n\x04hash\x18\x01 \x01(\t\x12\x0b\n\x03row\x18\x02 \x01(\x05\x12\x0b\n\x03\x63ol\x18\x03 \x01(\x05\x12\r\n\x05\x63hunk\x18\x04 \x01(\x0c\"<\n\x0fRecoverResponse\x12)\n\x06\x63hunks\x18\x01 \x03(\x0b\x32\x19.service.RecoverSlotChunk2T\n\x0bRappaMaster\x12\x45\n\nCommitSlot\x12\x1a.service.SlotCommitRequest\x1a\x1b.service.SlotCommitResponse2\xd2\x01\n\rRappaExecutor\x12\x42\n\tHeartbeat\x12\x19.service.HeartbeatRequest\x1a\x1a.service.HeartbeatResponse\x12?\n\x08Schedule\x12\x18.service.ScheduleRequest\x1a\x19.service.ScheduleResponse\x12<\n\x07\x43ollect\x12\x17.service.RecoverRequest\x1a\x18.service.RecoverResponseB\nZ\x08/serviceb\x06proto3'
   ,
   dependencies=[google_dot_protobuf_dot_struct__pb2.DESCRIPTOR,])
 
@@ -50,7 +50,7 @@ _JUSTIFIEDSLOT = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='signer', full_name='service.JustifiedSlot.signer', index=2,
+      name='sign', full_name='service.JustifiedSlot.sign', index=2,
       number=3, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
@@ -473,7 +473,7 @@ _SCHEDULEREQUEST = _descriptor.Descriptor(
   create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
-      name='signer', full_name='service.ScheduleRequest.signer', index=0,
+      name='sign', full_name='service.ScheduleRequest.sign', index=0,
       number=1, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
@@ -561,7 +561,7 @@ _SCHEDULERESPONSE = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='signer', full_name='service.ScheduleResponse.signer', index=2,
+      name='sign', full_name='service.ScheduleResponse.sign', index=2,
       number=3, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
@@ -614,57 +614,64 @@ _SLOTCOMMITREQUEST = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='signer', full_name='service.SlotCommitRequest.signer', index=2,
+      name='ca', full_name='service.SlotCommitRequest.ca', index=2,
       number=3, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='slot', full_name='service.SlotCommitRequest.slot', index=3,
-      number=4, type=5, cpp_type=1, label=1,
-      has_default_value=False, default_value=0,
+      name='sign', full_name='service.SlotCommitRequest.sign', index=3,
+      number=4, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='size', full_name='service.SlotCommitRequest.size', index=4,
+      name='slot', full_name='service.SlotCommitRequest.slot', index=4,
       number=5, type=5, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='commitment', full_name='service.SlotCommitRequest.commitment', index=5,
-      number=6, type=12, cpp_type=9, label=1,
-      has_default_value=False, default_value=b"",
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
-    _descriptor.FieldDescriptor(
-      name='hash', full_name='service.SlotCommitRequest.hash', index=6,
-      number=7, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=b"".decode('utf-8'),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
-    _descriptor.FieldDescriptor(
-      name='padding', full_name='service.SlotCommitRequest.padding', index=7,
-      number=8, type=5, cpp_type=1, label=3,
-      has_default_value=False, default_value=[],
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
-    _descriptor.FieldDescriptor(
-      name='store', full_name='service.SlotCommitRequest.store', index=8,
-      number=9, type=5, cpp_type=1, label=1,
+      name='size', full_name='service.SlotCommitRequest.size', index=5,
+      number=6, type=5, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='errorMessage', full_name='service.SlotCommitRequest.errorMessage', index=9,
-      number=10, type=9, cpp_type=9, label=1,
+      name='commitment', full_name='service.SlotCommitRequest.commitment', index=6,
+      number=7, type=12, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"",
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='hash', full_name='service.SlotCommitRequest.hash', index=7,
+      number=8, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='padding', full_name='service.SlotCommitRequest.padding', index=8,
+      number=9, type=5, cpp_type=1, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='store', full_name='service.SlotCommitRequest.store', index=9,
+      number=10, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='errorMessage', full_name='service.SlotCommitRequest.errorMessage', index=10,
+      number=11, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
@@ -682,7 +689,7 @@ _SLOTCOMMITREQUEST = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=1180,
-  serialized_end=1363,
+  serialized_end=1375,
 )
 
 
@@ -715,6 +722,13 @@ _SLOTCOMMITRESPONSE = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='isValid', full_name='service.SlotCommitResponse.isValid', index=3,
+      number=4, type=8, cpp_type=7, label=1,
+      has_default_value=False, default_value=False,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
   ],
   extensions=[
   ],
@@ -727,8 +741,8 @@ _SLOTCOMMITRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1365,
-  serialized_end=1430,
+  serialized_start=1377,
+  serialized_end=1459,
 )
 
 
@@ -766,8 +780,8 @@ _RECOVERREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1432,
-  serialized_end=1480,
+  serialized_start=1461,
+  serialized_end=1509,
 )
 
 
@@ -819,8 +833,8 @@ _RECOVERSLOTCHUNK = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1482,
-  serialized_end=1555,
+  serialized_start=1511,
+  serialized_end=1584,
 )
 
 
@@ -851,8 +865,8 @@ _RECOVERRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1557,
-  serialized_end=1617,
+  serialized_start=1586,
+  serialized_end=1646,
 )
 
 _HEARTBEATREQUEST_COMMITSENTRY.containing_type = _HEARTBEATREQUEST
@@ -1013,8 +1027,8 @@ _RAPPAMASTER = _descriptor.ServiceDescriptor(
   index=0,
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
-  serialized_start=1619,
-  serialized_end=1703,
+  serialized_start=1648,
+  serialized_end=1732,
   methods=[
   _descriptor.MethodDescriptor(
     name='CommitSlot',
@@ -1039,8 +1053,8 @@ _RAPPAEXECUTOR = _descriptor.ServiceDescriptor(
   index=1,
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
-  serialized_start=1706,
-  serialized_end=1916,
+  serialized_start=1735,
+  serialized_end=1945,
   methods=[
   _descriptor.MethodDescriptor(
     name='Heartbeat',

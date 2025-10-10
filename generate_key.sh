@@ -37,6 +37,4 @@ echo
 echo "========================================="
 echo "          PROCESS COMPLETE"
 echo "========================================="
-echo "Final files in directory:"
-ls -l host_*.key node_*.key node.ca
 echo

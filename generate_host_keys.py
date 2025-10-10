@@ -41,6 +41,14 @@ def load_go_library(library_path='./libgo.so'):
     ]
     lib.C_VerifyCA.restype = ctypes.c_int
 
+    # C_GenerateBLS12381Key
+    lib.C_GenerateBLS12381Key.argtypes = [
+        ctypes.c_char_p, ctypes.c_int,
+        ctypes.POINTER(ctypes.c_char_p), ctypes.POINTER(ctypes.c_int),
+        ctypes.POINTER(ctypes.c_char_p), ctypes.POINTER(ctypes.c_int)
+    ]
+    lib.C_GenerateBLS12381Key.restype = ctypes.c_int
+
     return lib
 
 

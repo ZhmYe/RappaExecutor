@@ -1,3 +1,4 @@
+import os
 import random
 from typing import Optional, List
 from config.config import BHExecutionNodeGlobalConfig, STORE_METHOD_ENUM
@@ -10,6 +11,8 @@ from network.format import BHExecutionAddress
 from paradigm.channel import Channel
 from paradigm.replicate import ReplicateChunk, ReplicatePackage
 import threading
+
+from signer.certification import CertificateManager
 
 
 class GrpcEngine:
@@ -38,9 +41,12 @@ class GrpcEngine:
                                                    BHExecutionNodeGlobalConfig.GRPC_PORT)
         self.registry.layer2_address = BHExecutionAddress(BHExecutionNodeGlobalConfig.LAYER2_ADDRESS_IP,
                                                           BHExecutionNodeGlobalConfig.LAYER_ADDRESS_PORT)
-        self.registry.node_num=BHExecutionNodeGlobalConfig.ALL_NODE_NUM
+        self.registry.node_num = BHExecutionNodeGlobalConfig.ALL_NODE_NUM
         # 导入节点id
         self.registry.node_id = str(BHExecutionNodeGlobalConfig.NODE_ID)
+        # 导入节点的证书
+        manager = CertificateManager()
+        self.registry.ca = manager.get_ca_base64()
         # 配置服务端
         self.server = GrpcServer(self.registry)
         # 配置客户端
@@ -50,9 +56,9 @@ class GrpcEngine:
         # for node_id, ITEM in BHExecutionNodeGlobalConfig.OTHER_NODE_GRPC_ADDRESSES.items():
         #     self.registry.others_address[int(node_id)] = BHExecutionAddress(ITEM['IP'],
         #                                                                port=ITEM['PORT'])
-            # self.mocker_executors[node_id] = MockerExecutor(node_id, self.registry.others_address[node_id], self.registry.channel) # 存储冗余数据块的路径
-            # self.fake_other_nodes[node_id] = MockerNode(node_id, self.registry.others_address[node_id],
-            #                                             self.fake_layer2_node)
+        # self.mocker_executors[node_id] = MockerExecutor(node_id, self.registry.others_address[node_id], self.registry.channel) # 存储冗余数据块的路径
+        # self.fake_other_nodes[node_id] = MockerNode(node_id, self.registry.others_address[node_id],
+        #                                             self.fake_layer2_node)
 
         for i in range(BHExecutionNodeGlobalConfig.EC_PARAMS_N - 1):
             node_id = BHExecutionNodeGlobalConfig.NODE_ID + i + 1
@@ -70,7 +76,7 @@ class GrpcEngine:
         #     Process(target=self.client.start_client),
         #     Process(target=self.process_replicate_encoded_chunks)
         # ]
-        threads=[
+        threads = [
             threading.Thread(target=self.server.start_server),
             threading.Thread(target=self.client.start_client),
             threading.Thread(target=self.process_replicate_encoded_chunks)
@@ -100,7 +106,7 @@ class GrpcEngine:
     #         p.terminate()
     #     os._exit(0)
 
-        # todo ===============================暂未实现的GRPC服务====================================
+    # todo ===============================暂未实现的GRPC服务====================================
 
     # todo @XQ 下面的内容要实现到grpc_client中去，主要就是分发数据块和收集数据块
 

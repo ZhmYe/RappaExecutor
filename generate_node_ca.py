@@ -44,11 +44,19 @@ def load_go_library(library_path='./libgo.so'):
     ]
     lib.C_VerifyCA.restype = ctypes.c_int
 
+    # C_GenerateBLS12381Key
+    lib.C_GenerateBLS12381Key.argtypes = [
+        ctypes.c_char_p, ctypes.c_int,
+        ctypes.POINTER(ctypes.c_char_p), ctypes.POINTER(ctypes.c_int),
+        ctypes.POINTER(ctypes.c_char_p), ctypes.POINTER(ctypes.c_int)
+    ]
+    lib.C_GenerateBLS12381Key.restype = ctypes.c_int
+
     return lib
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Generate node keys and a CA certificate signed by a host.")
+    parser = argparse.ArgumentParser(description="Generate node keys (Secp256k1 + BLS) and a CA certificate signed by a host.")
     parser.add_argument("--host-sk-file", required=True, help="Path to the host's Base64 encoded private key file.")
     args = parser.parse_args()
 
@@ -75,21 +83,47 @@ def main():
             ctypes.byref(node_pk_ptr), ctypes.byref(node_pk_len)
         )
         if ret != 0:
-            raise Exception("Failed to generate node keys.")
+            raise Exception("Failed to generate node secp256k1 keys.")
 
         node_sk_bytes = node_sk_ptr.value[:node_sk_len.value]
         node_pk_bytes = node_pk_ptr.value[:node_pk_len.value]
 
-        with open("certs/node_sk.key", 'w') as f:
+        os.makedirs("certs", exist_ok=True)
+
+        with open("certs/node_spec_sk.key", 'w') as f:
             f.write(base64.b64encode(node_sk_bytes).decode('utf-8'))
-        with open("certs/node_pk.key", 'w') as f:
+        with open("certs/node_spec_pk.key", 'w') as f:
             f.write(base64.b64encode(node_pk_bytes).decode('utf-8'))
 
-        print("Node keys saved to node_sk.key and node_pk.key")
+        print("Node Secp256k1 keys saved to node_sk.key and node_pk.key")
 
-        # 3. Generate CA certificate
+        # 3. Generate BLS12-381 keys
+        print("Generating BLS12-381 key pair for the node...")
+        bls_sk_ptr = ctypes.c_char_p()
+        bls_sk_len = ctypes.c_int()
+        bls_pk_ptr = ctypes.c_char_p()
+        bls_pk_len = ctypes.c_int()
+
+        ret = go_lib.C_GenerateBLS12381Key(
+            node_seed, len(node_seed),
+            ctypes.byref(bls_sk_ptr), ctypes.byref(bls_sk_len),
+            ctypes.byref(bls_pk_ptr), ctypes.byref(bls_pk_len)
+        )
+        if ret != 0:
+            raise Exception("Failed to generate BLS keys.")
+
+        bls_sk_bytes = bls_sk_ptr.value[:bls_sk_len.value]
+        bls_pk_bytes = bls_pk_ptr.value[:bls_pk_len.value]
+
+        with open("certs/node_bls_sk.key", 'w') as f:
+            f.write(base64.b64encode(bls_sk_bytes).decode('utf-8'))
+        with open("certs/node_bls_pk.key", 'w') as f:
+            f.write(base64.b64encode(bls_pk_bytes).decode('utf-8'))
+
+        print("BLS keys saved to node_bls_sk.key and node_bls_pk.key")
+
+        # 4. Generate CA certificate (using Secp256k1 PK)
         print("Generating CA certificate for the node...")
-        # 这里暂时假设是永久证书，即两个epoch均为-1
         epoch_lower = -1
         epoch_upper = -1
         ca_json_ptr = ctypes.c_char_p()
@@ -104,24 +138,20 @@ def main():
         if ret != 0:
             raise Exception("Failed to generate CA certificate.")
 
-        # <--- MODIFICATION START --->
-        # Get the raw JSON bytes from the Go function
         ca_json_bytes = ca_json_ptr.value[:ca_json_len.value]
-
-        # Encode the entire JSON output to Base64
         ca_base64_string = base64.b64encode(ca_json_bytes).decode('utf-8')
 
-        # Save the Base64 string to a file with a .b64 extension
         ca_filename = "certs/node.ca"
         with open(ca_filename, 'w') as f:
             f.write(ca_base64_string)
 
         print(f"CA certificate (Base64 encoded) saved to {ca_filename}")
-        # <--- MODIFICATION END --->
 
         # Clean up memory
         free(node_sk_ptr)
         free(node_pk_ptr)
+        free(bls_sk_ptr)
+        free(bls_pk_ptr)
         free(ca_json_ptr)
 
     except Exception as e:

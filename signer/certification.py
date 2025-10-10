@@ -17,9 +17,12 @@ class CertificateManager:
         self.cert_path = Path(get_project_root()) / BHExecutionNodeGlobalConfig.CERT_PATH
         self.lib = self._load_go_library(os.path.join(get_project_root(), 'signer/libgo.so'))
         # 这里加载节点的公钥、私钥、CA证书
-        self.publicKey = None
-        self.privateKey = None
+        self.spec_publicKey = None
+        self.spec_privateKey = None
+        self.bls_publicKey = None
+        self.bls_privateKey = None
         self.ca = None
+        self.ca_base64 = None
         self._load_certificates()
 
     # 加载动态链接库
@@ -56,33 +59,60 @@ class CertificateManager:
         ]
         lib.C_VerifyCA.restype = ctypes.c_int
 
+        # C_GenerateBLS12381Key
+        lib.C_GenerateBLS12381Key.argtypes = [
+            ctypes.c_char_p, ctypes.c_int,
+            ctypes.POINTER(ctypes.c_char_p), ctypes.POINTER(ctypes.c_int),
+            ctypes.POINTER(ctypes.c_char_p), ctypes.POINTER(ctypes.c_int)
+        ]
+        lib.C_GenerateBLS12381Key.restype = ctypes.c_int
+
         return lib
 
     def _load_certificates(self):
         """加载公钥、私钥和 CA 证书"""
-        # 加载公钥（base64 编码）
-        public_key_path = os.path.join(self.cert_path, 'node_pk.key')
+        # 加载spec公钥（base64 编码）
+        public_key_path = os.path.join(self.cert_path, 'node_spec_pk.key')
         if os.path.exists(public_key_path):
             with open(public_key_path, 'r') as f:
                 b64_data = f.read()
-                self.publicKey = base64.b64decode(b64_data)
+                self.spec_publicKey = base64.b64decode(b64_data)
         else:
-            raise FileNotFoundError(f"Public key file not found: {public_key_path}")
+            raise FileNotFoundError(f"Spec public key file not found: {public_key_path}")
 
-        # 加载私钥（base64 编码）
-        private_key_path = os.path.join(self.cert_path, 'node_sk.key')
+        # 加载spec私钥（base64 编码）
+        private_key_path = os.path.join(self.cert_path, 'node_spec_sk.key')
         if os.path.exists(private_key_path):
             with open(private_key_path, 'r') as f:
                 b64_data = f.read()
-                self.privateKey = base64.b64decode(b64_data)
+                self.spec_privateKey = base64.b64decode(b64_data)
         else:
-            raise FileNotFoundError(f"Private key file not found: {private_key_path}")
+            raise FileNotFoundError(f"Spec private key file not found: {private_key_path}")
+
+        # 加载bls公钥（base64 编码）
+        public_key_path = os.path.join(self.cert_path, 'node_bls_pk.key')
+        if os.path.exists(public_key_path):
+            with open(public_key_path, 'r') as f:
+                b64_data = f.read()
+                self.bls_publicKey = base64.b64decode(b64_data)
+        else:
+            raise FileNotFoundError(f"BLS public key file not found: {public_key_path}")
+        # 加载bls私钥（base64 编码）
+        private_key_path = os.path.join(self.cert_path, 'node_bls_sk.key')
+        if os.path.exists(private_key_path):
+            with open(private_key_path, 'r') as f:
+                b64_data = f.read()
+                self.bls_privateKey = base64.b64decode(b64_data)
+        else:
+            raise FileNotFoundError(f"BLS private key file not found: {private_key_path}")
+
 
         # 加载 CA 证书（JSON 格式）
         ca_path = os.path.join(self.cert_path, 'node.ca')
         if os.path.exists(ca_path):
             with open(ca_path, 'r', encoding='utf-8') as f:
                 b64_data = f.read()
+                self.ca_base64 = b64_data
                 self.ca = json.loads(base64.b64decode(b64_data))
                 # 解码 CA 证书中的公钥
                 self.ca['public_key'] = base64.b64decode(self.ca['public_key'])
@@ -116,7 +146,7 @@ class CertificateManager:
         """使用私钥对数据进行签名,并使用base64编码返回"""
         # 调用C_Sign函数
         sign_result = self.lib.C_Sign(
-            ctypes.c_char_p(self.privateKey), ctypes.c_int(len(self.privateKey)),
+            ctypes.c_char_p(self.spec_privateKey), ctypes.c_int(len(self.spec_publicKey)),
             ctypes.c_char_p(data), ctypes.c_int(len(data)),
             ctypes.POINTER(ctypes.c_char_p)(), ctypes.POINTER(ctypes.c_int)()
         )
@@ -124,4 +154,9 @@ class CertificateManager:
             raise ValueError(f"签名失败，错误码: {sign_result}")
         # 转换为base64编码
         return base64.b64encode(sign_result).decode('utf-8')
+
+    def get_ca_base64(self):
+        """返回CA证书的base64编码"""
+        return self.ca_base64
+
 
