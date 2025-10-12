@@ -12,7 +12,7 @@ import (
 	ecdsa_secp "github.com/consensys/gnark-crypto/ecc/secp256k1/ecdsa"
 )
 
-// C_SignSlot 导出版本 (Renamed from SignSlot)
+// C_SignSlot
 //export C_SignSlot
 func C_SignSlot(dataHash *C.char, dataHashLen C.int, secpSk *C.char, secpSkLen C.int, sig **C.char, sigLen *C.int, slotHash **C.char, slotHashLen *C.int) C.int {
 	dataHashBytes := C.GoBytes(unsafe.Pointer(dataHash), dataHashLen)

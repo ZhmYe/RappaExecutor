@@ -67,6 +67,15 @@ class CertificateManager:
         ]
         lib.C_GenerateBLS12381Key.restype = ctypes.c_int
 
+        # C_SignSlot
+        lib.C_SignSlot.argtypes = [
+            ctypes.c_char_p, ctypes.c_int,  # dataHash, dataHashLen
+            ctypes.c_char_p, ctypes.c_int,  # secpSk, secpSkLen
+            ctypes.POINTER(ctypes.c_char_p), ctypes.POINTER(ctypes.c_int),  # sig, sigLen
+            ctypes.POINTER(ctypes.c_char_p), ctypes.POINTER(ctypes.c_int)  # slotHash, slotHashLen
+        ]
+        lib.C_SignSlot.restype = ctypes.c_int
+
         return lib
 
     def _load_certificates(self):
@@ -143,17 +152,29 @@ class CertificateManager:
             raise FileNotFoundError(f"CA certificate file not found: {ca_path}")
 
     def sign_data(self, data: bytes):
-        """使用私钥对数据进行签名,并使用base64编码返回"""
-        # 调用C_Sign函数
-        sign_result = self.lib.C_Sign(
-            ctypes.c_char_p(self.spec_privateKey), ctypes.c_int(len(self.spec_publicKey)),
+        # For the output string parameters, we need to create proper pointer variables
+        sig = ctypes.c_char_p()
+        sigLen = ctypes.c_int(0)
+        slotHash = ctypes.c_char_p()
+        slotHashLen = ctypes.c_int(0)
+
+        # Call the C_SignSlot function with the correct pointer types
+        sign_result = self.lib.C_SignSlot(
             ctypes.c_char_p(data), ctypes.c_int(len(data)),
-            ctypes.POINTER(ctypes.c_char_p)(), ctypes.POINTER(ctypes.c_int)()
+            ctypes.c_char_p(self.spec_privateKey), ctypes.c_int(len(self.spec_privateKey)),
+            ctypes.byref(sig), ctypes.byref(sigLen),
+            ctypes.byref(slotHash), ctypes.byref(slotHashLen)
         )
+
+        # Check if the call was successful
         if sign_result != 0:
-            raise ValueError(f"签名失败，错误码: {sign_result}")
-        # 转换为base64编码
-        return base64.b64encode(sign_result).decode('utf-8')
+            raise Exception("Failed to sign slot")
+
+        # Extract the signature data
+        signature_data = ctypes.string_at(sig, sigLen)
+
+        # The method only returns the base64-encoded signature data
+        return base64.b64encode(signature_data).decode('utf-8')
 
     def get_ca_base64(self):
         """返回CA证书的base64编码"""
