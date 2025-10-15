@@ -85,8 +85,17 @@ def main():
         if ret != 0:
             raise Exception("Failed to generate node secp256k1 keys.")
 
-        node_sk_bytes = node_sk_ptr.value[:node_sk_len.value]
-        node_pk_bytes = node_pk_ptr.value[:node_pk_len.value]
+        node_sk_len_val = node_sk_len.value
+        node_pk_len_val = node_pk_len.value
+
+        if node_sk_len_val != 96:
+            raise Exception(f"Invalid SK length: {node_sk_len_val}, expected 96")
+        if node_pk_len_val != 64:
+            raise Exception(f"Invalid PK length: {node_pk_len_val}, expected 64")
+
+        # 使用 string_at 而不是 .value，因为 .value 会在遇到 \x00 时截断
+        node_sk_bytes = ctypes.string_at(node_sk_ptr, node_sk_len_val)
+        node_pk_bytes = ctypes.string_at(node_pk_ptr, node_pk_len_val)
 
         os.makedirs("certs", exist_ok=True)
 
@@ -112,8 +121,12 @@ def main():
         if ret != 0:
             raise Exception("Failed to generate BLS keys.")
 
-        bls_sk_bytes = bls_sk_ptr.value[:bls_sk_len.value]
-        bls_pk_bytes = bls_pk_ptr.value[:bls_pk_len.value]
+        bls_sk_len_val = bls_sk_len.value
+        bls_pk_len_val = bls_pk_len.value
+
+        # 使用 string_at 而不是 .value，因为 .value 会在遇到 \x00 时截断
+        bls_sk_bytes = ctypes.string_at(bls_sk_ptr, bls_sk_len_val)
+        bls_pk_bytes = ctypes.string_at(bls_pk_ptr, bls_pk_len_val)
 
         with open("certs/node_bls_sk.key", 'w') as f:
             f.write(base64.b64encode(bls_sk_bytes).decode('utf-8'))
@@ -138,7 +151,9 @@ def main():
         if ret != 0:
             raise Exception("Failed to generate CA certificate.")
 
-        ca_json_bytes = ca_json_ptr.value[:ca_json_len.value]
+        ca_json_len_val = ca_json_len.value
+        # 使用 string_at 而不是 .value
+        ca_json_bytes = ctypes.string_at(ca_json_ptr, ca_json_len_val)
         ca_base64_string = base64.b64encode(ca_json_bytes).decode('utf-8')
 
         ca_filename = "certs/node.ca"
