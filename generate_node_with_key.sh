@@ -11,7 +11,10 @@ host_key_script="generate_host_keys.py"
 
 NODES_NUM="${1:-}"
 if [[ -z "$NODES_NUM" ]]; then
-  echo "use: $0 <NODES_NUM> [OUTPUT_DIR]"
+  echo "使用方法: $0 <NODES_NUM> [OUTPUT_DIR]"
+  echo "参数说明:"
+  echo "  NODES_NUM    : 要生成的节点数量（正整数）"
+  echo "  OUTPUT_DIR   : 节点输出目录（可选，默认为当前目录）"
   exit 1
 fi
 
@@ -179,6 +182,194 @@ EOF
   )
 done
 
+# 创建参数化的启动脚本
+cat <<'EOF' >"./start_para.sh"
+#!/bin/bash
+
+script_dir="$(cd "$(dirname "$0")" && pwd)"
+PARALLEL="${1:-1}"
+TIMEOUT="${2:-600}"
+MODE="${3:-}"
+
+# 获取节点数量
+NODES_NUM=$(find "$script_dir" -mindepth 1 -maxdepth 1 -type d -name "node*" | wc -l)
+
+usage() {
+  echo "使用方法: $0 [PARALLEL] [TIMEOUT] [MODE]"
+  echo "参数说明:"
+  echo "  PARALLEL : 并行启动的节点数量，默认1（串行）"
+  echo "  TIMEOUT  : 等待节点加载的超时时间（秒），默认600秒"
+  echo "  MODE     : 启动模式，--debug 或 空（默认生产模式）"
+  echo ""
+  echo "示例:"
+  echo "  $0                    # 串行启动所有节点（生产模式）"
+  echo "  $0 2                  # 并行启动2个节点（生产模式）"
+  echo "  $0 2 300              # 并行启动2个节点，超时300秒"
+  echo "  $0 2 300 --debug      # 并行启动2个节点，超时300秒（调试模式）"
+}
+
+if [ "$1" = "-h" ] || [ "$1" = "--help" ]; then
+  usage
+  exit 0
+fi
+
+if ! [[ "$PARALLEL" =~ ^[0-9]+$ ]] || [ "$PARALLEL" -lt 1 ]; then
+  echo "错误: PARALLEL 必须是大于0的整数。" >&2
+  usage
+  exit 1
+fi
+
+if ! [[ "$TIMEOUT" =~ ^[0-9]+$ ]] || [ "$TIMEOUT" -lt 60 ]; then
+  echo "错误: TIMEOUT 必须是大于60的整数。" >&2
+  usage
+  exit 1
+fi
+
+if [ "$MODE" = "--debug" ]; then
+  echo "智能启动所有节点 (调试模式)..."
+else
+  echo "智能启动所有节点 (生产模式)..."
+fi
+echo "并行度: $PARALLEL"
+echo "超时时间: ${TIMEOUT}秒"
+echo "总节点数: ${NODES_NUM}"
+echo "-----------------------------"
+
+if [ "$NODES_NUM" -eq 0 ]; then
+  echo "错误: 未找到任何节点目录！"
+  exit 1
+fi
+
+# 查找最新日志文件的函数
+find_latest_log() {
+  local node_id="$1"
+  local log_dir="${script_dir}/node${node_id}/RappaExecutor/logs"
+  local latest_log=""
+  
+  if [ -d "$log_dir" ]; then
+    latest_log=$(ls -t "$log_dir" | grep "\.log$" | head -1)
+    if [ -n "$latest_log" ]; then
+      echo "${log_dir}/${latest_log}"
+    fi
+  fi
+}
+
+# 等待节点模型加载完成的函数
+wait_for_model_loading() {
+  local node_id="$1"
+  local node_name="node${node_id}"
+  local start_time=$(date +%s)
+  local log_file=""
+  
+  echo "等待节点 ${node_name} 模型加载..."
+  
+  # 先等待一段时间，让节点开始生成日志
+  sleep 10
+  
+  while true; do
+    local current_time=$(date +%s)
+    local elapsed=$((current_time - start_time))
+    
+    if [ $elapsed -gt $TIMEOUT ]; then
+      echo "【错误】节点 ${node_name} 模型加载超时（${TIMEOUT}秒）！"
+      return 1
+    fi
+    
+    # 查找最新的日志文件
+    log_file=$(find_latest_log "$node_id")
+    
+    if [ -n "$log_file" ] && [ -f "$log_file" ]; then
+      if grep -q "Load All Supported Model Success..." "$log_file"; then
+        echo "节点 ${node_name} 模型加载完成！"
+        return 0
+      fi
+      # 如果找到了日志文件但还没有成功消息，显示一些进度信息
+      if [ $((elapsed % 30)) -eq 0 ]; then
+        echo "节点 ${node_name} 仍在加载中... 已等待 ${elapsed} 秒"
+      fi
+    else
+      # 如果还没有日志文件，显示等待信息
+      if [ $((elapsed % 30)) -eq 0 ]; then
+        echo "节点 ${node_name} 正在启动... 已等待 ${elapsed} 秒"
+      fi
+    fi
+    
+    sleep 5
+  done
+}
+
+# 启动单个节点的函数
+start_single_node() {
+  local node_id="$1"
+  local node_folder="node${node_id}"
+  local node_start_script="${script_dir}/${node_folder}/start.sh"
+
+  if [ ! -f "$node_start_script" ]; then
+    echo "【错误】未检测到节点${node_id}的启动脚本: $node_start_script"
+    return 1
+  fi
+
+  echo "启动节点：${node_folder}"
+  bash "$node_start_script" "$MODE" &
+  local node_pid=$!
+  
+  # 等待节点模型加载完成
+  if wait_for_model_loading "$node_id"; then
+    wait $node_pid  # 等待进程正常结束
+    return 0
+  else
+    kill $node_pid 2>/dev/null  # 超时则杀死进程
+    return 1
+  fi
+}
+
+# 按批次启动节点
+current_batch=()
+success_count=0
+fail_count=0
+
+for (( i=0; i<NODES_NUM; i++ )); do
+  # 启动当前节点
+  start_single_node "$i" &
+  current_batch+=($!)
+  
+  # 如果达到并行度，等待当前批次完成
+  if [ ${#current_batch[@]} -eq "$PARALLEL" ]; then
+    for pid in "${current_batch[@]}"; do
+      if wait $pid; then
+        ((success_count++))
+      else
+        ((fail_count++))
+      fi
+    done
+    current_batch=()
+    echo "当前批次完成，成功: ${success_count}, 失败: ${fail_count}"
+  fi
+done
+
+# 等待剩余批次完成
+if [ ${#current_batch[@]} -gt 0 ]; then
+  for pid in "${current_batch[@]}"; do
+    if wait $pid; then
+      ((success_count++))
+    else
+      ((fail_count++))
+    fi
+  done
+fi
+
+echo "================================="
+echo "所有节点启动完成！"
+echo "成功: ${success_count}, 失败: ${fail_count}"
+echo "================================="
+
+if [ "$fail_count" -gt 0 ]; then
+  exit 1
+fi
+EOF
+chmod +x "./start_para.sh"
+
+# 保留原有的并行启动脚本
 cat <<EOF >"./start_all.sh"
 #!/bin/bash
 
@@ -186,9 +377,13 @@ script_dir="\$(cd "\$(dirname "\$0")" && pwd)"
 MODE="\$1"
 
 if [ "\$MODE" = "--debug" ]; then
-  echo "启动所有节点 (调试模式)..."
+  echo "并行启动所有节点 (调试模式)..."
+  echo "警告: 此脚本会同时启动所有节点，在无GPU环境下可能导致CPU过载！"
+  echo "推荐使用: ./start_para.sh [MODE] [PARALLEL] [TIMEOUT]"
 else
-  echo "启动所有节点 (生产模式)..."
+  echo "并行启动所有节点 (生产模式)..."
+  echo "警告: 此脚本会同时启动所有节点，在无GPU环境下可能导致CPU过载！"
+  echo "推荐使用: ./start_para.sh [MODE] [PARALLEL] [TIMEOUT]"
 fi
 
 for (( i=0; i<${NODES_NUM}; i++ )); do
@@ -207,6 +402,7 @@ for (( i=0; i<${NODES_NUM}; i++ )); do
 done
 
 echo "所有节点启动命令已执行完毕。"
+echo "注意: 节点正在后台启动，使用 ./stop_all.sh 停止所有节点"
 EOF
 chmod +x "./start_all.sh"
 
@@ -229,9 +425,23 @@ for (( i=0; i<${NODES_NUM}; i++ )); do
     echo "节点\${i} 停止失败！"
   fi
 done
+
+wait
+echo "所有节点停止命令已执行完毕。"
 EOF
 chmod +x "./stop_all.sh"
 
-echo "一键启动脚本：${nodes_root}/start_all.sh"
-echo "一键停止脚本：${nodes_root}/stop_all.sh"
+echo "节点生成完成！"
+echo ""
+echo "启动脚本说明:"
+echo "1. 并行度控制启动脚本: ${nodes_root}/start_para.sh"
+echo "   用法: ./start_para.sh [MODE] [PARALLEL] [TIMEOUT]"
+echo "   示例: ./start_para.sh 5 300"
+echo ""
+echo "2. 一键并行启动脚本: ${nodes_root}/start_all.sh"
+echo "   用法: ./start_all.sh [MODE]"
+echo "   警告: 在无GPU环境下可能导致CPU过载！"
+echo ""
+echo "3. 停止脚本: ${nodes_root}/stop_all.sh"
+echo ""
 echo "所有节点与密钥生成完毕。"
