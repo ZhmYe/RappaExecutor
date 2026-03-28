@@ -8,7 +8,7 @@ from utils.cryptography.commitment.merkle.merkle_root import MerkleCommitment, M
 
 class ReplicateChunk:
     def __init__(self, col_index, chunk):
-        # self.sign = sign
+        # self.signer = signer
         # self.slot = slot
         # self.row_index = row_index
         self.col_index = col_index

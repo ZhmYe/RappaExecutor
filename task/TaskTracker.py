@@ -24,7 +24,7 @@ class TaskTracker:
     """
     def handle_receive_slot(self, slot: CommitSlotItem):
         if slot.sign is None:
-            raise ValueError("TaskPoolItem.sign should not be None")
+            raise ValueError("TaskPoolItem.signer should not be None")
             # 取出对应的task，这样写可能不太好，先这样
             # 考虑到会有并发的请求，所以会出现上一个任务还没做完下一个任务就开始了
             # 这里先不考虑并发运行task todo

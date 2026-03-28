@@ -1,3 +1,4 @@
+import base64
 import json
 from typing import Optional
 
@@ -64,6 +65,8 @@ class GrpcClient:
             try:
                 commit_request = pb2.SlotCommitRequest(
                     nodeId=int(self._registry.node_id),
+                    nodeSign=commit_slot.node_sign,
+                    ca=self._registry.ca,
                     sign=commit_slot.sign,
                     slot=commit_slot.slot,
                     size=commit_slot.size,
@@ -89,11 +92,7 @@ class GrpcClient:
     # TODO 这里处理layer返回commit的结果
     def _commit_result_process(self, slot: CommitSlotItem, response: pb2.SlotCommitResponse):
         # 这里response应该暂时是不涉及invalid的
-        # slot_hash = response.hash
-        # slot.set_hash(slot_hash)
         self._registry.channel.slot_buffer_share_dict[slot.hash] = slot  # todo 暂时先这样写
-        # self._registry.slot_hash[slot_hash] = True
-        # self._registry.channel.to_slot_manager_channel.put(slot) # 传递到slot_channel
         pass
 
     # 创建 channel

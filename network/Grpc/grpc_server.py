@@ -9,7 +9,6 @@ from config.config import BHExecutionNodeGlobalConfig
 from network.Grpc.grpc_registry import GrpcRegistry
 from logger.logger import logWriter as log, logWriter
 from concurrent import futures
-import utils.system.sys_monitor as sys_monitor
 from paradigm.model import CommitSlotModelParams
 from paradigm.slot import CommitSlotItem
 from utils.system.sys_monitor import get_storage_info
@@ -82,7 +81,7 @@ class GrpcServer(pb2_grpc.RappaExecutorServicer):
             # if request.schedule.get(self._registry.node_id, 0) != 0:
             # 节点在其调度内，将任务加入当前任务的队列中
             # new_task = PendingTaskPoolItem(
-            #     request.sign, int(request.slot), request.schedule[self._registry.node_id], request.model,
+            #     request.signer, int(request.slot), request.schedule[self._registry.node_id], request.model,
             #     MessageToDict(request.params)
             # )
             # modify by zhmye

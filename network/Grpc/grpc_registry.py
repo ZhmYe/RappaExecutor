@@ -10,6 +10,8 @@ class GrpcRegistry:
         self.node_id = None
         # 当前节点的ip和端口
         self.address = None
+        # 当前节点的证书
+        self.ca = None
         # 当前layer2node的ip和端口
         self.layer2_address = None
         # 节点数

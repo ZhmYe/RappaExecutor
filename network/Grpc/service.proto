@@ -78,6 +78,7 @@ message HeartbeatResponse {
   int32 nodeId = 1;               // 节点id
   map<string, string> nodeStatus = 2; // 节点状态，这里先不管，可以加点cpu利用率、内存啥的
   repeated Vote votes = 3; // 投票
+  string sign = 4; // 签名
 }
 
 // EpochVote response message
@@ -114,20 +115,24 @@ message ScheduleResponse {
 
 message SlotCommitRequest {
   int32 nodeId = 1;
-  string sign = 2;
-  int32 slot = 3;
-  int32 size = 4;
-  bytes commitment = 5;
-  string hash = 6;
-  repeated int32 padding = 7;
-  int32 store = 8; // 存储方式,0=ec; 1=local; 2=replicas
-  string errorMessage = 9;// 可能有一些说明，比如没有完全完成
+  string nodeSign = 2;
+  string ca = 3;   // 节点的证书
+  string sign = 4;
+  int32 slot = 5;
+  int32 size = 6;
+  bytes commitment = 7;
+  string hash = 8;
+  repeated int32 padding = 9;
+  int32 store = 10; // 存储方式,0=ec; 1=local; 2=replicas
+  string errorMessage = 11;// 可能有一些说明，比如没有完全完成
 }
+
 message SlotCommitResponse {
   //  string valid = 1; // 你的提交是否合法，给个枚举,这个感觉没啥必要
   bytes seed = 1; // 传给节点一个随机值，用于生成随机的hash
   string hash = 2; // 给节点一个标识用来标识这个slot，用于后续查看heartbeat
   int32 timeout = 3; // 传给节点一个时限，用于说明多少时间后需要传递一个zkp证明以及多久后开始投票，暂定不可变
+  bool isValid = 4;  //给出是否该提交是否合法
   //  string sign = 2; //
   //  string slot = 3; // 合法的slot
 }
@@ -142,8 +147,9 @@ message RecoverSlotChunk {
   string hash = 1; // slot hash
   int32 row = 2; // 行块对应的index
   int32 col = 3; // ec的index
-  bytes chunk =4; // chunk的内容
+  bytes chunk = 4; // chunk的内容
 }
+
 message RecoverResponse {
   repeated RecoverSlotChunk chunks = 1; // 本地的对应的chunks
 }

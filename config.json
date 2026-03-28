@@ -1,33 +1,15 @@
 {
-  "GrpcPort": 50051,
-  "HttpPort": 8080,
-  "MaxEpochDelay ": 1,
-  "IS_CUDA": true,
-  "MaxUnprocessedTaskPoolSize": 100,
-  "MaxPendingSchedulePoolSize": 100,
-  "MaxScheduledTasksPoolSize": 100,
-  "MaxCommitSlotItemPoolSize": 100,
-  "MaxGrpcRequestPoolSize": 200,
-  "DefaultSlotSize": 100,
-  "LogPath": "logs/",
-  "FiscoBcosHost": "127.0.0.1",
-  "FiscoBcosPort": 20200,
-  "GroupID": "group0",
-  "PrivateKey": "145e247e170ba3afd6ae97e88f00dbc976c2345d511b0f6713355d19d8b80b58",
-  "TLSCaFile": "./ChainUpper/ca.crt",
-  "TLSCertFile": "./ChainUpper/sdk.crt",
-  "TLSKeyFile": "./ChainUpper/sdk.key",
-  "QueueBufferSize": 100000,
-  "WorkerCount": 3,
-  "BatchSize": 1,
-  "ErasureCodeParamN": 9,
-  "ErasureCodeParamK": 6,
-  "DEBUG": false,
-  "IsRecovery": true,
-  "BHNodeAddressMap": {
-    "0": {
-      "NodeIPAddress": "127.0.0.1",
-      "NodeGrpcPort": 1234
-    }
-  }
+  "NODE_ID": 0,
+  "EC_PARAMS_N": 19,
+  "EC_PARAMS_K": 10,
+  "NODE_IP": "127.0.0.1",
+  "GRPC_PORT": 1234,
+  "LAYER2_ADDRESS_IP": "127.0.0.1",
+  "LAYER_ADDRESS_PORT": 50051,
+  "NUM_PROCESS_WORKER": 1,
+  "STORAGE_PATH": "meta",
+  "CERT_PATH": "certs",
+  "IS_CUDA":false,
+  "IS_RECOVERY":true,
+  "OTHER_NODE_GRPC_ADDRESSES": {}
 }

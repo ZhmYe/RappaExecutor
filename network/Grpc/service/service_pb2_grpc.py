@@ -2,8 +2,8 @@
 """Client and server classes corresponding to protobuf-defined services."""
 import grpc
 
-from . import service_pb2 as service__pb2
-
+# import service_pb2 as service__pb2
+from network.Grpc.service import service_pb2 as service__pb2
 
 class RappaMasterStub(object):
     """**

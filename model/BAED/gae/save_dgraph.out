@@ -1,7 +1,7 @@
 nohup: 忽略输入
 <frozen importlib._bootstrap>:219: RuntimeWarning: scipy._lib.messagestream.MessageStream size changed, may indicate binary incompatibility. Expected 56 from C header, got 64 from PyObject
 dgraph train dataset save
-data: Data(x=[185027, 17], edge_index=[2, 18736], y=[185027])
+data: Data(x=[18ds5027, 17], edge_index=[2, 18736], y=[185027])
 /root/zkml_test/BHExecutionNode/anaconda3/envs/ggad/lib/python3.8/site-packages/torch_geometric/deprecation.py:26: UserWarning: 'train_test_split_edges' is deprecated, use 'transforms.RandomLinkSplit' instead
   warnings.warn(out)
 data: Data(x=[185027, 17], y=[185027], val_pos_edge_index=[2, 500], test_pos_edge_index=[2, 1001], train_pos_edge_index=[2, 17024], train_neg_adj_mask=[185027, 185027], val_neg_edge_index=[2, 500], test_neg_edge_index=[2, 1001])
