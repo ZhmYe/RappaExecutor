@@ -39,6 +39,7 @@ class Channel:
         # self.collect_pass_grpc_channel = manager.Queue()
 
         self.collect_connect_channel = manager.Queue()
+        self.latest_synth_speed = manager.Value('d', 0.0)
 
     def update_store_chunk(self, slot_hash, new_store_chunk_item, row_index):
         if not self.store_chunks.get(slot_hash):

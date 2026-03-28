@@ -3,7 +3,7 @@
     可以使用worker来进行并行
 """
 import torch.cuda
-
+import time
 from config.config import BHExecutionNodeGlobalConfig
 from model.loader import ModelLoader
 from paradigm.channel import Channel
@@ -50,12 +50,43 @@ class Processor:
 
                 # TODO @YZM
                 model_instance = self.model_instances[params.name]  # 获取预先加载好的模型
-                # startTime = time.time()
+                start_time = time.time()
                 output = model_instance.generate_output(slot.size, params.condition_params)  # 调用模型得到输出
-                # print(time.time() - startTime)
+                duration = time.time() - start_time
+                
+                # 计算速度 (byte/s)
+                speed = 0.0
+                if duration > 0:
+                    # output 是 ModelFormatOutput 类型，真实数据在 output.output 中
+                    data = output.output
+                    
+                    # 估算字节大小
+                    data_size = 0
+                    if isinstance(data, (bytes, bytearray)):
+                        data_size = len(data)
+                    elif isinstance(data, str):
+                        data_size = len(data.encode('utf-8'))
+                    elif hasattr(data, 'to_json'): # Pandas DataFrame
+                        # 转换成 json 估算大小，这与 Storager 的存储逻辑一致
+                        data_size = len(data.to_json().encode('utf-8'))
+                    elif isinstance(data, list):
+                        try:
+                            import json
+                            data_size = len(json.dumps(data).encode('utf-8'))
+                        except:
+                            data_size = len(str(data))
+                    else:
+                        data_size = len(str(data))
+                        
+                    speed = data_size / duration
+                
+                log.write_log("INFO", f"Slot {slot.hash} synth speed: {speed:.2f} byte/s, total size: {data_size} bytes, time: {duration:.4f}s")
+                self.channel.latest_synth_speed.value = speed
+
                 # self.storager.handle_slot_output(slot, output)  # 将输出和slot交给storager
                 self.channel.to_storager_slot_channel.put((slot, output))
             except Exception as e:
+                log.write_log("ERROR", f"Processor cycle error: {e}")
                 raise RuntimeError(e)
 
     def start(self):

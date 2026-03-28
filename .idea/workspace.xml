@@ -4,10 +4,12 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a82bfccb-85f9-4672-96b4-dd064011af39" name="更改" comment="update for index">
+    <list default="true" id="a82bfccb-85f9-4672-96b4-dd064011af39" name="更改" comment="fix bug">
+      <change afterPath="$PROJECT_DIR$/model/TRADINGNET/createDataset.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/model/TRADINGNET/dgraph_degree.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/model/TRADINGNET/eval_generate_data.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/model/TRADINGNET/generateData.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/model/ABM_/instance.py" beforeDir="false" afterPath="$PROJECT_DIR$/model/ABM_/instance.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/uni_test/test_loader.py" beforeDir="false" afterPath="$PROJECT_DIR$/uni_test/test_loader.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -58,7 +60,7 @@
     "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager": "true",
     "RunOnceActivity.git.unshallow": "true",
     "git-widget-placeholder": "index",
-    "last_opened_file_path": "/root/rappa/RappaExecutor/model/ABM_",
+    "last_opened_file_path": "/root/rappa/RappaExecutor/model/TRADINGNET",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
@@ -75,8 +77,8 @@
       <window_info id="Backup and Sync History" />
       <window_info id="Commit_Guest" show_stripe_button="false" />
       <window_info id="Pull Requests" />
-      <window_info active="true" content_ui="combo" id="Project" order="0" sideWeight="0.62243736" visible="true" weight="0.33014446" />
-      <window_info id="Commit" order="1" sideWeight="0.6421092" weight="0.33014446" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" sideWeight="0.62243736" visible="true" weight="0.33011132" />
+      <window_info id="Commit" order="1" sideWeight="0.6421092" weight="0.33011132" />
       <window_info id="Structure" order="2" sideWeight="0.37756264" side_tool="true" weight="0.18723156" />
       <window_info id="Learn" order="3" show_stripe_button="false" weight="0.22258297" />
       <window_info anchor="bottom" id="Database Changes" />
@@ -86,7 +88,7 @@
       <window_info anchor="bottom" id="Version Control" order="0" weight="0.3298636" />
       <window_info anchor="bottom" id="Problems" order="1" />
       <window_info anchor="bottom" id="Problems View" order="2" weight="0.521875" />
-      <window_info anchor="bottom" id="Terminal" order="3" weight="0.3298636" />
+      <window_info anchor="bottom" id="Terminal" order="3" weight="0.33023" />
       <window_info anchor="bottom" id="Services" order="4" weight="0.3298636" />
       <window_info anchor="bottom" id="Python Packages" order="5" weight="0.1" />
       <window_info anchor="bottom" id="Python Console" order="6" weight="0.1" />
@@ -110,11 +112,11 @@
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/model/TRADINGNET" />
       <recent name="$PROJECT_DIR$/model/ABM_" />
       <recent name="$PROJECT_DIR$/model" />
       <recent name="$PROJECT_DIR$/model/ABM" />
       <recent name="$PROJECT_DIR$/model/ABM/data" />
-      <recent name="$PROJECT_DIR$/model/ABM/model" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/model/ABM_/model" />
@@ -280,7 +282,7 @@
       <workItem from="1747212983775" duration="1732000" />
       <workItem from="1748067123650" duration="701000" />
       <workItem from="1748070875957" duration="683000" />
-      <workItem from="1748519636574" duration="2346000" />
+      <workItem from="1748519636574" duration="7952000" />
     </task>
     <task id="LOCAL-00001" summary="update get disk">
       <option name="closed" value="true" />
@@ -338,7 +340,15 @@
       <option name="project" value="LOCAL" />
       <updated>1747208985664</updated>
     </task>
-    <option name="localTasksCounter" value="8" />
+    <task id="LOCAL-00008" summary="fix bug">
+      <option name="closed" value="true" />
+      <created>1748522139327</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1748522139327</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -373,7 +383,8 @@
     <MESSAGE value="fit for cuda" />
     <MESSAGE value="update for abm" />
     <MESSAGE value="update for index" />
-    <option name="LAST_COMMIT_MESSAGE" value="update for index" />
+    <MESSAGE value="fix bug" />
+    <option name="LAST_COMMIT_MESSAGE" value="fix bug" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

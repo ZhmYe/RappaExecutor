@@ -67,6 +67,7 @@ class GrpcServer(pb2_grpc.RappaExecutorServicer):
         status["cpu"] = str(10)
         status["disk"] = str(avg_disk_used // (1024 ** 3))
         status["total"] = str(avg_disk_space // (1024 ** 3))
+        status["synth_speed"] = f"{self._registry.channel.latest_synth_speed.value:.2f}"
         return pb2.HeartbeatResponse(
             nodeId=int(self._registry.node_id),
             nodeStatus=status,
