@@ -2,9 +2,12 @@ import ctypes
 import os
 import json
 import base64
+import hashlib
+import time
 from pathlib import Path
 from utils.function.func import get_project_root
 from config.config import BHExecutionNodeGlobalConfig
+from logger.logger import logWriter as log
 
 # C's free function to release memory allocated by Go's C.CString
 free = ctypes.CDLL(None).free
@@ -31,6 +34,7 @@ class CertificateManager:
         if not os.path.exists(library_path):
             raise FileNotFoundError(f"Go shared library not found at {library_path}. Please compile it first.")
 
+        log.write_log("INFO", f"Loading signer library from {library_path}")
         lib = ctypes.CDLL(library_path)
 
         # C_GenerateSecp256K1Key
@@ -151,7 +155,18 @@ class CertificateManager:
         else:
             raise FileNotFoundError(f"CA certificate file not found: {ca_path}")
 
-    def sign_data(self, data: bytes):
+    def sign_hash(self, data_hash: bytes):
+        if len(data_hash) != 32:
+            raise ValueError(f"data_hash must be 32 bytes (256bit), got {len(data_hash)} bytes")
+
+        log.write_log(
+            "INFO",
+            "Signer start: hash_len=%s hash_prefix=%s" % (
+                len(data_hash),
+                data_hash[:8].hex()
+            )
+        )
+
         # For the output string parameters, we need to create proper pointer variables
         sig = ctypes.c_char_p()
         sigLen = ctypes.c_int(0)
@@ -159,25 +174,62 @@ class CertificateManager:
         slotHashLen = ctypes.c_int(0)
 
         # Call the C_SignSlot function with the correct pointer types
+        sign_start = time.time()
         sign_result = self.lib.C_SignSlot(
-            ctypes.c_char_p(data), ctypes.c_int(len(data)),
+            ctypes.c_char_p(data_hash), ctypes.c_int(len(data_hash)),
             ctypes.c_char_p(self.spec_privateKey), ctypes.c_int(len(self.spec_privateKey)),
             ctypes.byref(sig), ctypes.byref(sigLen),
             ctypes.byref(slotHash), ctypes.byref(slotHashLen)
         )
+        elapsed = time.time() - sign_start
 
         # Check if the call was successful
         if sign_result != 0:
+            log.write_log(
+                "ERROR",
+                "Signer failed: code=%s elapsed=%.3fs hash_prefix=%s" % (
+                    sign_result,
+                    elapsed,
+                    data_hash[:8].hex()
+                )
+            )
             raise Exception("Failed to sign slot")
 
-        # Extract the signature data
-        signature_data = ctypes.string_at(sig, sigLen)
+        try:
+            # Extract the signature data
+            signature_data = ctypes.string_at(sig, sigLen)
+            slot_hash_data = ctypes.string_at(slotHash, slotHashLen)
+        finally:
+            if sig:
+                free(sig)
+            if slotHash:
+                free(slotHash)
+
+        log.write_log(
+            "INFO",
+            "Signer done: elapsed=%.3fs sig_len=%s slot_hash_len=%s slot_hash_prefix=%s" % (
+                elapsed,
+                sigLen.value,
+                slotHashLen.value,
+                slot_hash_data[:8].hex()
+            )
+        )
 
         # The method only returns the base64-encoded signature data
         return base64.b64encode(signature_data).decode('utf-8')
 
+    def sign_data(self, data: bytes):
+        data_hash = hashlib.sha256(data).digest()
+        log.write_log(
+            "INFO",
+            "Signer input bytes hashed: data_len=%s hash_prefix=%s" % (
+                len(data),
+                data_hash[:8].hex()
+            )
+        )
+        return self.sign_hash(data_hash)
+
     def get_ca_base64(self):
         """返回CA证书的base64编码"""
         return self.ca_base64
-
 

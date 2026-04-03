@@ -3,6 +3,7 @@
     可以使用worker来进行并行
 """
 import torch.cuda
+import time
 
 from config.config import BHExecutionNodeGlobalConfig
 from model.loader import ModelLoader
@@ -50,8 +51,14 @@ class Processor:
 
                 # TODO @YZM
                 model_instance = self.model_instances[params.name]  # 获取预先加载好的模型
-                # startTime = time.time()
+                startTime = time.time()
                 output = model_instance.generate_output(slot.size, params.condition_params)  # 调用模型得到输出
+                endTime = time.time()
+                duration = endTime - startTime
+                if duration > 0:
+                    speed = slot.size / duration
+                    self.channel.latest_speed.value = speed
+                    log.write_log("EXECUTION", f"Task {slot.sign} Slot {slot.slot} synthesis speed: {speed:.2f} items/s")
                 # print(time.time() - startTime)
                 # self.storager.handle_slot_output(slot, output)  # 将输出和slot交给storager
                 self.channel.to_storager_slot_channel.put((slot, output))

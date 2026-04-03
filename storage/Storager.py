@@ -1,5 +1,7 @@
 import random
 import threading
+import time
+import hashlib
 from multiprocessing import Process
 from typing import List
 
@@ -92,8 +94,8 @@ class Storager:
         chunks, commitment = chunker.chunk(output)  # 对输出进行分块，得到chunks和commitment
         # 得到每个chunk的merkle proof
         merkle_proofs = [commitment.open(chunk) for chunk in chunks]  # 这里的merkle proof考虑就是进行完整性的校验 todo 是否有必要？直接算一个哈希也行
-        # 一个总bytes,为其签名
-        total_bytes = b''
+        # signer 侧要求传入 256bit data hash，这里增量计算，避免拼接大字节串阻塞存储线程
+        total_data_hasher = hashlib.sha256()
         for (row, chunk) in enumerate(chunks):
             # record = ChunkReplicateRecord(signer=slot.signer, slot=slot.slot, slot_hash=slot.hash, index=row, nb_chunk=1, merkle_proof= merkle_proofs[row],padding_size=0)
             # record.record_success_replicate(0, BHExecutionNodeGlobalConfig.NODE_IP)
@@ -104,17 +106,29 @@ class Storager:
             serialized_df = self.chunk2json(chunk)
             serialized_df_bytes = serialized_df.encode('utf-8')  # Convert JSON to bytes
             replicate_chunk = ReplicateChunk(col_index=0, chunk=serialized_df_bytes)
-            total_bytes += serialized_df_bytes
+            total_data_hasher.update(serialized_df_bytes)
             replicate_package.add_chunk(replicate_chunk)
             self._store_local(replicate_package)  # 存在本地
         # 存完以后这个slot被标记为processed
         slot.sign_as_processed()
         slot.set_commitment(commitment=commitment.commitment)
-        # 对total_bytes进行签名
-        signature = self.cert_manager.sign_data(total_bytes)
+        data_hash = total_data_hasher.digest()
+        log.write_log(
+            "STORAGE",
+            "slot {} local chunks prepared: {}, data hash bytes: {}".format(
+                slot.hash, len(chunks), len(data_hash)
+            )
+        )
+        sign_start = time.time()
+        signature = self.cert_manager.sign_hash(data_hash)
+        log.write_log(
+            "STORAGE",
+            "slot {} signer finished in {:.3f}s".format(slot.hash, time.time() - sign_start)
+        )
         slot.set_nodeSign(signature)
-        self.channel.test_collect_output_channel.put((slot, output, 1))
         self.channel.to_slot_manager_channel.put(slot)
+        # collector 仅用于测试，不应阻塞 commit 主链路
+        self.channel.test_collect_output_channel.put((slot, output, 1))
         log.write_log("STORAGE",
                       "finish store the data from {}, commitment: {}".format(slot.hash, commitment.commitment))
         return commitment
