@@ -1,0 +1,335 @@
+import json
+import mimetypes
+import os
+import shutil
+import subprocess
+import sys
+import threading
+import time
+from pathlib import Path
+from typing import Any, Dict, Iterable, List
+
+import pandas as pd
+
+from logger.logger import logWriter as log
+from utils.function.func import get_project_root
+
+
+PROJECT1_ABM_ROOT = Path(os.environ.get("RAPPA_ABM_V2_PROJECT_ROOT", "/root/rappa/project1_ABM")).resolve()
+
+
+def normalize_code(code: str) -> str:
+    code = str(code).strip()
+    if code.isdigit():
+        return code.zfill(6) if len(code) < 6 else code
+    return code
+
+
+def deep_merge(base: Dict[str, Any], override: Dict[str, Any]) -> Dict[str, Any]:
+    merged = dict(base)
+    for key, value in override.items():
+        if isinstance(value, dict) and isinstance(merged.get(key), dict):
+            merged[key] = deep_merge(merged[key], value)
+        else:
+            merged[key] = value
+    return merged
+
+
+def guess_content_type(path: Path) -> str:
+    guessed, _ = mimetypes.guess_type(str(path))
+    if guessed:
+        return guessed
+    if path.suffix.lower() == ".json":
+        return "application/json"
+    if path.suffix.lower() in {".csv", ".log", ".txt"}:
+        return "text/plain"
+    return "application/octet-stream"
+
+
+class ABMV2PipelineRunner:
+    def __init__(self) -> None:
+        self.executor_root = Path(get_project_root()).resolve()
+        self.meta_root = self.executor_root / "meta"
+        self.meta_root.mkdir(parents=True, exist_ok=True)
+        self.data_root = Path(__file__).resolve().parent / "data"
+        self.template_path = PROJECT1_ABM_ROOT / "params_quickstart.json"
+        self.pipeline_path = PROJECT1_ABM_ROOT / "run_pipeline_with_params.py"
+        self.converter_path = PROJECT1_ABM_ROOT / "preprocess" / "auto_convert_l2_to_abm.py"
+
+    def run(self, params: Dict[str, Any], output_size: int = 1) -> pd.DataFrame:
+        params = dict(params or {})
+        task_hash = str(params.pop("__slot_hash", "")).strip() or f"ABM_V2_{int(time.time() * 1000)}"
+        params.pop("__slot_size", None)
+        task_sign = str(params.pop("__slot_sign", "")).strip()
+        task_label = task_sign or task_hash
+        task_dir = self._resolve_task_dir(task_sign, task_hash)
+        if task_dir.exists():
+            shutil.rmtree(task_dir)
+        input_dir = task_dir / "input"
+        runtime_dir = task_dir / "runtime_params"
+        output_dir = task_dir / "outputs"
+        log_dir = task_dir / "logs"
+        for path in (input_dir, runtime_dir, output_dir, log_dir):
+            path.mkdir(parents=True, exist_ok=True)
+
+        input_csv = self._resolve_input_csv(params)
+        raw_code = str(params.get("evaluation", {}).get("code", input_csv.stem))
+        eval_code = normalize_code(raw_code or input_csv.stem)
+        local_input = input_dir / f"{eval_code}.csv"
+        log.write_log("EXECUTION", f"ABM_V2 {task_label}: input prepared from {input_csv}")
+        self._materialize_input_csv(input_csv, local_input)
+
+        task_info = {
+            "task_hash": task_hash,
+            "sign": task_sign,
+            "slot": 0,
+            "raw_code": raw_code or eval_code,
+            "normalized_code": eval_code,
+            "input_csv": str(local_input),
+            "created_at": int(time.time()),
+        }
+        with open(task_dir / "task_info.json", "w", encoding="utf-8") as f:
+            json.dump(task_info, f, ensure_ascii=False, indent=2)
+
+        pipeline_params = self._build_pipeline_params(local_input, output_dir, params, eval_code)
+        params_path = runtime_dir / "params.json"
+        with open(params_path, "w", encoding="utf-8") as f:
+            json.dump(pipeline_params, f, ensure_ascii=False, indent=2)
+        log.write_log("EXECUTION", f"ABM_V2 {task_label}: runtime params written to {params_path}")
+
+        stdout_path = log_dir / "pipeline.stdout.log"
+        stderr_path = log_dir / "pipeline.stderr.log"
+        self._run_pipeline(params_path, stdout_path, stderr_path, task_label)
+
+        manifest = self._collect_manifest(task_hash, task_sign, raw_code or eval_code, eval_code, task_dir)
+        if manifest.empty:
+            raise RuntimeError(f"ABM_V2 task {task_hash} produced no artifacts under {task_dir}")
+        log.write_log("EXECUTION", f"ABM_V2 {task_label}: artifact collection complete, total={len(manifest)}")
+        return manifest
+
+    def _resolve_task_dir(self, task_sign: str, task_hash: str) -> Path:
+        if task_sign:
+            return self.meta_root / task_sign / "0"
+        return self.meta_root / task_hash
+
+    def _resolve_input_csv(self, params: Dict[str, Any]) -> Path:
+        input_csv = str(params.get("input_csv", "")).strip()
+        checked: List[str] = []
+
+        for raw_name in self._candidate_input_names(params, input_csv):
+            local_path = (self.data_root / raw_name).resolve()
+            checked.append(str(local_path))
+            if local_path.exists():
+                return local_path
+
+        for code in self._candidate_stock_codes(params, input_csv):
+            for candidate in self._candidate_csv_paths(code):
+                checked.append(str(candidate))
+                if candidate.exists():
+                    return candidate.resolve()
+
+        raise FileNotFoundError(
+            "ABM_V2 input csv not found in executor local data directory; checked: "
+            + ", ".join(dict.fromkeys(checked))
+        )
+
+    def _candidate_input_names(self, params: Dict[str, Any], input_csv: str) -> List[str]:
+        names: List[str] = []
+        if input_csv:
+            logical_name = Path(input_csv).name.strip()
+            if logical_name and logical_name not in names:
+                names.append(logical_name)
+
+        for code in self._candidate_stock_codes(params, input_csv):
+            csv_name = f"{normalize_code(code)}.csv"
+            if csv_name not in names:
+                names.append(csv_name)
+        return names
+
+    def _candidate_stock_codes(self, params: Dict[str, Any], input_csv: str) -> List[str]:
+        codes: List[str] = []
+        for raw in (
+            params.get("stockCode"),
+            params.get("evaluation", {}).get("code") if isinstance(params.get("evaluation"), dict) else None,
+            params.get("dataset"),
+            Path(input_csv).stem if input_csv else None,
+        ):
+            text = normalize_code(str(raw).strip()) if raw not in (None, "") else ""
+            if text and text not in codes:
+                codes.append(text)
+        return codes
+
+    def _candidate_csv_paths(self, code: str) -> List[Path]:
+        code = normalize_code(code)
+        candidates: List[Path] = []
+        exact = self.data_root / f"{code}.csv"
+        candidates.append(exact)
+
+        pattern_matches = sorted(self.data_root.glob(f"*_{code}_*.csv"))
+        if not pattern_matches:
+            pattern_matches = sorted(self.data_root.glob(f"*{code}*.csv"))
+        candidates.extend(pattern_matches)
+        return candidates
+
+    def _materialize_input_csv(self, source_path: Path, local_input: Path) -> None:
+        if self._is_standard_abm_csv(source_path):
+            shutil.copyfile(source_path, local_input)
+            return
+        self._convert_raw_input_csv(source_path, local_input)
+
+    def _is_standard_abm_csv(self, path: Path) -> bool:
+        try:
+            with open(path, "r", encoding="utf-8", errors="replace") as f:
+                header = [item.strip() for item in f.readline().strip().split(",")]
+        except OSError:
+            return False
+        return "close" in header and ("Time" in header or "date" in header)
+
+    def _convert_raw_input_csv(self, source_path: Path, local_input: Path) -> None:
+        if not self.converter_path.exists():
+            raise FileNotFoundError(f"ABM raw converter not found: {self.converter_path}")
+
+        local_input.parent.mkdir(parents=True, exist_ok=True)
+        cmd = [
+            sys.executable,
+            str(self.converter_path),
+            "--inputs",
+            str(source_path),
+            "--output-dir",
+            str(local_input.parent),
+        ]
+        proc = subprocess.run(
+            cmd,
+            cwd=str(PROJECT1_ABM_ROOT),
+            text=True,
+            capture_output=True,
+            check=False,
+            env={**os.environ, "PYTHONNOUSERSITE": "1"},
+        )
+        if proc.returncode != 0:
+            raise RuntimeError(
+                "ABM_V2 raw input conversion failed for "
+                f"{source_path}; stdout={proc.stdout[-400:]}, stderr={proc.stderr[-400:]}"
+            )
+        if not local_input.exists():
+            raise FileNotFoundError(f"ABM_V2 converted csv missing: {local_input}")
+
+    def _build_pipeline_params(
+        self,
+        local_input: Path,
+        output_dir: Path,
+        params: Dict[str, Any],
+        eval_code: str,
+    ) -> Dict[str, Any]:
+        if not self.template_path.exists():
+            raise FileNotFoundError(f"ABM_V2 template params missing: {self.template_path}")
+        with open(self.template_path, "r", encoding="utf-8") as f:
+            template = json.load(f)
+
+        user_cfg = {k: v for k, v in params.items() if not str(k).startswith("__")}
+        pipeline_params = deep_merge(template, user_cfg)
+        pipeline_params["input_csv"] = str(local_input)
+
+        runtime_cfg = dict(pipeline_params.get("runtime", {}) or {})
+        runtime_cfg["output_root"] = str(output_dir)
+        pipeline_params["runtime"] = runtime_cfg
+
+        eval_cfg = dict(pipeline_params.get("evaluation", {}) or {})
+        user_eval_cfg = dict(params.get("evaluation", {}) or {})
+        eval_cfg["code"] = str(user_eval_cfg.get("code", eval_code) or eval_code)
+        eval_cfg["stock_root"] = str(local_input.parent)
+        pipeline_params["evaluation"] = eval_cfg
+
+        return pipeline_params
+
+    def _run_pipeline(self, params_path: Path, stdout_path: Path, stderr_path: Path, task_label: str) -> None:
+        cmd = [sys.executable, str(self.pipeline_path), "--params", str(params_path)]
+        env = {**os.environ, "PYTHONNOUSERSITE": "1", "PYTHONUNBUFFERED": "1"}
+        log.write_log("EXECUTION", f"ABM_V2 {task_label}: pipeline start")
+
+        with open(stdout_path, "w", encoding="utf-8") as stdout_file, open(stderr_path, "w", encoding="utf-8") as stderr_file:
+            proc = subprocess.Popen(
+                cmd,
+                cwd=str(PROJECT1_ABM_ROOT),
+                text=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                bufsize=1,
+                env=env,
+            )
+
+            stdout_thread = threading.Thread(
+                target=self._stream_pipe,
+                args=(proc.stdout, stdout_file, task_label, True),
+                daemon=True,
+            )
+            stderr_thread = threading.Thread(
+                target=self._stream_pipe,
+                args=(proc.stderr, stderr_file, task_label, False),
+                daemon=True,
+            )
+            stdout_thread.start()
+            stderr_thread.start()
+
+            return_code = proc.wait()
+            stdout_thread.join(timeout=5)
+            stderr_thread.join(timeout=5)
+
+        log.write_log("EXECUTION", f"ABM_V2 {task_label}: pipeline finish")
+        if return_code != 0:
+            raise RuntimeError(
+                f"ABM_V2 pipeline failed with code {return_code}; "
+                f"see {stdout_path} and {stderr_path}"
+            )
+
+    def _stream_pipe(self, pipe, sink, task_label: str, mirror_stage_log: bool) -> None:
+        if pipe is None:
+            return
+        try:
+            for line in pipe:
+                sink.write(line)
+                sink.flush()
+                clean = line.strip()
+                if mirror_stage_log and clean.startswith("[ABM_V2]"):
+                    log.write_log("EXECUTION", f"ABM_V2 {task_label}: {clean}")
+        finally:
+            pipe.close()
+
+    def _collect_manifest(
+        self,
+        task_hash: str,
+        task_sign: str,
+        raw_code: str,
+        normalized_code: str,
+        task_dir: Path,
+    ) -> pd.DataFrame:
+        files = self._iter_text_artifacts(task_dir)
+        rows: List[Dict[str, Any]] = []
+        for path in files:
+            rel = path.relative_to(task_dir).as_posix()
+            rows.append(
+                {
+                    "task_hash": task_hash,
+                    "sign": task_sign,
+                    "slot": 0,
+                    "raw_code": raw_code,
+                    "code": normalized_code,
+                    "artifact_name": path.name,
+                    "relative_path": rel,
+                    "content_type": guess_content_type(path),
+                    "size_bytes": path.stat().st_size,
+                    "content": path.read_text(encoding="utf-8", errors="replace"),
+                }
+            )
+        return pd.DataFrame(rows)
+
+    def _iter_text_artifacts(self, task_dir: Path) -> Iterable[Path]:
+        if not task_dir.exists():
+            return []
+        allowed_suffixes = {".csv", ".json", ".log", ".txt"}
+        return sorted(
+            p for p in task_dir.rglob("*")
+            if p.is_file()
+            and p.suffix.lower() in allowed_suffixes
+            and "input" not in p.relative_to(task_dir).parts
+        )

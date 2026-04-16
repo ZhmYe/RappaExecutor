@@ -1,6 +1,7 @@
 import os
 
-from model.ABM_.instance import ABM_MODEL_INSTANCE
+from model.ABM_.instance import ABM_MODEL_INSTANCE as ABM_LEGACY_MODEL_INSTANCE
+from model.ABM.instance import ABM_V2_MODEL_INSTANCE
 from model.BAED.instance import BAED_MODEL_INSTANCE
 from model.CTGAN.instance import CTGAN_Model_Instance
 from model.FINKAN.instance import FINKAN_MODEL_INSTANCE
@@ -87,7 +88,11 @@ class ModelLoader:
             return instance
         if model_type == "ABM":
             model_args = load_model_args(model=ModelEnum.ABM, is_cuda=is_cuda)
-            instance = ABM_MODEL_INSTANCE(model_args=model_args)
+            instance = ABM_LEGACY_MODEL_INSTANCE(model_args=model_args)
+            return instance
+        if model_type == "ABM_V2":
+            model_args = load_model_args(model=ModelEnum.ABM_V2, is_cuda=is_cuda)
+            instance = ABM_V2_MODEL_INSTANCE(model_args=model_args)
             return instance
 
         else:

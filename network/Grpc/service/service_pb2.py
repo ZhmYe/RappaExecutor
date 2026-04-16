@@ -20,7 +20,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   syntax='proto3',
   serialized_options=b'Z\010/service',
   create_key=_descriptor._internal_create_key,
-  serialized_pb=b'\n\rservice.proto\x12\x07service\x1a\x1cgoogle/protobuf/struct.proto\"\x8c\x01\n\rJustifiedSlot\x12\x0b\n\x03nid\x18\x01 \x01(\x05\x12\x0f\n\x07process\x18\x02 \x01(\x05\x12\x0c\n\x04sign\x18\x03 \x01(\t\x12\x0c\n\x04slot\x18\x04 \x01(\x05\x12\r\n\x05\x65poch\x18\x05 \x01(\x05\x12\x12\n\ncommitment\x18\x06 \x01(\x0c\x12\x0f\n\x07padding\x18\x07 \x03(\x05\x12\r\n\x05store\x18\x08 \x01(\x05\"\xd7\x03\n\x10HeartbeatRequest\x12\x37\n\x07\x63ommits\x18\x01 \x03(\x0b\x32&.service.HeartbeatRequest.CommitsEntry\x12=\n\njustifieds\x18\x02 \x03(\x0b\x32).service.HeartbeatRequest.JustifiedsEntry\x12;\n\tfinalizes\x18\x03 \x03(\x0b\x32(.service.HeartbeatRequest.FinalizesEntry\x12\x39\n\x08invalids\x18\x04 \x03(\x0b\x32\'.service.HeartbeatRequest.InvalidsEntry\x12\r\n\x05\x65poch\x18\x05 \x01(\x05\x1a.\n\x0c\x43ommitsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x0c:\x02\x38\x01\x1a\x31\n\x0fJustifiedsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x0c:\x02\x38\x01\x1a\x30\n\x0e\x46inalizesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x0c:\x02\x38\x01\x1a/\n\rInvalidsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x05:\x02\x38\x01\"\xb4\x01\n\x11HeartbeatResponse\x12\x0e\n\x06nodeId\x18\x01 \x01(\x05\x12>\n\nnodeStatus\x18\x02 \x03(\x0b\x32*.service.HeartbeatResponse.NodeStatusEntry\x12\x1c\n\x05votes\x18\x03 \x03(\x0b\x32\r.service.Vote\x1a\x31\n\x0fNodeStatusEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"U\n\x04Vote\x12\x0c\n\x04hash\x18\x01 \x01(\t\x12\x0e\n\x06nodeId\x18\x02 \x01(\x05\x12\x12\n\ncommitment\x18\x03 \x01(\x0c\x12\r\n\x05state\x18\x04 \x01(\x08\x12\x0c\n\x04\x64\x65sp\x18\x05 \x01(\t\"\x91\x01\n\x0fScheduleRequest\x12\x0c\n\x04sign\x18\x01 \x01(\t\x12\x0c\n\x04slot\x18\x02 \x01(\x05\x12\x0e\n\x06nodeID\x18\x03 \x01(\x05\x12\x0c\n\x04size\x18\x04 \x01(\x05\x12\r\n\x05model\x18\x05 \x01(\t\x12\'\n\x06params\x18\x06 \x01(\x0b\x32\x17.google.protobuf.Struct\x12\x0c\n\x04hash\x18\x07 \x01(\t\"V\n\x10ScheduleResponse\x12\x0e\n\x06\x61\x63\x63\x65pt\x18\x01 \x01(\x08\x12\x0e\n\x06nodeId\x18\x02 \x01(\t\x12\x0c\n\x04sign\x18\x03 \x01(\t\x12\x14\n\x0c\x65rrorMessage\x18\x04 \x01(\t\"\xc3\x01\n\x11SlotCommitRequest\x12\x0e\n\x06nodeId\x18\x01 \x01(\x05\x12\x10\n\x08nodeSign\x18\x02 \x01(\t\x12\n\n\x02\x63\x61\x18\x03 \x01(\t\x12\x0c\n\x04sign\x18\x04 \x01(\t\x12\x0c\n\x04slot\x18\x05 \x01(\x05\x12\x0c\n\x04size\x18\x06 \x01(\x05\x12\x12\n\ncommitment\x18\x07 \x01(\x0c\x12\x0c\n\x04hash\x18\x08 \x01(\t\x12\x0f\n\x07padding\x18\t \x03(\x05\x12\r\n\x05store\x18\n \x01(\x05\x12\x14\n\x0c\x65rrorMessage\x18\x0b \x01(\t\"R\n\x12SlotCommitResponse\x12\x0c\n\x04seed\x18\x01 \x01(\x0c\x12\x0c\n\x04hash\x18\x02 \x01(\t\x12\x0f\n\x07timeout\x18\x03 \x01(\x05\x12\x0f\n\x07isValid\x18\x04 \x01(\x08\"0\n\x0eRecoverRequest\x12\x0f\n\x07mission\x18\x01 \x01(\t\x12\r\n\x05hashs\x18\x02 \x03(\t\"I\n\x10RecoverSlotChunk\x12\x0c\n\x04hash\x18\x01 \x01(\t\x12\x0b\n\x03row\x18\x02 \x01(\x05\x12\x0b\n\x03\x63ol\x18\x03 \x01(\x05\x12\r\n\x05\x63hunk\x18\x04 \x01(\x0c\"<\n\x0fRecoverResponse\x12)\n\x06\x63hunks\x18\x01 \x03(\x0b\x32\x19.service.RecoverSlotChunk2T\n\x0bRappaMaster\x12\x45\n\nCommitSlot\x12\x1a.service.SlotCommitRequest\x1a\x1b.service.SlotCommitResponse2\xd2\x01\n\rRappaExecutor\x12\x42\n\tHeartbeat\x12\x19.service.HeartbeatRequest\x1a\x1a.service.HeartbeatResponse\x12?\n\x08Schedule\x12\x18.service.ScheduleRequest\x1a\x19.service.ScheduleResponse\x12<\n\x07\x43ollect\x12\x17.service.RecoverRequest\x1a\x18.service.RecoverResponseB\nZ\x08/serviceb\x06proto3'
+  serialized_pb=b'\n\rservice.proto\x12\x07service\x1a\x1cgoogle/protobuf/struct.proto\"\x8c\x01\n\rJustifiedSlot\x12\x0b\n\x03nid\x18\x01 \x01(\x05\x12\x0f\n\x07process\x18\x02 \x01(\x05\x12\x0c\n\x04sign\x18\x03 \x01(\t\x12\x0c\n\x04slot\x18\x04 \x01(\x05\x12\r\n\x05\x65poch\x18\x05 \x01(\x05\x12\x12\n\ncommitment\x18\x06 \x01(\x0c\x12\x0f\n\x07padding\x18\x07 \x03(\x05\x12\r\n\x05store\x18\x08 \x01(\x05\"\xd7\x03\n\x10HeartbeatRequest\x12\x37\n\x07\x63ommits\x18\x01 \x03(\x0b\x32&.service.HeartbeatRequest.CommitsEntry\x12=\n\njustifieds\x18\x02 \x03(\x0b\x32).service.HeartbeatRequest.JustifiedsEntry\x12;\n\tfinalizes\x18\x03 \x03(\x0b\x32(.service.HeartbeatRequest.FinalizesEntry\x12\x39\n\x08invalids\x18\x04 \x03(\x0b\x32\'.service.HeartbeatRequest.InvalidsEntry\x12\r\n\x05\x65poch\x18\x05 \x01(\x05\x1a.\n\x0c\x43ommitsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x0c:\x02\x38\x01\x1a\x31\n\x0fJustifiedsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x0c:\x02\x38\x01\x1a\x30\n\x0e\x46inalizesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x0c:\x02\x38\x01\x1a/\n\rInvalidsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x05:\x02\x38\x01\"\xb4\x01\n\x11HeartbeatResponse\x12\x0e\n\x06nodeId\x18\x01 \x01(\x05\x12>\n\nnodeStatus\x18\x02 \x03(\x0b\x32*.service.HeartbeatResponse.NodeStatusEntry\x12\x1c\n\x05votes\x18\x03 \x03(\x0b\x32\r.service.Vote\x1a\x31\n\x0fNodeStatusEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"U\n\x04Vote\x12\x0c\n\x04hash\x18\x01 \x01(\t\x12\x0e\n\x06nodeId\x18\x02 \x01(\x05\x12\x12\n\ncommitment\x18\x03 \x01(\x0c\x12\r\n\x05state\x18\x04 \x01(\x08\x12\x0c\n\x04\x64\x65sp\x18\x05 \x01(\t\"\x91\x01\n\x0fScheduleRequest\x12\x0c\n\x04sign\x18\x01 \x01(\t\x12\x0c\n\x04slot\x18\x02 \x01(\x05\x12\x0e\n\x06nodeID\x18\x03 \x01(\x05\x12\x0c\n\x04size\x18\x04 \x01(\x05\x12\r\n\x05model\x18\x05 \x01(\t\x12\'\n\x06params\x18\x06 \x01(\x0b\x32\x17.google.protobuf.Struct\x12\x0c\n\x04hash\x18\x07 \x01(\t\"V\n\x10ScheduleResponse\x12\x0e\n\x06\x61\x63\x63\x65pt\x18\x01 \x01(\x08\x12\x0e\n\x06nodeId\x18\x02 \x01(\t\x12\x0c\n\x04sign\x18\x03 \x01(\t\x12\x14\n\x0c\x65rrorMessage\x18\x04 \x01(\t\"\xc3\x01\n\x11SlotCommitRequest\x12\x0e\n\x06nodeId\x18\x01 \x01(\x05\x12\x10\n\x08nodeSign\x18\x02 \x01(\t\x12\n\n\x02\x63\x61\x18\x03 \x01(\t\x12\x0c\n\x04sign\x18\x04 \x01(\t\x12\x0c\n\x04slot\x18\x05 \x01(\x05\x12\x0c\n\x04size\x18\x06 \x01(\x05\x12\x12\n\ncommitment\x18\x07 \x01(\x0c\x12\x0c\n\x04hash\x18\x08 \x01(\t\x12\x0f\n\x07padding\x18\t \x03(\x05\x12\r\n\x05store\x18\n \x01(\x05\x12\x14\n\x0c\x65rrorMessage\x18\x0b \x01(\t\"R\n\x12SlotCommitResponse\x12\x0c\n\x04seed\x18\x01 \x01(\x0c\x12\x0c\n\x04hash\x18\x02 \x01(\t\x12\x0f\n\x07timeout\x18\x03 \x01(\x05\x12\x0f\n\x07isValid\x18\x04 \x01(\x08\"0\n\x0eRecoverRequest\x12\x0f\n\x07mission\x18\x01 \x01(\t\x12\r\n\x05hashs\x18\x02 \x03(\t\"I\n\x10RecoverSlotChunk\x12\x0c\n\x04hash\x18\x01 \x01(\t\x12\x0b\n\x03row\x18\x02 \x01(\x05\x12\x0b\n\x03\x63ol\x18\x03 \x01(\x05\x12\r\n\x05\x63hunk\x18\x04 \x01(\x0c\"<\n\x0fRecoverResponse\x12)\n\x06\x63hunks\x18\x01 \x03(\x0b\x32\x19.service.RecoverSlotChunk\"7\n\x11\x41nalyticalRequest\x12\x0c\n\x04sign\x18\x01 \x01(\t\x12\x14\n\x0c\x61nalysisType\x18\x02 \x01(\t\";\n\x12\x41nalyticalResponse\x12%\n\x04\x64\x61ta\x18\x01 \x01(\x0b\x32\x17.google.protobuf.Struct2T\n\x0bRappaMaster\x12\x45\n\nCommitSlot\x12\x1a.service.SlotCommitRequest\x1a\x1b.service.SlotCommitResponse2\x9b\x02\n\rRappaExecutor\x12\x42\n\tHeartbeat\x12\x19.service.HeartbeatRequest\x1a\x1a.service.HeartbeatResponse\x12?\n\x08Schedule\x12\x18.service.ScheduleRequest\x1a\x19.service.ScheduleResponse\x12<\n\x07\x43ollect\x12\x17.service.RecoverRequest\x1a\x18.service.RecoverResponse\x12G\n\x0cGetAnalytics\x12\x1a.service.AnalyticalRequest\x1a\x1b.service.AnalyticalResponseB\nZ\x08/serviceb\x06proto3'
   ,
   dependencies=[google_dot_protobuf_dot_struct__pb2.DESCRIPTOR,])
 
@@ -869,6 +869,77 @@ _RECOVERRESPONSE = _descriptor.Descriptor(
   serialized_end=1646,
 )
 
+
+_ANALYTICALREQUEST = _descriptor.Descriptor(
+  name='AnalyticalRequest',
+  full_name='service.AnalyticalRequest',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  create_key=_descriptor._internal_create_key,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='sign', full_name='service.AnalyticalRequest.sign', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='analysisType', full_name='service.AnalyticalRequest.analysisType', index=1,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=1648,
+  serialized_end=1703,
+)
+
+
+_ANALYTICALRESPONSE = _descriptor.Descriptor(
+  name='AnalyticalResponse',
+  full_name='service.AnalyticalResponse',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  create_key=_descriptor._internal_create_key,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='data', full_name='service.AnalyticalResponse.data', index=0,
+      number=1, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=1705,
+  serialized_end=1764,
+)
+
 _HEARTBEATREQUEST_COMMITSENTRY.containing_type = _HEARTBEATREQUEST
 _HEARTBEATREQUEST_JUSTIFIEDSENTRY.containing_type = _HEARTBEATREQUEST
 _HEARTBEATREQUEST_FINALIZESENTRY.containing_type = _HEARTBEATREQUEST
@@ -882,6 +953,7 @@ _HEARTBEATRESPONSE.fields_by_name['nodeStatus'].message_type = _HEARTBEATRESPONS
 _HEARTBEATRESPONSE.fields_by_name['votes'].message_type = _VOTE
 _SCHEDULEREQUEST.fields_by_name['params'].message_type = google_dot_protobuf_dot_struct__pb2._STRUCT
 _RECOVERRESPONSE.fields_by_name['chunks'].message_type = _RECOVERSLOTCHUNK
+_ANALYTICALRESPONSE.fields_by_name['data'].message_type = google_dot_protobuf_dot_struct__pb2._STRUCT
 DESCRIPTOR.message_types_by_name['JustifiedSlot'] = _JUSTIFIEDSLOT
 DESCRIPTOR.message_types_by_name['HeartbeatRequest'] = _HEARTBEATREQUEST
 DESCRIPTOR.message_types_by_name['HeartbeatResponse'] = _HEARTBEATRESPONSE
@@ -893,6 +965,8 @@ DESCRIPTOR.message_types_by_name['SlotCommitResponse'] = _SLOTCOMMITRESPONSE
 DESCRIPTOR.message_types_by_name['RecoverRequest'] = _RECOVERREQUEST
 DESCRIPTOR.message_types_by_name['RecoverSlotChunk'] = _RECOVERSLOTCHUNK
 DESCRIPTOR.message_types_by_name['RecoverResponse'] = _RECOVERRESPONSE
+DESCRIPTOR.message_types_by_name['AnalyticalRequest'] = _ANALYTICALREQUEST
+DESCRIPTOR.message_types_by_name['AnalyticalResponse'] = _ANALYTICALRESPONSE
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
 JustifiedSlot = _reflection.GeneratedProtocolMessageType('JustifiedSlot', (_message.Message,), {
@@ -1012,6 +1086,20 @@ RecoverResponse = _reflection.GeneratedProtocolMessageType('RecoverResponse', (_
   })
 _sym_db.RegisterMessage(RecoverResponse)
 
+AnalyticalRequest = _reflection.GeneratedProtocolMessageType('AnalyticalRequest', (_message.Message,), {
+  'DESCRIPTOR' : _ANALYTICALREQUEST,
+  '__module__' : 'service_pb2'
+  # @@protoc_insertion_point(class_scope:service.AnalyticalRequest)
+  })
+_sym_db.RegisterMessage(AnalyticalRequest)
+
+AnalyticalResponse = _reflection.GeneratedProtocolMessageType('AnalyticalResponse', (_message.Message,), {
+  'DESCRIPTOR' : _ANALYTICALRESPONSE,
+  '__module__' : 'service_pb2'
+  # @@protoc_insertion_point(class_scope:service.AnalyticalResponse)
+  })
+_sym_db.RegisterMessage(AnalyticalResponse)
+
 
 DESCRIPTOR._options = None
 _HEARTBEATREQUEST_COMMITSENTRY._options = None
@@ -1027,8 +1115,8 @@ _RAPPAMASTER = _descriptor.ServiceDescriptor(
   index=0,
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
-  serialized_start=1648,
-  serialized_end=1732,
+  serialized_start=1766,
+  serialized_end=1850,
   methods=[
   _descriptor.MethodDescriptor(
     name='CommitSlot',
@@ -1053,8 +1141,8 @@ _RAPPAEXECUTOR = _descriptor.ServiceDescriptor(
   index=1,
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
-  serialized_start=1735,
-  serialized_end=1945,
+  serialized_start=1853,
+  serialized_end=2136,
   methods=[
   _descriptor.MethodDescriptor(
     name='Heartbeat',
@@ -1083,6 +1171,16 @@ _RAPPAEXECUTOR = _descriptor.ServiceDescriptor(
     containing_service=None,
     input_type=_RECOVERREQUEST,
     output_type=_RECOVERRESPONSE,
+    serialized_options=None,
+    create_key=_descriptor._internal_create_key,
+  ),
+  _descriptor.MethodDescriptor(
+    name='GetAnalytics',
+    full_name='service.RappaExecutor.GetAnalytics',
+    index=3,
+    containing_service=None,
+    input_type=_ANALYTICALREQUEST,
+    output_type=_ANALYTICALRESPONSE,
     serialized_options=None,
     create_key=_descriptor._internal_create_key,
   ),

@@ -20,6 +20,7 @@ class ModelEnum(Enum):
     BAED  = auto() # 生成图数据的模型
     FINKAN = auto() # 生成表格数据的模型
     ABM = auto() # 生成时序数据的模型
+    ABM_V2 = auto() # 新版 ABM 代码任务
 
 class ModelArgs:
     def __init__(self, model_root, dataset, model_path, args_path, checkpoint_path, is_cuda=False):
@@ -59,6 +60,8 @@ def load_default_dataset(model: ModelEnum):
         return "default of credit card clients"
     if model == ModelEnum.ABM:
         return "SHL2_TAQ_600519_202401-202402_defreq"
+    if model == ModelEnum.ABM_V2:
+        return "ABM_V2"
 
 def load_model_args(model: ModelEnum, dataset=None, checkpoint=None, is_cuda=False) -> ModelArgs:
     project_root = get_project_root()
@@ -92,6 +95,12 @@ def load_model_args(model: ModelEnum, dataset=None, checkpoint=None, is_cuda=Fal
         model_path = os.path.join(model_root, "model/")
         path_args = os.path.join(model_root, "data")
         path_check = "{}/model_params.tsf".format(model_path)
+        return ModelArgs(model_root, dataset, model_path, path_args, path_check, is_cuda=is_cuda)
+    if model == ModelEnum.ABM_V2:
+        model_root = os.path.join(project_root, "model/ABM")
+        model_path = model_root
+        path_args = os.path.join(model_root, "data")
+        path_check = None
         return ModelArgs(model_root, dataset, model_path, path_args, path_check, is_cuda=is_cuda)
 
 

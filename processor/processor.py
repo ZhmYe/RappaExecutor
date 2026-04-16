@@ -51,7 +51,11 @@ class Processor:
                 # TODO @YZM
                 model_instance = self.model_instances[params.name]  # 获取预先加载好的模型
                 start_time = time.time()
-                output = model_instance.generate_output(slot.size, params.condition_params)  # 调用模型得到输出
+                model_params = dict(params.condition_params or {})
+                model_params.setdefault("__slot_hash", slot.hash)
+                model_params.setdefault("__slot_size", slot.size)
+                model_params.setdefault("__slot_sign", slot.sign)
+                output = model_instance.generate_output(slot.size, model_params)  # 调用模型得到输出
                 duration = time.time() - start_time
                 
                 # 计算速度 (byte/s)

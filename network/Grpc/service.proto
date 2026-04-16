@@ -24,6 +24,9 @@ service RappaExecutor {
 
   // Collect 用于向节点收集chunk，恢复文件数据
   rpc Collect(RecoverRequest) returns (RecoverResponse);
+
+  // GetAnalytics 从节点获取分析结果
+  rpc GetAnalytics(AnalyticalRequest) returns (AnalyticalResponse);
 }
 
 
@@ -78,7 +81,6 @@ message HeartbeatResponse {
   int32 nodeId = 1;               // 节点id
   map<string, string> nodeStatus = 2; // 节点状态，这里先不管，可以加点cpu利用率、内存啥的
   repeated Vote votes = 3; // 投票
-  string sign = 4; // 签名
 }
 
 // EpochVote response message
@@ -152,4 +154,13 @@ message RecoverSlotChunk {
 
 message RecoverResponse {
   repeated RecoverSlotChunk chunks = 1; // 本地的对应的chunks
+}
+
+message AnalyticalRequest {
+  string sign = 1;          // 任务标识 taskId-stockId
+  string analysisType = 2;  // 分析类型 (order_dynamics, price_synthesis, crash_risk, etc.)
+}
+
+message AnalyticalResponse {
+  google.protobuf.Struct data = 1; // 采用 Struct 动态承载分析结果 JSON
 }

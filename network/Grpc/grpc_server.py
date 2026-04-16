@@ -9,6 +9,8 @@ from config.config import BHExecutionNodeGlobalConfig
 from network.Grpc.grpc_registry import GrpcRegistry
 from logger.logger import logWriter as log, logWriter
 from concurrent import futures
+from google.protobuf.struct_pb2 import Struct
+from model.ABM.analytics import ABMV2AnalyticsService
 from paradigm.model import CommitSlotModelParams
 from paradigm.slot import CommitSlotItem
 from utils.system.sys_monitor import get_storage_info
@@ -19,6 +21,7 @@ class GrpcServer(pb2_grpc.RappaExecutorServicer):
     def __init__(self, registry: GrpcRegistry):
         self._registry = registry
         self._core_server = None
+        self._analytics_service = ABMV2AnalyticsService()
 
     def Heartbeat(self, request: pb2.HeartbeatRequest, context):
         # TODO 这里暂时这样做,简单实现一下
@@ -131,6 +134,38 @@ class GrpcServer(pb2_grpc.RappaExecutorServicer):
         # for slot_hash in slot_hashs:
         # print(self._registry)
         # chunks.extend(self._registry.channel.load_store_chunk(slot_hash=slot_hash))
+
+    def GetAnalytics(self, request: pb2.AnalyticalRequest, context):
+        sign = request.sign.strip()
+        analysis_type = request.analysisType.strip()
+        if not sign:
+            context.set_code(grpc.StatusCode.INVALID_ARGUMENT)
+            context.set_details("sign is required")
+            return pb2.AnalyticalResponse()
+        if not analysis_type:
+            context.set_code(grpc.StatusCode.INVALID_ARGUMENT)
+            context.set_details("analysisType is required")
+            return pb2.AnalyticalResponse()
+
+        try:
+            payload = self._analytics_service.get_analytics(sign, analysis_type)
+        except ValueError as exc:
+            context.set_code(grpc.StatusCode.INVALID_ARGUMENT)
+            context.set_details(str(exc))
+            return pb2.AnalyticalResponse()
+        except FileNotFoundError as exc:
+            context.set_code(grpc.StatusCode.NOT_FOUND)
+            context.set_details(str(exc))
+            return pb2.AnalyticalResponse()
+        except Exception as exc:
+            log.write_log("ERROR", f"GetAnalytics failed for {sign}: {exc}")
+            context.set_code(grpc.StatusCode.INTERNAL)
+            context.set_details(str(exc))
+            return pb2.AnalyticalResponse()
+
+        data = Struct()
+        data.update(payload)
+        return pb2.AnalyticalResponse(data=data)
 
     # 开启服务
     def start_server(self):
