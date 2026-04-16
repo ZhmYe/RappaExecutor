@@ -78,11 +78,11 @@ class FINKAN_MODEL_INSTANCE:
 
         # split sample into numeric and categorical parts
         samples = samples.detach().cpu().numpy()
-        return samples
+        return samples, sampled_labels.cpu().numpy()
     def generate_output(self, num_samples=1, params: dict=None):
         # init samples to be generated
         args = self.args
-        samples = self.generate_input({"samples": num_samples})
+        samples, sampled_labels = self.generate_input({"samples": num_samples})
 
         # with torch.no_grad():
         #     # iterate over diffusion steps
@@ -136,6 +136,7 @@ class FINKAN_MODEL_INSTANCE:
         z_cat_df = z_cat_df.apply(args.label_encoder.inverse_transform)
 
         samples_decoded = pd.concat([z_cat_df, z_norm_df], axis=1)
+        samples_decoded['default payment next month'] = sampled_labels
 
         # print(len(samples_decoded))
         # print("generated_nxgraphs:",generated_nxgraphs)
