@@ -352,7 +352,7 @@ current_batch=()
 success_count=0
 fail_count=0
 
-for (( i=0; i<NODES_NUM; i++ )); do
+for (( i=START_NODE_ID; i<START_NODE_ID+NODES_NUM; i++ )); do
   # 启动当前节点
   start_single_node "$i" &
   current_batch+=($!)
