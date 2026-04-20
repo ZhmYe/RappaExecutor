@@ -14,7 +14,10 @@ class ABM_V2_MODEL_INSTANCE:
         self.load()
 
     def load(self):
-        log.write_log("MODEL", f"ABM_V2 runner ready from: {self.model_args.model_path}")
+        log.write_log(
+            "MODEL",
+            f"ABM_V2 runner ready, model_path={self.model_args.model_path}, runtime_root={self.runner.runtime_root}",
+        )
 
     def generate_input(self, params: dict = None):
         return params

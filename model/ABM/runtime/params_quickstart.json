@@ -1,0 +1,36 @@
+{
+  "input_csv": "600000.csv",
+  "predict": {
+    "enabled": true,
+    "method": "auto",
+    "horizon": 5
+  },
+  "abm": {
+    "epochs": 3,
+    "learning_rate": 0.01,
+    "epsilon": 0.001,
+    "max_rows": 1500,
+    "seed_count": 1,
+    "bootstrap_samples": 50,
+    "patience": 3,
+    "structural_params": {
+      "N_FT": 30,
+      "N_LMT": 30,
+      "N_SMT": 30,
+      "N_NT": 30,
+      "S_FT": 1,
+      "ALPHA_L": 0.001,
+      "ALPHA_S": 0.9
+    }
+  },
+  "evaluation": {
+    "code": "600000",
+    "market": "SM",
+    "generate_models": false,
+    "gan_epochs": 1,
+    "abm_root": "simulated_result",
+    "stock_root": "SM_stock",
+    "model_root": "SM_result"
+  }
+}
+

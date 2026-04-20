@@ -15,7 +15,11 @@ from logger.logger import logWriter as log
 from utils.function.func import get_project_root
 
 
-PROJECT1_ABM_ROOT = Path(os.environ.get("RAPPA_ABM_V2_PROJECT_ROOT", "/root/rappa/project1_ABM")).resolve()
+ABM_PACKAGE_ROOT = Path(__file__).resolve().parent
+DEFAULT_ABM_V2_RUNTIME_ROOT = ABM_PACKAGE_ROOT / "runtime"
+PROJECT1_ABM_ROOT = Path(
+    os.environ.get("RAPPA_ABM_V2_PROJECT_ROOT", str(DEFAULT_ABM_V2_RUNTIME_ROOT))
+).resolve()
 
 
 def normalize_code(code: str) -> str:
@@ -52,9 +56,15 @@ class ABMV2PipelineRunner:
         self.meta_root = self.executor_root / "meta"
         self.meta_root.mkdir(parents=True, exist_ok=True)
         self.data_root = Path(__file__).resolve().parent / "data"
+        self.runtime_root = PROJECT1_ABM_ROOT
         self.template_path = PROJECT1_ABM_ROOT / "params_quickstart.json"
         self.pipeline_path = PROJECT1_ABM_ROOT / "run_pipeline_with_params.py"
         self.converter_path = PROJECT1_ABM_ROOT / "preprocess" / "auto_convert_l2_to_abm.py"
+        if not self.template_path.exists() or not self.pipeline_path.exists():
+            raise FileNotFoundError(
+                "ABM_V2 runtime files missing under "
+                f"{self.runtime_root}; expected {self.template_path.name} and {self.pipeline_path.name}"
+            )
 
     def run(self, params: Dict[str, Any], output_size: int = 1) -> pd.DataFrame:
         params = dict(params or {})
@@ -75,9 +85,7 @@ class ABMV2PipelineRunner:
         input_csv = self._resolve_input_csv(params)
         raw_code = str(params.get("evaluation", {}).get("code", input_csv.stem))
         eval_code = normalize_code(raw_code or input_csv.stem)
-        local_input = input_dir / f"{eval_code}.csv"
-        log.write_log("EXECUTION", f"ABM_V2 {task_label}: input prepared from {input_csv}")
-        self._materialize_input_csv(input_csv, local_input)
+        runtime_input, stock_root = self._prepare_runtime_input(input_csv, input_dir, eval_code, task_label)
 
         task_info = {
             "task_hash": task_hash,
@@ -85,13 +93,14 @@ class ABMV2PipelineRunner:
             "slot": 0,
             "raw_code": raw_code or eval_code,
             "normalized_code": eval_code,
-            "input_csv": str(local_input),
+            "input_csv": str(runtime_input),
+            "stock_root": str(stock_root),
             "created_at": int(time.time()),
         }
         with open(task_dir / "task_info.json", "w", encoding="utf-8") as f:
             json.dump(task_info, f, ensure_ascii=False, indent=2)
 
-        pipeline_params = self._build_pipeline_params(local_input, output_dir, params, eval_code)
+        pipeline_params = self._build_pipeline_params(runtime_input, stock_root, output_dir, params, eval_code)
         params_path = runtime_dir / "params.json"
         with open(params_path, "w", encoding="utf-8") as f:
             json.dump(pipeline_params, f, ensure_ascii=False, indent=2)
@@ -171,6 +180,29 @@ class ABMV2PipelineRunner:
         candidates.extend(pattern_matches)
         return candidates
 
+    def _prepare_runtime_input(
+        self,
+        source_path: Path,
+        input_dir: Path,
+        eval_code: str,
+        task_label: str,
+    ) -> tuple[Path, Path]:
+        local_input = input_dir / f"{eval_code}.csv"
+        if self._can_reuse_input_csv(source_path, eval_code):
+            log.write_log("EXECUTION", f"ABM_V2 {task_label}: reuse local input {source_path}")
+            return source_path.resolve(), source_path.parent.resolve()
+
+        log.write_log("EXECUTION", f"ABM_V2 {task_label}: materialize task-local input from {source_path}")
+        self._materialize_input_csv(source_path, local_input)
+        return local_input.resolve(), local_input.parent.resolve()
+
+    def _can_reuse_input_csv(self, source_path: Path, eval_code: str) -> bool:
+        if not self._is_standard_abm_csv(source_path):
+            return False
+        if source_path.name == f"{eval_code}.csv":
+            return True
+        return (source_path.parent / f"{eval_code}.csv").exists()
+
     def _materialize_input_csv(self, source_path: Path, local_input: Path) -> None:
         if self._is_standard_abm_csv(source_path):
             shutil.copyfile(source_path, local_input)
@@ -216,7 +248,8 @@ class ABMV2PipelineRunner:
 
     def _build_pipeline_params(
         self,
-        local_input: Path,
+        runtime_input: Path,
+        stock_root: Path,
         output_dir: Path,
         params: Dict[str, Any],
         eval_code: str,
@@ -228,7 +261,7 @@ class ABMV2PipelineRunner:
 
         user_cfg = {k: v for k, v in params.items() if not str(k).startswith("__")}
         pipeline_params = deep_merge(template, user_cfg)
-        pipeline_params["input_csv"] = str(local_input)
+        pipeline_params["input_csv"] = str(runtime_input)
 
         runtime_cfg = dict(pipeline_params.get("runtime", {}) or {})
         runtime_cfg["output_root"] = str(output_dir)
@@ -237,7 +270,7 @@ class ABMV2PipelineRunner:
         eval_cfg = dict(pipeline_params.get("evaluation", {}) or {})
         user_eval_cfg = dict(params.get("evaluation", {}) or {})
         eval_cfg["code"] = str(user_eval_cfg.get("code", eval_code) or eval_code)
-        eval_cfg["stock_root"] = str(local_input.parent)
+        eval_cfg["stock_root"] = str(stock_root)
         pipeline_params["evaluation"] = eval_cfg
 
         return pipeline_params
