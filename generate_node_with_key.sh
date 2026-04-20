@@ -71,23 +71,30 @@ GENERATE_F=$(((NODES_NUM - 1) / 3))
 EC_PARAMS_N=$((2 * GENERATE_F + 1))
 EC_PARAMS_K=$((GENERATE_F + 1))
 
+MAX_JOBS=10
 for ((i = 0; i < NODES_NUM; i++)); do
-  node_folder="node${i}"
+  (
+    node_folder="node${i}"
 
-  if [[ -d "$node_folder" ]]; then
-    echo "节点 ${node_folder} 已存在，跳过创建。"
-    continue
-  fi
+    if [[ -d "$node_folder" ]]; then
+      echo "节点 ${node_folder} 已存在，跳过创建。"
+      exit 0
+    fi
 
-  echo "创建 ${node_folder}..."
-  mkdir -p "$node_folder"
-  cp -r "${code_path}" "${node_folder}/"
+    echo "创建 ${node_folder}..."
+    mkdir -p "$node_folder"
+    if command -v rsync >/dev/null 2>&1; then
+      rsync -a --exclude='nodes' --exclude='__pycache__' --exclude='.git' "${code_path}/" "${node_folder}/${executor_dir_name}/"
+    else
+      cp -r "${code_path}" "${node_folder}/"
+      rm -rf "${node_folder}/${executor_dir_name}/__pycache__"
+    fi
 
-  node_repo_path="${node_folder}/${executor_dir_name}"
-  config_path="${node_repo_path}/config.json"
-  node_grpc_port=$((1234 + i * 2))
+    node_repo_path="${node_folder}/${executor_dir_name}"
+    config_path="${node_repo_path}/config.json"
+    node_grpc_port=$((1234 + i * 2))
 
-  cat <<EOF >"$config_path"
+    cat <<EOF >"$config_path"
 {
   "NODE_ID": $i,
   "EC_PARAMS_N": $EC_PARAMS_N,
@@ -103,26 +110,26 @@ for ((i = 0; i < NODES_NUM; i++)); do
   "OTHER_NODE_GRPC_ADDRESSES": {
 EOF
 
-  for ((j = 0; j < NODES_NUM; j++)); do
-    if (( j == i )); then
-      continue
-    fi
-    other_grpc_port=$((1234 + j * 2))
-    cat <<EOF >>"$config_path"
+    for ((j = 0; j < NODES_NUM; j++)); do
+      if (( j == i )); then
+        continue
+      fi
+      other_grpc_port=$((1234 + j * 2))
+      cat <<EOF >>"$config_path"
     "$j": {
       "IP": "127.0.0.1",
       "PORT": $other_grpc_port
     },
 EOF
-  done
+    done
 
-  sed -i '$s/,//' "$config_path"
-  cat <<'EOF' >>"$config_path"
+    sed -i '$s/,//' "$config_path"
+    cat <<'EOF' >>"$config_path"
   }
 }
 EOF
 
-  cat <<EOF >"${node_folder}/start.sh"
+    cat <<EOF >"${node_folder}/start.sh"
 #!/bin/bash
 MODE="\$1"
 cd "\$(dirname "\$0")/${executor_dir_name}" || exit 1
@@ -138,9 +145,9 @@ fi
 
 echo "\$!" > "../node.pid"
 EOF
-  chmod +x "${node_folder}/start.sh"
+    chmod +x "${node_folder}/start.sh"
 
-  cat <<EOF >"${node_folder}/stop.sh"
+    cat <<EOF >"${node_folder}/stop.sh"
 #!/bin/bash
 
 SHELL_FOLDER="\$(cd "\$(dirname "\$0")" && pwd)"
@@ -173,14 +180,21 @@ done
 echo "【WARN】停止 \${node_name} 超时，请手动检查或使用 kill -9。"
 exit 1
 EOF
-  chmod +x "${node_folder}/stop.sh"
+    chmod +x "${node_folder}/stop.sh"
 
-  echo "为 node${i} 生成密钥与证书..."
-  (
-    cd "$node_repo_path"
-    bash ./generate_key.sh
-  )
+    echo "为 node${i} 生成密钥与证书..."
+    (
+      cd "$node_repo_path"
+      bash ./generate_key.sh > /dev/null 2>&1
+    )
+    echo "节点 node${i} 创建并初始化完成。"
+  ) &
+
+  if (( (i + 1) % MAX_JOBS == 0 )); then
+    wait
+  fi
 done
+wait
 
 # 创建参数化的启动脚本
 cat <<'EOF' >"./start_para.sh"
