@@ -11,10 +11,13 @@ host_key_script="generate_host_keys.py"
 
 NODES_NUM="${1:-}"
 if [[ -z "$NODES_NUM" ]]; then
-  echo "使用方法: $0 <NODES_NUM> [OUTPUT_DIR]"
+  echo "使用方法: $0 <NODES_NUM> [OUTPUT_DIR] [START_PORT] [PORT_INTERVAL] [START_NODE_ID]"
   echo "参数说明:"
   echo "  NODES_NUM    : 要生成的节点数量（正整数）"
   echo "  OUTPUT_DIR   : 节点输出目录（可选，默认为当前目录）"
+  echo "  START_PORT   : 起始端口号（可选，默认为 1234）"
+  echo "  PORT_INTERVAL: 端口间隔（可选，默认为 2）"
+  echo "  START_NODE_ID: 起始节点编号（可选，默认为 0）"
   exit 1
 fi
 
@@ -33,17 +36,23 @@ if [[ ! -f "$key_script_path" ]]; then
   exit 1
 fi
 
-OUTPUT_DIR="${2:-}"
-if [[ -z "$OUTPUT_DIR" ]]; then
+OUTPUT_DIR="${2:-.}"
+if [[ "$OUTPUT_DIR" == "." ]]; then
   OUTPUT_DIR="$PWD"
-else
-  if [[ "$OUTPUT_DIR" != /* ]]; then
-    OUTPUT_DIR="$(cd "$OUTPUT_DIR" && pwd)"
-  fi
+elif [[ "$OUTPUT_DIR" != /* ]]; then
+  mkdir -p "$OUTPUT_DIR"
+  OUTPUT_DIR="$(cd "$OUTPUT_DIR" && pwd)"
 fi
+
+START_PORT="${3:-1234}"
+PORT_INTERVAL="${4:-2}"
+START_NODE_ID="${5:-0}"
 
 echo "节点数量：$NODES_NUM"
 echo "输出路径：$OUTPUT_DIR"
+echo "起始端口：$START_PORT"
+echo "端口间隔：$PORT_INTERVAL"
+echo "起始编号：$START_NODE_ID"
 echo "-----------------------------"
 
 echo "检查主机密钥是否存在..."
@@ -72,7 +81,7 @@ EC_PARAMS_N=$((2 * GENERATE_F + 1))
 EC_PARAMS_K=$((GENERATE_F + 1))
 
 MAX_JOBS=10
-for ((i = 0; i < NODES_NUM; i++)); do
+for ((i = START_NODE_ID; i < START_NODE_ID + NODES_NUM; i++)); do
   (
     node_folder="node${i}"
 
@@ -92,7 +101,7 @@ for ((i = 0; i < NODES_NUM; i++)); do
 
     node_repo_path="${node_folder}/${executor_dir_name}"
     config_path="${node_repo_path}/config.json"
-    node_grpc_port=$((1234 + i * 2))
+    node_grpc_port=$((START_PORT + (i - START_NODE_ID) * PORT_INTERVAL))
 
     cat <<EOF >"$config_path"
 {
@@ -110,11 +119,11 @@ for ((i = 0; i < NODES_NUM; i++)); do
   "OTHER_NODE_GRPC_ADDRESSES": {
 EOF
 
-    for ((j = 0; j < NODES_NUM; j++)); do
+    for ((j = START_NODE_ID; j < START_NODE_ID + NODES_NUM; j++)); do
       if (( j == i )); then
         continue
       fi
-      other_grpc_port=$((1234 + j * 2))
+      other_grpc_port=$((START_PORT + (j - START_NODE_ID) * PORT_INTERVAL))
       cat <<EOF >>"$config_path"
     "$j": {
       "IP": "127.0.0.1",
