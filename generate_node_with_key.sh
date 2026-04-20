@@ -93,10 +93,11 @@ for ((i = START_NODE_ID; i < START_NODE_ID + NODES_NUM; i++)); do
     echo "创建 ${node_folder}..."
     mkdir -p "$node_folder"
     if command -v rsync >/dev/null 2>&1; then
-      rsync -a --exclude='nodes' --exclude='__pycache__' --exclude='.git' "${code_path}/" "${node_folder}/${executor_dir_name}/"
+      rsync -a --exclude='nodes' --exclude='__pycache__' --exclude='.git' --exclude='model/TRADINGNET' "${code_path}/" "${node_folder}/${executor_dir_name}/"
     else
       cp -r "${code_path}" "${node_folder}/"
       rm -rf "${node_folder}/${executor_dir_name}/__pycache__"
+      rm -rf "${node_folder}/${executor_dir_name}/model/TRADINGNET"
     fi
 
     node_repo_path="${node_folder}/${executor_dir_name}"
