@@ -9,7 +9,7 @@
   "NUM_PROCESS_WORKER": 1,
   "STORAGE_PATH": "meta",
   "CERT_PATH": "certs",
-  "IS_CUDA":false,
-  "IS_RECOVERY":true,
+  "IS_CUDA": true,
+  "IS_RECOVERY": true,
   "OTHER_NODE_GRPC_ADDRESSES": {}
 }

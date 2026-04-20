@@ -59,7 +59,7 @@ message JustifiedSlot {
   bytes commitment = 6; // 提交slot的时候向Master承诺，自己生成的数据文件的commitment
   repeated int32 padding = 7; // 所有的row chunk的padding size
   int32 store = 8; // 存储方式
-  // state字段省略
+  int64 uploadSize = 9; // 节点上传的数据大小，单位bytes
 }
 
 // Heartbeat request message
@@ -125,6 +125,7 @@ message SlotCommitRequest {
   repeated int32 padding = 9;
   int32 store = 10; // 存储方式,0=ec; 1=local; 2=replicas
   string errorMessage = 11;// 可能有一些说明，比如没有完全完成
+  int64 uploadSize = 12; // 节点上传的数据大小，单位bytes
 }
 
 message SlotCommitResponse {

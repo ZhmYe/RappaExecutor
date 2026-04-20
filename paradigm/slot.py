@@ -49,6 +49,7 @@ class CommitSlotItem:
         self.is_reliable = False
         self.params: CommitSlotModelParams = params  # 输入模型参数
         self.commitment = None  # todo 这里还有一个commitment
+        self.upload_size = 0 # 节点上传的数据大小，单位bytes
         self.hash = ""
         self.replicate_records: List[ChunkReplicateRecord] = []
         self.nb_chunks = -1
