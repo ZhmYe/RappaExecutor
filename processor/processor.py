@@ -83,6 +83,7 @@ class Processor:
                 log.write_log("INFO", f"Slot {slot.hash} synth speed: {speed:.2f} byte/s, total size: {data_size} bytes, time: {duration:.4f}s")
                 self.channel.latest_synth_speed.value = speed
                 slot.upload_size = int(data_size)
+                slot.speed = speed
 
                 # self.storager.handle_slot_output(slot, output)  # 将输出和slot交给storager
                 self.channel.to_storager_slot_channel.put((slot, output))

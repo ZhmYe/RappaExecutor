@@ -11,5 +11,6 @@
   "CERT_PATH": "certs",
   "IS_CUDA": true,
   "IS_RECOVERY": true,
+  "NUM_ROW_IN_CHUNK": 20,
   "OTHER_NODE_GRPC_ADDRESSES": {}
 }

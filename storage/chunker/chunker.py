@@ -5,6 +5,7 @@ from utils.cryptography.commitment.commitment_computer import CommitmentComputer
 from utils.cryptography.commitment.merkle.merkle_root import MerkleCommitment
 from utils.cryptography.hash.hasher import Hasher, HashFunction
 from networkx.readwrite import json_graph
+from config.config import BHExecutionNodeGlobalConfig
 
 """
     NOTE: Chunker 将生成的文件按行分为若干个chunk，为每个chunk计算hash，然后将这些hash组成merkle tree的叶子节点计算merkle root(commitment)
@@ -14,7 +15,7 @@ from networkx.readwrite import json_graph
 
 class Chunker:
     def __init__(self, hasher: Hasher):
-        self.num_row_in_chunk = 20  # 从config中读取 TODO @XQ 在config里补上这个
+        self.num_row_in_chunk = BHExecutionNodeGlobalConfig.NUM_ROW_IN_CHUNK
         self.hasher: Hasher = hasher
 
     def chunk(self, data):

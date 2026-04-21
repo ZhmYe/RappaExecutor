@@ -50,6 +50,7 @@ class CommitSlotItem:
         self.params: CommitSlotModelParams = params  # 输入模型参数
         self.commitment = None  # todo 这里还有一个commitment
         self.upload_size = 0 # 节点上传的数据大小，单位bytes
+        self.speed = 0.0 # 节点合成该slot的速度，单位bytes/s
         self.hash = ""
         self.replicate_records: List[ChunkReplicateRecord] = []
         self.nb_chunks = -1

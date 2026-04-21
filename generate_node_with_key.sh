@@ -18,6 +18,7 @@ if [[ -z "$NODES_NUM" ]]; then
   echo "  START_PORT   : 起始端口号（可选，默认为 1234）"
   echo "  PORT_INTERVAL: 端口间隔（可选，默认为 2）"
   echo "  START_NODE_ID: 起始节点编号（可选，默认为 0）"
+  echo "  CHUNK_SIZE   : 每个分块的数据行数（可选，默认为 20）"
   exit 1
 fi
 
@@ -47,12 +48,14 @@ fi
 START_PORT="${3:-1234}"
 PORT_INTERVAL="${4:-2}"
 START_NODE_ID="${5:-0}"
+CHUNK_SIZE="${6:-20}"
 
 echo "节点数量：$NODES_NUM"
 echo "输出路径：$OUTPUT_DIR"
 echo "起始端口：$START_PORT"
 echo "端口间隔：$PORT_INTERVAL"
 echo "起始编号：$START_NODE_ID"
+echo "分块大小：$CHUNK_SIZE"
 echo "-----------------------------"
 
 echo "检查主机密钥是否存在..."
@@ -117,6 +120,7 @@ for ((i = START_NODE_ID; i < START_NODE_ID + NODES_NUM; i++)); do
   "STORAGE_PATH": "meta",
   "IS_CUDA": true,
   "IS_RECOVERY": true,
+  "NUM_ROW_IN_CHUNK": $CHUNK_SIZE,
   "OTHER_NODE_GRPC_ADDRESSES": {
 EOF
 
@@ -410,7 +414,8 @@ else
   echo "推荐使用: ./start_para.sh [MODE] [PARALLEL] [TIMEOUT]"
 fi
 
-for (( i=0; i<${NODES_NUM}; i++ )); do
+for (( i=${START_NODE_ID}; i<${START_NODE_ID}+${NODES_NUM}; i++ )); do
+
   node_folder="node\${i}"
   node_start_script="\${script_dir}/\${node_folder}/start.sh"
 
@@ -437,7 +442,8 @@ script_dir="\$(cd "\$(dirname "\$0")" && pwd)"
 
 echo "开始停止所有节点..."
 
-for (( i=0; i<${NODES_NUM}; i++ )); do
+for (( i=${START_NODE_ID}; i<${START_NODE_ID}+${NODES_NUM}; i++ )); do
+
   node_folder="node\${i}"
   node_stop_script="\${script_dir}/\${node_folder}/stop.sh"
 

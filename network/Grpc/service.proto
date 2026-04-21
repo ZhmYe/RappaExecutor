@@ -60,6 +60,7 @@ message JustifiedSlot {
   repeated int32 padding = 7; // 所有的row chunk的padding size
   int32 store = 8; // 存储方式
   int64 uploadSize = 9; // 节点上传的数据大小，单位bytes
+  double speed = 10; // 节点合成该slot的速度，单位bytes/s
 }
 
 // Heartbeat request message
@@ -78,7 +79,6 @@ message HeartbeatResponse {
   int32 nodeId = 1;               // 节点id
   map<string, string> nodeStatus = 2; // 节点状态，这里先不管，可以加点cpu利用率、内存啥的
   repeated Vote votes = 3; // 投票
-  string sign = 4; // 签名
 }
 
 // EpochVote response message
@@ -126,6 +126,7 @@ message SlotCommitRequest {
   int32 store = 10; // 存储方式,0=ec; 1=local; 2=replicas
   string errorMessage = 11;// 可能有一些说明，比如没有完全完成
   int64 uploadSize = 12; // 节点上传的数据大小，单位bytes
+  double speed = 13; // 节点合成该slot的速度，单位bytes/s
 }
 
 message SlotCommitResponse {

@@ -74,11 +74,12 @@ class GrpcClient:
                     commitment=commit_slot.commitment,
                     store=commit_slot.store_method.value,
                     padding=commit_slot.get_padding_sizes(),
-                    uploadSize=commit_slot.upload_size
+                    uploadSize=commit_slot.upload_size,
+                    speed=commit_slot.speed
                 )
                 # 发送grpc请求
                 stub = pb2_grpc.RappaMasterStub(self._channel)
-                commit_response: pb2.SlotCommitResponse = stub.CommitSlot(commit_request, timeout=10,
+                commit_response: pb2.SlotCommitResponse = stub.CommitSlot(commit_request, timeout=60,
                                                                           wait_for_ready=True)
                 # 对提交结果进行处理
                 self._commit_result_process(commit_slot, commit_response)
