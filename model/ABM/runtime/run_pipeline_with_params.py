@@ -142,7 +142,10 @@ def main() -> None:
     code = str(eval_cfg.get("code", input_csv.stem))
     market = str(eval_cfg.get("market", "SM"))
     generate_models = bool(eval_cfg.get("generate_models", True))
-    gan_epochs = int(eval_cfg.get("gan_epochs", 50))
+    vrnn_epochs = int(eval_cfg.get("vrnn_epochs", 50))
+    timegan_epochs = int(eval_cfg.get("timegan_epochs", 50))
+    min_deep_samples = int(eval_cfg.get("min_deep_samples", 200))
+    allow_fallback = bool(eval_cfg.get("allow_fallback", True))
     if abm_output_root is not None:
         abm_root_cfg = str(eval_cfg.get("abm_root", "") or "").strip()
         model_root_cfg = str(eval_cfg.get("model_root", "") or "").strip()
@@ -172,11 +175,17 @@ def main() -> None:
         str(stock_root),
         "--model-root",
         str(model_root),
-        "--gan-epochs",
-        str(gan_epochs),
+        "--vrnn-epochs",
+        str(vrnn_epochs),
+        "--timegan-epochs",
+        str(timegan_epochs),
+        "--min-deep-samples",
+        str(min_deep_samples),
     ]
+    if not allow_fallback:
+        eval_cmd.append("--no-fallback")
     eval_cmd.append("--generate-models" if generate_models else "--no-generate-models")
-    _run(eval_cmd, env, "ABM/GBM/GAN Evaluation")
+    _run(eval_cmd, env, "ABM/VRNN/TimeGAN Evaluation")
 
     stage_log("pipeline finished")
     print("\nPipeline finished.", flush=True)

@@ -135,8 +135,23 @@ def prompt_structural_params(param_config: dict):
 def apply_structural_params_from_dict(param_config: dict, overrides: dict):
     if not isinstance(overrides, dict):
         return
-    int_keys = ["N_FT", "N_LMT", "N_SMT", "N_NT", "S_FT"]
-    float_keys = ["ALPHA_L", "ALPHA_S"]
+    int_keys = ["N_FT", "N_LMT", "N_SMT", "N_NT", "S_FT", "VOLUME"]
+    float_keys = [
+        "ALPHA_L",
+        "ALPHA_S",
+        "MU_L",
+        "SIGMA_L",
+        "K1",
+        "K2",
+        "BETA_L",
+        "BETA_S",
+        "DELTA_NT",
+        "THETA",
+        "MU",
+        "DELTA",
+        "RHO",
+        "GAMMA",
+    ]
 
     for key in int_keys:
         if key not in overrides:
@@ -155,10 +170,7 @@ def apply_structural_params_from_dict(param_config: dict, overrides: dict):
             continue
         try:
             v = float(overrides[key])
-            if v > 0:
-                param_config[key] = v
-            else:
-                print(f"[WARN] 忽略非法结构参数 {key}={overrides[key]}（需>0）")
+            param_config[key] = v
         except Exception:
             print(f"[WARN] 忽略非法结构参数 {key}={overrides[key]}")
 

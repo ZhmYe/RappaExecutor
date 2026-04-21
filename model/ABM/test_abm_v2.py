@@ -65,7 +65,10 @@ def main() -> None:
             "evaluation": {
                 "market": args.market,
                 "generate_models": False,
-                "gan_epochs": 1,
+                "vrnn_epochs": 1,
+                "timegan_epochs": 1,
+                "min_deep_samples": 200,
+                "allow_fallback": True,
             },
         },
     )

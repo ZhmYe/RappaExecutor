@@ -46,8 +46,17 @@ def resolve_available_model(df: pd.DataFrame, selected_model: str) -> str:
 
 
 def normalize_model_name(model_name: str) -> str:
-    value = str(model_name or "").strip().upper()
-    return value or "ABM"
+    value = str(model_name or "").strip()
+    if not value:
+        return "ABM"
+    canonical = {
+        "ABM": "ABM",
+        "GBM": "GBM",
+        "GAN": "GAN",
+        "VRNN": "VRNN",
+        "TIMEGAN": "TimeGAN",
+    }
+    return canonical.get(value.upper(), value)
 
 
 def pick_model_row(df: pd.DataFrame, model_name: str) -> Dict[str, Any]:

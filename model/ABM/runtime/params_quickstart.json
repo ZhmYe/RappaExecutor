@@ -27,10 +27,13 @@
     "code": "600000",
     "market": "SM",
     "generate_models": false,
-    "gan_epochs": 1,
+    "allow_fallback": true,
+    "min_deep_samples": 200,
     "abm_root": "simulated_result",
     "stock_root": "SM_stock",
-    "model_root": "SM_result"
+    "model_root": "SM_result",
+    "timegan_epochs": 1,
+    "vrnn_epochs": 1
   }
 }
 
