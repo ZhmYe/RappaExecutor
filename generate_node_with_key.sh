@@ -146,7 +146,14 @@ EOF
     cat <<EOF >"${node_folder}/start.sh"
 #!/bin/bash
 MODE="\$1"
+GPU_ID="\$2"
+
 cd "\$(dirname "\$0")/${executor_dir_name}" || exit 1
+
+if [ -n "\$GPU_ID" ]; then
+  export CUDA_VISIBLE_DEVICES="\$GPU_ID"
+  echo "节点 node${i}：分配使用 GPU \$GPU_ID"
+fi
 
 echo "启动节点：node${i}"
 if [ "\$MODE" = "--debug" ]; then
@@ -222,6 +229,13 @@ MODE="${3:-}"
 # 获取节点数量
 NODES_NUM=$(find "$script_dir" -mindepth 1 -maxdepth 1 -type d -name "node*" | wc -l)
 
+# 检查 GPU 数量
+if command -v nvidia-smi &> /dev/null; then
+  GPU_COUNT=$(nvidia-smi -L | wc -l)
+else
+  GPU_COUNT=0
+fi
+
 usage() {
   echo "使用方法: $0 [PARALLEL] [TIMEOUT] [MODE]"
   echo "参数说明:"
@@ -261,6 +275,11 @@ fi
 echo "并行度: $PARALLEL"
 echo "超时时间: ${TIMEOUT}秒"
 echo "总节点数: ${NODES_NUM}"
+if [ "$GPU_COUNT" -gt 0 ]; then
+  echo "检测到 GPU 数量: $GPU_COUNT，将按数量平分节点 GPU 启动。"
+else
+  echo "未检测到 GPU，将按默认方式启动。"
+fi
 echo "-----------------------------"
 
 if [ "$NODES_NUM" -eq 0 ]; then
@@ -329,6 +348,7 @@ wait_for_model_loading() {
 # 启动单个节点的函数
 start_single_node() {
   local node_id="$1"
+  local gpu_id="$2"
   local node_folder="node${node_id}"
   local node_start_script="${script_dir}/${node_folder}/start.sh"
 
@@ -337,8 +357,8 @@ start_single_node() {
     return 1
   fi
 
-  echo "启动节点：${node_folder}"
-  bash "$node_start_script" "$MODE" &
+  echo "启动节点：${node_folder} (GPU: ${gpu_id:-None})"
+  bash "$node_start_script" "$MODE" "$gpu_id" &
   local node_pid=$!
   
   # 等待节点模型加载完成
@@ -351,14 +371,26 @@ start_single_node() {
   fi
 }
 
+# 获取所有节点 ID
+node_ids=($(find "$script_dir" -mindepth 1 -maxdepth 1 -type d -name "node*" | sed 's/.*node//' | sort -n))
+
 # 按批次启动节点
 current_batch=()
 success_count=0
 fail_count=0
 
-for (( i=START_NODE_ID; i<START_NODE_ID+NODES_NUM; i++ )); do
+for i in "${!node_ids[@]}"; do
+  node_id="${node_ids[$i]}"
+  
+  # 计算 GPU ID
+  if [ "$GPU_COUNT" -gt 0 ]; then
+    gpu_id=$(( i % GPU_COUNT ))
+  else
+    gpu_id=""
+  fi
+
   # 启动当前节点
-  start_single_node "$i" &
+  start_single_node "$node_id" "$gpu_id" &
   current_batch+=($!)
   
   # 如果达到并行度，等待当前批次完成
@@ -404,15 +436,26 @@ cat <<EOF >"./start_all.sh"
 script_dir="\$(cd "\$(dirname "\$0")" && pwd)"
 MODE="\$1"
 
+# 检查 GPU 数量
+if command -v nvidia-smi &> /dev/null; then
+  GPU_COUNT=\$(nvidia-smi -L | wc -l)
+else
+  GPU_COUNT=0
+fi
+
+if [ "\$GPU_COUNT" -gt 0 ]; then
+  echo "检测到 \$GPU_COUNT 个 GPU，将按数量平分节点 GPU 启动。"
+else
+  echo "未检测到 GPU，将按默认方式启动。"
+fi
+
 if [ "\$MODE" = "--debug" ]; then
   echo "并行启动所有节点 (调试模式)..."
-  echo "警告: 此脚本会同时启动所有节点，在无GPU环境下可能导致CPU过载！"
-  echo "推荐使用: ./start_para.sh [MODE] [PARALLEL] [TIMEOUT]"
 else
   echo "并行启动所有节点 (生产模式)..."
-  echo "警告: 此脚本会同时启动所有节点，在无GPU环境下可能导致CPU过载！"
-  echo "推荐使用: ./start_para.sh [MODE] [PARALLEL] [TIMEOUT]"
 fi
+echo "警告: 此脚本会同时启动所有节点，在无GPU环境下可能导致CPU过载！"
+echo "推荐使用: ./start_para.sh [MODE] [PARALLEL] [TIMEOUT]"
 
 for (( i=${START_NODE_ID}; i<${START_NODE_ID}+${NODES_NUM}; i++ )); do
 
@@ -422,7 +465,15 @@ for (( i=${START_NODE_ID}; i<${START_NODE_ID}+${NODES_NUM}; i++ )); do
   if [ -f "\$node_start_script" ]; then
     echo "-----------------------------"
     echo "启动节点：\${node_folder}"
-    bash "\$node_start_script" "\$MODE" &
+    
+    # 计算该节点使用的 GPU ID
+    if [ "\$GPU_COUNT" -gt 0 ]; then
+      GPU_ID=\$(( (i - ${START_NODE_ID}) % GPU_COUNT ))
+    else
+      GPU_ID=""
+    fi
+    
+    bash "\$node_start_script" "\$MODE" "\$GPU_ID" &
   else
     echo "-----------------------------"
     echo "【错误】未检测到节点\${i}的启动脚本: \$node_start_script"
