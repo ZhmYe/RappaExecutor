@@ -32,31 +32,40 @@ class ReedSolomonEncoder:
         """
         if isinstance(data, pd.DataFrame):
             return self._process_dataframe_with_json(data)
+        elif isinstance(data, (list, dict)):
+            return self._process_generic_with_json(data)
         else:
-            # todo 这里还需要改
-            raise ValueError("Unsupported data type. Only Pandas DataFrame is supported.")
+            raise ValueError("Unsupported data type. Only Pandas DataFrame, List, and Dict are supported.")
 
-    def decode(self, encoded_chunks, chunk_indices, padding_size) -> pd.DataFrame:
+    def _process_generic_with_json(self, data) -> ErasureCodeChunks:
+        """
+        对 List 或 Dict 进行编码。
+        """
+        # 使用 json.dumps 处理图数据适配后的 dict 或 list
+        serialized_data = json.dumps(data)
+        serialized_data_bytes = serialized_data.encode('utf-8')
+        data_length = len(serialized_data_bytes)
+
+        # 确保分块的大小一致
+        chunk_size = math.ceil(data_length / self.k)
+
+        # 计算填充的字节数
+        padded_length = chunk_size * self.k
+        padding_size = padded_length - data_length
+
+        return self._process_serialized_data(serialized_data=serialized_data_bytes, chunk_size=chunk_size, padding_size=padding_size, output_type=ModelOutputType.JSON)
+
+    def decode(self, encoded_chunks, chunk_indices, padding_size, output_type=ModelOutputType.DATAFRAME):
         """
         从编码后的块中恢复原始数据。
-        :param padding_size: 填充的0的个数
-        :param encoded_chunks: 已编码的块列表（bytes）
-        :param chunk_indices: 块对应的索引（list of int）
-        :return: 恢复的 Pandas DataFrame
         """
-        # to_decode = encoded_chunks
         if len(encoded_chunks) < self.k:
             raise ValueError("Insufficient chunks to decode. At least k chunks are required.")
-        else:
-            """
-            zfec的纠删码只能接受k个数据块，如果传进来的数据块多了，就选择其中前k个，（这里我们不暂时不考虑作恶）
-            """
-            # 按照 chunk_indices 排序
-            sorted_chunks = sorted(zip(chunk_indices, encoded_chunks), key=lambda x: x[0])
-
-            # 取排序后的前 k 个块及其索引
-            to_decode_indices, to_decode = zip(*sorted_chunks[:self.k])
-        # 创建解码器
+        
+        # 按照 chunk_indices 排序
+        sorted_chunks = sorted(zip(chunk_indices, encoded_chunks), key=lambda x: x[0])
+        to_decode_indices, to_decode = zip(*sorted_chunks[:self.k])
+        
         decoder = Decoder(self.k, self.n)
 
         try:
@@ -65,14 +74,16 @@ class ReedSolomonEncoder:
             decoded_data = b''.join(decoded_chunks)
             if padding_size > 0:
                 decoded_data = decoded_data[: -padding_size]
-            # 反序列化 JSON 数据
-            json_str = decoded_data.decode('utf-8')  # 从字节流解码为 JSON 字符串
-            restored_df = pd.read_json(StringIO(json_str))  # 反序列化为 DataFrame
-            log.write_log("STORAGE", "EC Decoder decode data success...")
-            # 反序列化为 DataFrame
-            return restored_df
+            
+            json_str = decoded_data.decode('utf-8')
+            
+            if output_type == ModelOutputType.DATAFRAME:
+                return pd.read_json(StringIO(json_str))
+            else:
+                return json.loads(json_str)
+                
         except Exception as e:
-            log.write_log("ERROR", "indices: {}, decoded_data: {}, padding: {}".format(to_decode_indices, decoded_data, padding_size))
+            log.write_log("ERROR", f"Failed to decode data: {e}, indices: {to_decode_indices}, padding: {padding_size}")
             raise ValueError(f"Failed to decode data: {e}")
     # 这里是pickle的实现，但pickle好像是python独有的
     def _process_dataframe_with_pickle(self, df: pd.DataFrame) -> ErasureCodeChunks:

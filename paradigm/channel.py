@@ -7,7 +7,6 @@ from paradigm.replicate import ReplicatePackage
 from paradigm.slot import CommitSlotItem
 from network.Grpc.service.service_pb2 import RecoverSlotChunk
 from utils.function.func import get_project_root
-from
 
 
 class Channel:

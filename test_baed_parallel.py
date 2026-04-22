@@ -53,7 +53,7 @@ def test_baed_parallel_speed():
     with open(file_name, 'wb') as f:
         pickle.dump(all_graphs, f)
     
-    file_size_mb = os.path.getsize(file_name) / (1024 * 1024)
+    file_size_mb = len(pickle.dumps(all_graphs)) / (1024 * 1024)
     synthesis_speed = file_size_mb / duration
     
     print("-" * 30)

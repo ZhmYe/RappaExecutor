@@ -24,8 +24,17 @@ class Chunker:
             return self._chunk_dataframe_data(data)
         elif isinstance(data, list):
             return self.__chunk_list_data(data)
+        elif isinstance(data, dict):
+            return self.__chunk_dict_data(data)
         else:
-            raise ValueError("Unsupported data type. Only Pandas DataFrame and List is supported.")
+            raise ValueError("Unsupported data type. Only Pandas DataFrame, List, and Dict are supported.")
+
+    def __chunk_dict_data(self, data: dict):
+        # Treat the entire dictionary as a single chunk
+        chunks = [data]
+        commitment_computer = CommitmentComputer(hasher=self.hasher)
+        commitment: MerkleCommitment = commitment_computer.compute_commitment(chunks, commitment_type=CommitmentType.MERKLE)
+        return chunks, commitment
 
     def _chunk_dataframe_data(self, data: pd.DataFrame):
         # 处理dataframe

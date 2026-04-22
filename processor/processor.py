@@ -4,6 +4,9 @@
 """
 import torch.cuda
 import time
+import torch  # 确保能识别 Tensor 类型
+import networkx as nx
+import pickle
 from config.config import BHExecutionNodeGlobalConfig
 from model.loader import ModelLoader
 from paradigm.channel import Channel
@@ -53,38 +56,38 @@ class Processor:
                 start_time = time.time()
                 output = model_instance.generate_output(slot.size, params.condition_params)  # 调用模型得到输出
                 duration = time.time() - start_time
-                
-                # 计算速度 (byte/s)
-                speed = 0.0
-                if duration > 0:
-                    # output 是 ModelFormatOutput 类型，真实数据在 output.output 中
-                    data = output.output
-                    
-                    # 估算字节大小
-                    data_size = 0
-                    if isinstance(data, (bytes, bytearray)):
-                        data_size = len(data)
-                    elif isinstance(data, str):
-                        data_size = len(data.encode('utf-8'))
-                    elif hasattr(data, 'to_json'): # Pandas DataFrame
-                        # 转换成 json 估算大小，这与 Storager 的存储逻辑一致
-                        data_size = len(data.to_json().encode('utf-8'))
-                    elif isinstance(data, list):
-                        try:
-                            import json
-                            data_size = len(json.dumps(data).encode('utf-8'))
-                        except:
-                            data_size = len(str(data))
-                    else:
-                        data_size = len(str(data))
-                        
-                    speed = data_size / duration
-                
+                 # 计算速度 (byte/s)
+                data_size = len(pickle.dumps(output))
+                speed = data_size / duration
                 log.write_log("INFO", f"Slot {slot.hash} synth speed: {speed:.2f} byte/s, total size: {data_size} bytes, time: {duration:.4f}s")
                 self.channel.latest_synth_speed.value = speed
                 slot.upload_size = int(data_size)
                 slot.speed = speed
+                # 适配图数据格式
+                data = output.output
+                if isinstance(data, list) and len(data) > 0 and isinstance(data[0], nx.Graph):
+                    import torch
+                    combined_graph = nx.Graph()
+                    for graph in data:
+                        combined_graph = nx.compose(combined_graph, graph)
+                    
+                    # 1. 深度清理图中的 Tensor，否则后续 JSON 序列化会失败
+                    for node, attrs in combined_graph.nodes(data=True):
+                        for key, val in list(attrs.items()):
+                            if torch.is_tensor(val):
+                                attrs[key] = val.item() if val.numel() == 1 else val.detach().cpu().tolist()
+                    
+                    for u, v, attrs in combined_graph.edges(data=True):
+                        for key, val in list(attrs.items()):
+                            if torch.is_tensor(val):
+                                attrs[key] = val.item() if val.numel() == 1 else val.detach().cpu().tolist()
 
+                    # 2. 使用标准格式：id/source/target 必须为 int，字段名必须为 links
+                    # nx.node_link_data 生成的格式能完美对应 Master 侧的 paradigm.Graph 结构体
+                    graph_dict = nx.node_link_data(combined_graph)
+                    
+                    # 3. 重要：Master 侧期望 []paradigm.Graph 数组，所以必须包装在 list 中
+                    output.output = [graph_dict]
                 # self.storager.handle_slot_output(slot, output)  # 将输出和slot交给storager
                 self.channel.to_storager_slot_channel.put((slot, output))
             except Exception as e:

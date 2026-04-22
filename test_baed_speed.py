@@ -6,6 +6,7 @@ from model.loader import ModelLoader
 from utils.function.func import get_model_root
 from paradigm.model import ModelEnum
 import os
+import sys
 import pickle
 
 def chunk2json(chunk):
@@ -14,7 +15,7 @@ def chunk2json(chunk):
         for item in chunk:
             json_chunk.append(nx.node_link_data(item))
         return json.dumps(json_chunk)
-    return str(chunk)
+    return json.dumps(chunk)
 
 def test_baed_speed():
     model_name = "BAED"
@@ -33,11 +34,8 @@ def test_baed_speed():
     start_time = time.time()
     output = instance.generate_output(total_samples)
     duration = time.time() - start_time
-    file_name = f"./test_generate.pkl"
-    with open(file_name, 'wb') as f:
-        pickle.dump(output, f)
     # 获取数据合成文件大小
-    file_size = os.path.getsize(file_name) / (1024 * 1024)  # 转换为MB
+    file_size = len(pickle.dumps(output)) / (1024 * 1024)  # 转换为MB
     print(f"数据合成文件大小：{file_size:.2f} MB")
     # 计算数据合成速度
     synthesis_speed = file_size / duration
