@@ -4,10 +4,14 @@ from torch_geometric.nn import GCNConv
 
 #gae的encoder
 class GCNEncoder(torch.nn.Module):
-    def __init__(self, in_channels, out_channels, activation='relu'):
+    def __init__(self, in_channels, out_channels, activation='relu', dropout_rate=0.5):
         super(GCNEncoder, self).__init__()
-        self.conv1 = GCNConv(in_channels, 2 * out_channels, cached=False) # cached only for transductive learning
-        self.conv2 = GCNConv(2 * out_channels, out_channels, cached=False) # cached only for transductive learning
+        self.conv1 = GCNConv(in_channels, 2 * out_channels, cached=False)
+        self.conv2 = GCNConv(2 * out_channels, out_channels, cached=False)
+        
+        # Dropout层
+        self.dropout = torch.nn.Dropout(dropout_rate)
+        
         # 设置激活函数
         if activation == 'relu':
             self.activation = F.relu
@@ -20,7 +24,9 @@ class GCNEncoder(torch.nn.Module):
 
     def forward(self, x, edge_index):
         x = self.conv1(x, edge_index)
-        x = self.activation(x)  # 使用自定义激活函数
+        x = self.activation(x)
+        if hasattr(self, 'dropout'):
+            x = self.dropout(x)  # 在第一层后添加dropout
         return self.conv2(x, edge_index)
 
 
@@ -44,6 +50,3 @@ class VariationalGCNEncoder(torch.nn.Module):
         x = self.conv1(x, edge_index)
         x = self.activation(x)  # 使用自定义激活函数
         return self.conv_mu(x, edge_index), self.conv_logstd(x, edge_index)
-
-
-

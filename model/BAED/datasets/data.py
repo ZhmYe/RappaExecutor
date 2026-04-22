@@ -1,18 +1,27 @@
-import os.path
-
+import math
 import torch
+import os 
+import networkx as nx
+import numpy as np
+
 import pickle as pkl
 from torch.utils.data import DataLoader, Dataset, ConcatDataset
+from torch_geometric.data import data
+import torch_geometric as pyg
 import random
-
-from utils.function.func import get_project_root
-from .data_utils import EmpiricalEmptyGraphGenerator, NeuralEmptyGraphGenerator, preprocess, collate_fn, FEATURE_EXTRACTOR
-from .evaluator import NetworkEvaluator, GenericGraphEvaluator
+from functools import partial
+from torch_geometric.datasets import QM9
+from model.BAED.datasets.data_utils import EmpiricalEmptyGraphGenerator, NeuralEmptyGraphGenerator, preprocess, collate_fn, FEATURE_EXTRACTOR
+from model.BAED.datasets.evaluator import NetworkEvaluator, GenericGraphEvaluator
+# 引入计算子图embedding的函数
 from model.BAED.gae.encoder import GCNEncoder
 from torch_geometric.nn import GCNConv
 from torch_geometric.nn.models import GAE
+import torch_geometric as pyg
 import sys
-sys.path.append(os.path.join(get_project_root(), "model/BAED/gae"))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "gae")))
+
+
 class NetworkDataset(Dataset):
     def __init__(self, pyg_graph, num_iter, transform=None):
         super().__init__()
@@ -63,7 +72,7 @@ def get_data(args):
         num_node_classes = None
         num_edge_classes = 2
         num_node_feat = None
-        nx_graph = pkl.load(open(f'{args.model_path}/graphs/{args.dataset}.pkl','rb'))
+        nx_graph = pkl.load(open(f'graphs/{args.dataset}.pkl','rb'))
         pyg_graph = preprocess(nx_graph, degree=args.degree)
         max_degree = max([d for _, d in nx_graph.degree()]) 
         train_set = NetworkDataset(pyg_graph, num_iter=args.num_iter * args.batch_size, transform=None)
@@ -77,7 +86,50 @@ def get_data(args):
         num_node_classes = None
         num_edge_classes = 2
         num_node_feat = None
-        nx_graphs = pkl.load(open(f"{args.model_path}/graphs/{args.dataset}.pkl", 'rb'))
+        nx_graphs = pkl.load(open(f"graphs/{args.dataset}.pkl", 'rb'))
+        random.shuffle(nx_graphs)
+        l = len(nx_graphs)
+        train_nx_graphs = nx_graphs[:int(0.8*l)]
+        eval_nx_graphs = nx_graphs[:int(0.2*l)]
+        test_nx_graphs = nx_graphs[int(0.8*l):] 
+
+        train_pygraphs = []
+        eval_pygraphs = []
+        test_pygraphs = []
+
+        max_degree = max([max([d for n, d in train_nx_graph.degree()]) for train_nx_graph in train_nx_graphs])
+        for nx_graph in train_nx_graphs:
+            pyg_data = preprocess(nx_graph, degree=args.degree)
+            train_pygraphs.append(pyg_data)
+
+        for nx_graph in eval_nx_graphs:
+            pyg_data = preprocess(nx_graph, degree=args.degree)
+            eval_pygraphs.append(pyg_data)
+
+        for nx_graph in test_nx_graphs:
+            pyg_data = preprocess(nx_graph, degree=args.degree)
+            test_pygraphs.append(pyg_data)
+            
+        train_set = ConcatDataset([GraphDataset(train_pygraphs) for _ in range(repeat)])
+        eval_set = GraphDataset(eval_pygraphs)
+        test_set = GraphDataset(test_pygraphs)
+
+        if args.empty_graph_sampler == 'empirical':
+            initial_graph_sampler = EmpiricalEmptyGraphGenerator(train_pygraphs, degree=args.degree)
+        elif args.empty_graph_sampler == 'neural':
+            neural_attr_sampler = torch.load(f'graphs/{args.dataset}_degree_sampler.pt', map_location=args.device)
+            initial_graph_sampler = NeuralEmptyGraphGenerator(train_pygraphs, neural_attr_sampler, degree=args.degree, device=args.device)
+
+        eval_evaluator = GenericGraphEvaluator(eval_nx_graphs, device=args.device)
+        test_evaluator = GenericGraphEvaluator(test_nx_graphs, device=args.device)
+
+        monitoring_statistics = ['clustering_mmd', 'orbits_mmd', 'spectral_mmd', 'degree_mmd', 'mmd_linear', 'mmd_rbf']
+    elif args.dataset in ['xy_transfer']:
+        repeat = 64 
+        num_node_classes = None
+        num_edge_classes = 2
+        num_node_feat = None
+        nx_graphs = pkl.load(open(f"graphs/{args.dataset}.pkl", 'rb'))
         random.shuffle(nx_graphs)
         l = len(nx_graphs)
         train_nx_graphs = nx_graphs[:int(0.8*l)]
@@ -116,11 +168,12 @@ def get_data(args):
 
         monitoring_statistics = ['clustering_mmd', 'orbits_mmd', 'spectral_mmd', 'degree_mmd', 'mmd_linear', 'mmd_rbf']
     elif args.dataset == "elliptic":
+        print("正在初始化elliptic数据集")
         repeat = 64 
         num_node_classes = None
         num_edge_classes = 2
         num_node_feat = None
-        nx_graphs = pkl.load(open(f"{args.model_path}/graphs/{args.dataset}_init_1_dataset.pkl", 'rb'))
+        nx_graphs = pkl.load(open(f"model/BAED/graphs/{args.dataset}_init_1_dataset.pkl", 'rb'))
         random.shuffle(nx_graphs)
         l = len(nx_graphs)
         train_nx_graphs = nx_graphs[:int(0.8*l)]
@@ -133,7 +186,7 @@ def get_data(args):
 
         max_degree = max([max([d for n, d in train_nx_graph.degree()]) for train_nx_graph in train_nx_graphs])
         # # 加载GAE模型
-        model = torch.load(f"{args.model_path}/gae/weight/elliptic_gae_relu_256.pt", map_location=args.device)
+        model = torch.load("model/BAED/gae/weight/elliptic_gae_relu_256.pt",map_location=args.device)
         # 增加子图的节点特征属性
         featureNameList=["label","feature"]
         for i in range(166):
@@ -160,7 +213,7 @@ def get_data(args):
             initial_graph_sampler = EmpiricalEmptyGraphGenerator(train_pygraphs,model ,device=args.device,degree=args.degree,augment_features=featureNameList)
         # 基于degree生成图结构
         elif args.empty_graph_sampler == 'neural':
-            neural_attr_sampler = torch.load(f'{args.model_path}/graphs/{args.dataset}_degree_sampler.pt', map_location=args.device)
+            neural_attr_sampler = torch.load(f'graphs/{args.dataset}_degree_sampler.pt', map_location=args.device)
             initial_graph_sampler = NeuralEmptyGraphGenerator(train_pygraphs, neural_attr_sampler, degree=args.degree, device=args.device)
 
         eval_evaluator = GenericGraphEvaluator(eval_nx_graphs, device=args.device)
@@ -168,11 +221,12 @@ def get_data(args):
 
         monitoring_statistics = ['clustering_mmd', 'orbits_mmd', 'spectral_mmd', 'degree_mmd', 'mmd_linear', 'mmd_rbf']
     elif args.dataset == "dgraph":
+        print("正在初始化dgraph数据集")
         repeat = 64 
         num_node_classes = None
         num_edge_classes = 2
         num_node_feat = None
-        nx_graphs = pkl.load(open(f"{args.model_path}/graphs/{args.dataset}_init_1_dataset.pkl", 'rb'))
+        nx_graphs = pkl.load(open(f"model/BAED/graphs/{args.dataset}_init_1_dataset.pkl", 'rb'))
         # nx_graphs=nx_graphs[:300]
         random.shuffle(nx_graphs)
         l = len(nx_graphs)
@@ -186,8 +240,8 @@ def get_data(args):
 
         max_degree = max([max([d for n, d in train_nx_graph.degree()]) for train_nx_graph in train_nx_graphs])
         # # 加载GAE模型
-        # model = torch.load("/root/zkml_test/BHExecutionNode/BAED/gae/weight/dgraph_gae_relu_32.pt")
-        model=None
+        model = torch.load("model/BAED/gae/weight/dgraph_gae_relu_32.pt",map_location=args.device)
+        # model=None
 
         # 增加子图的节点特征属性
         featureNameList=["label","feature"]
@@ -223,11 +277,13 @@ def get_data(args):
 
         monitoring_statistics = ['clustering_mmd', 'orbits_mmd', 'spectral_mmd', 'degree_mmd', 'mmd_linear', 'mmd_rbf']
     elif args.dataset == "reddit":
+        print("正在初始化reddit数据集")
         repeat = 64 
         num_node_classes = None
         num_edge_classes = 2
         num_node_feat = None
-        nx_graphs = pkl.load(open(f"{args.model_path}/graphs/{args.dataset}_init_1_dataset.pkl", 'rb'))
+        nx_graphs = pkl.load(open(f"model/BAED/graphs/{args.dataset}_init_1_dataset.pkl", 'rb'))
+        print("加载完毕")
         # nx_graphs=nx_graphs[:16]
         random.shuffle(nx_graphs)
         l = len(nx_graphs)
@@ -241,7 +297,7 @@ def get_data(args):
 
         max_degree = max([max([d for n, d in train_nx_graph.degree()]) for train_nx_graph in train_nx_graphs])
         # 加载GAE模型
-        model = torch.load(f"{args.model_path}/gae/weight/reddit_gae_relu_128.pt", map_location=args.device)
+        model = torch.load("model/BAED/gae/weight/reddit_gae_relu_128.pt")
         # 增加子图的节点特征属性
         featureNameList=["label","feature"]
         for i in range(64):
@@ -268,7 +324,7 @@ def get_data(args):
             initial_graph_sampler = EmpiricalEmptyGraphGenerator(train_pygraphs,model ,device=args.device,degree=args.degree,augment_features=featureNameList)
         # 基于degree生成图结构
         elif args.empty_graph_sampler == 'neural':
-            neural_attr_sampler = torch.load(f'{args.model_path}/graphs/{args.dataset}_degree_sampler.pt', map_location=args.device)
+            neural_attr_sampler = torch.load(f'model/BAED/graphs/{args.dataset}_degree_sampler.pt', map_location=args.device)
             initial_graph_sampler = NeuralEmptyGraphGenerator(train_pygraphs, neural_attr_sampler, degree=args.degree, device=args.device)
 
         eval_evaluator = GenericGraphEvaluator(eval_nx_graphs, device=args.device)
@@ -276,11 +332,13 @@ def get_data(args):
 
         monitoring_statistics = ['clustering_mmd', 'orbits_mmd', 'spectral_mmd', 'degree_mmd', 'mmd_linear', 'mmd_rbf']
     elif args.dataset == "photo":
+        print("正在初始化photo数据集")
         repeat = 64 
         num_node_classes = None
         num_edge_classes = 2
         num_node_feat = None
-        nx_graphs = pkl.load(open(f"{args.model_path}/graphs/{args.dataset}_init_1_dataset.pkl", 'rb'))
+        nx_graphs = pkl.load(open(f"model/BAEDgraphs/{args.dataset}_init_1_dataset.pkl", 'rb'))
+        print("加载完毕")
         # nx_graphs=nx_graphs[:200]
         random.shuffle(nx_graphs)
         l = len(nx_graphs)
@@ -294,7 +352,7 @@ def get_data(args):
 
         max_degree = max([max([d for n, d in train_nx_graph.degree()]) for train_nx_graph in train_nx_graphs])
         # 加载GAE模型
-        model = torch.load("{args.model_path}/gae/weight/photo_gae_relu_896.pt", map_location=args.device)
+        model = torch.load("model/BAED/gae/weight/photo_gae_relu_896.pt")
         # 增加子图的节点特征属性
         featureNameList=["label","feature"]
         for i in range(745):
@@ -321,7 +379,7 @@ def get_data(args):
             initial_graph_sampler = EmpiricalEmptyGraphGenerator(train_pygraphs,model ,device=args.device,degree=args.degree,augment_features=featureNameList)
         # 基于degree生成图结构
         elif args.empty_graph_sampler == 'neural':
-            neural_attr_sampler = torch.load(f'{args.model_path}/graphs/{args.dataset}_degree_sampler.pt', map_location=args.device)
+            neural_attr_sampler = torch.load(f'graphs/{args.dataset}_degree_sampler.pt', map_location=args.device)
             initial_graph_sampler = NeuralEmptyGraphGenerator(train_pygraphs, neural_attr_sampler, degree=args.degree, device=args.device)
 
         eval_evaluator = GenericGraphEvaluator(eval_nx_graphs, device=args.device)
@@ -329,11 +387,13 @@ def get_data(args):
 
         monitoring_statistics = ['clustering_mmd', 'orbits_mmd', 'spectral_mmd', 'degree_mmd', 'mmd_linear', 'mmd_rbf']
     elif args.dataset == "tfinance":
+        print("正在初始化tfinance数据集")
         repeat = 64 
         num_node_classes = None
         num_edge_classes = 2
         num_node_feat = None
-        nx_graphs = pkl.load(open(f"{args.model_path}/graphs/{args.dataset}_init_1_dataset.pkl", 'rb'))
+        nx_graphs = pkl.load(open(f"model/BAED/graphs/{args.dataset}_init_1_dataset.pkl", 'rb'))
+        print("加载完毕")
         nx_graphs=nx_graphs[:100]
         random.shuffle(nx_graphs)
         l = len(nx_graphs)
@@ -347,7 +407,7 @@ def get_data(args):
 
         max_degree = max([max([d for n, d in train_nx_graph.degree()]) for train_nx_graph in train_nx_graphs])
         # 加载GAE模型
-        model = torch.load("{args.model_path}/gae/weight/tfinance_gae_sigmoid_32.pt", map_location=args.device)
+        model = torch.load("model/BAED/gae/weight/tfinance_gae_sigmoid_32.pt")
         # 增加子图的节点特征属性
         featureNameList=["label","feature"]
         for i in range(10):
@@ -374,13 +434,68 @@ def get_data(args):
             initial_graph_sampler = EmpiricalEmptyGraphGenerator(train_pygraphs,model ,device=args.device,degree=args.degree,augment_features=featureNameList)
         # 基于degree生成图结构
         elif args.empty_graph_sampler == 'neural':
-            neural_attr_sampler = torch.load(f'{args.model_path}/graphs/{args.dataset}_degree_sampler.pt', map_location=args.device)
+            neural_attr_sampler = torch.load(f'graphs/{args.dataset}_degree_sampler.pt', map_location=args.device)
             initial_graph_sampler = NeuralEmptyGraphGenerator(train_pygraphs, neural_attr_sampler, degree=args.degree, device=args.device)
 
         eval_evaluator = GenericGraphEvaluator(eval_nx_graphs, device=args.device)
         test_evaluator = GenericGraphEvaluator(test_nx_graphs, device=args.device)
 
         monitoring_statistics = ['clustering_mmd', 'orbits_mmd', 'spectral_mmd', 'degree_mmd', 'mmd_linear', 'mmd_rbf']
+    
+    elif args.dataset == "xyTransfer":
+        print("正在初始化xyTransfer数据集")
+        repeat = 64 
+        num_node_classes = None
+        num_edge_classes = 3
+        num_node_feat = None
+        nx_graphs = pkl.load(open(f"model/BAED/graphs/transfer_subgraph.pkl", 'rb'))
+        random.shuffle(nx_graphs)
+        l = len(nx_graphs)
+        train_nx_graphs = nx_graphs[:int(0.8*l)]
+        eval_nx_graphs = nx_graphs[:int(0.2*l)]
+        test_nx_graphs = nx_graphs[int(0.8*l):] 
+
+        train_pygraphs = []
+        eval_pygraphs = []
+        test_pygraphs = []
+
+        max_degree = max([max([d for n, d in train_nx_graph.degree()]) for train_nx_graph in train_nx_graphs])
+        # # 加载GAE模型
+        model = torch.load("model/BAED/gae/weight/xy_transfer.pt")
+        # 增加子图的节点特征属性
+        featureNameList=["label","feature"]
+        for i in range(32):
+            featureNameList.append(f"feature{i}")
+        for nx_graph in train_nx_graphs:
+            pyg_data = preprocess(nx_graph ,model,degree=args.degree,augmented_features=featureNameList,device=args.device)
+            train_pygraphs.append(pyg_data)
+
+        for nx_graph in eval_nx_graphs:
+            pyg_data = preprocess(nx_graph,model,degree=args.degree,augmented_features=featureNameList,device=args.device)
+            eval_pygraphs.append(pyg_data)
+
+        for nx_graph in test_nx_graphs:
+            pyg_data = preprocess(nx_graph,model,degree=args.degree,augmented_features=featureNameList,device=args.device)
+            test_pygraphs.append(pyg_data)
+            
+        # train_set = ConcatDataset([GraphDataset(train_pygraphs) for _ in range(repeat)])
+        train_set=GraphDataset(train_pygraphs)
+        eval_set = GraphDataset(eval_pygraphs)
+        test_set = GraphDataset(test_pygraphs)
+        # train_loader = DataLoader(train_set, batch_size=args.batch_size, shuffle=True, num_workers=0, pin_memory=False, collate_fn=collate_fn)
+
+        if args.empty_graph_sampler == 'empirical':
+            initial_graph_sampler = EmpiricalEmptyGraphGenerator(train_pygraphs,model ,device=args.device,degree=args.degree,augment_features=featureNameList)
+        # 基于degree生成图结构
+        elif args.empty_graph_sampler == 'neural':
+            neural_attr_sampler = torch.load(f'model/BAED/graphs/{args.dataset}_degree_sampler.pt', map_location=args.device)
+            initial_graph_sampler = NeuralEmptyGraphGenerator(train_pygraphs, neural_attr_sampler, degree=args.degree, device=args.device)
+
+        eval_evaluator = GenericGraphEvaluator(eval_nx_graphs, device=args.device)
+        test_evaluator = GenericGraphEvaluator(test_nx_graphs, device=args.device)
+
+        monitoring_statistics = ['clustering_mmd', 'orbits_mmd', 'spectral_mmd', 'degree_mmd', 'mmd_linear', 'mmd_rbf']
+
     else:
         raise NotImplementedError
     augmented_feature_dict = {k:FEATURE_EXTRACTOR[k]['data_spec'] for k in args.augmented_features}
@@ -390,5 +505,6 @@ def get_data(args):
     train_loader = DataLoader(train_set, batch_size=args.batch_size, shuffle=True, num_workers=0, pin_memory=False, collate_fn=collate_fn)
     eval_loader = DataLoader(eval_set, batch_size=1, shuffle=False, num_workers=0, pin_memory=False, collate_fn=collate_fn)
     test_loader = DataLoader(test_set, batch_size=1, shuffle=False, num_workers=0, pin_memory=False, collate_fn=collate_fn)
+    print("end")
     return train_loader, eval_loader, test_loader, num_node_feat, num_node_classes, num_edge_classes, max_degree, augmented_feature_dict, initial_graph_sampler, eval_evaluator, test_evaluator, monitoring_statistics
  

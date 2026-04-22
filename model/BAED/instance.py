@@ -32,22 +32,39 @@ class BAED_MODEL_INSTANCE:
         return None
     def generate_output(self, num_samples=1, params: dict=None):
         _input = self.generate_input()
-        sampled_pygraph = self.model.sample(num_samples,embedding=None)
-        # print(sampled_pygraph)
-        pyg_datas = sampled_pygraph.to_data_list()
-        generated_nxgraphs = []
-
-        # 这里把pyg转为json list
-        for pyg_data in pyg_datas:
-            g_gen = pyg.utils.to_networkx(pyg_data, to_undirected=True)
-            largest_cc = max(nx.connected_components(g_gen), key=len)
-            g_gen = g_gen.subgraph(largest_cc)
-            generated_nxgraphs.append(g_gen)
+        
+        # 模仿 generateData.py 的逻辑，进行分批合成
+        batch_size = 128
+        total_generated_nxgraphs = []
+        
+        remaining = num_samples
+        while remaining > 0:
+            current_batch_size = min(remaining, batch_size)
+            sampled_pygraph = self.model.sample(current_batch_size, embedding=None)
+            pyg_datas = sampled_pygraph.to_data_list()
+            
+            for pyg_data in pyg_datas:
+                feature_keys = [key for key in pyg_data.keys() if key.startswith('feature')]
+                feature_keys.append("label")
+                
+                g_gen = pyg.utils.to_networkx(pyg_data, to_undirected=True)
+                
+                # 将属性添加到 NetworkX 图的节点属性中
+                for i, node in enumerate(g_gen.nodes()):
+                    for key in feature_keys:
+                        g_gen.nodes[node][key] = pyg_data[key][i]
+                        
+                largest_cc = max(nx.connected_components(g_gen), key=len)
+                g_gen = g_gen.subgraph(largest_cc)
+                total_generated_nxgraphs.append(g_gen)
+            
+            remaining -= current_batch_size
+            log.write_log("MODEL", f"Batch generated: {len(total_generated_nxgraphs)}/{num_samples}")
 
         return ModelFormatOutput(
             model_name=self.name,
             _input=_input,
-            output=generated_nxgraphs,
+            output=total_generated_nxgraphs,
             params=params
         )
 
@@ -62,4 +79,5 @@ class BAED_MODEL_INSTANCE:
             args = pickle.load(f)
             args.device = 'cuda:0' if self.model_args.is_cuda else 'cpu'
             args.model_path = self.model_args.model_root
+            args.dataset = self.model_args.dataset
         return args

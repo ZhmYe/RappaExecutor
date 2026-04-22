@@ -6,7 +6,7 @@ import torch_geometric as pyg
 from torch_geometric.utils import to_dense_adj
 from torch_geometric import transforms as T
 from torch.nn import functional as F
-from ..layers.layers import BitModel, NodeModel
+from model.BAED.layers.layers import BitModel, NodeModel
 
 
 FEATURE_EXTRACTOR = {

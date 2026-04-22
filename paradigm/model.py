@@ -70,7 +70,7 @@ def load_model_args(model: ModelEnum, dataset=None, checkpoint=None, is_cuda=Fal
         # 参考BAED/evaluate.py
         # TODO @YZM 这里需要有个check,判断checkpoint和dataset是否符合要求
         model_root = os.path.join(project_root, "model/BAED")
-        model_path = os.path.join(model_root, "wandb/{}/multinomial_diffusion/multistep/{}".format(dataset, "2024-12-26_11-48-15")) # todo
+        model_path = os.path.join(model_root, "wandb/{}/multinomial_diffusion/multistep/{}".format(dataset, "2024-12-06_17-50-36")) # todo
         path_args = "{}/args.pickle".format(model_path)
         path_check = "{}/check/checkpoint_{}.pt".format(model_path, checkpoint)
         return ModelArgs(model_root, dataset, model_path, path_args, path_check, is_cuda=is_cuda)

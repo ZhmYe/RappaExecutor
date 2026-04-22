@@ -45,6 +45,7 @@ def get_model(args, initial_graph_sampler):
         raise NotImplementedError()
         
     dynamics = dynamics_fn(
+            dataset=args.dataset,
             max_degree=args.max_degree,
             num_node_classes=2 if args.num_node_classes is None else args.num_node_classes, 
             num_edge_classes=args.num_node_classes,

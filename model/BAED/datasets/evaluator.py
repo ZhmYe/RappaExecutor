@@ -1,9 +1,9 @@
 import dgl
 import numpy as np
 import networkx as nx
-from ..eval_utils.graph_statistics import compute_graph_statistics
-from ..eval_utils.evaluation.evaluator import Evaluator
-from ..eval_utils.evaluation.graph_structure_evaluation import MMDEval, NSPDKEvaluation
+from model.BAED.eval_utils.graph_statistics import compute_graph_statistics
+from model.BAED.eval_utils.evaluation.evaluator import Evaluator
+from model.BAED.eval_utils.evaluation.graph_structure_evaluation import MMDEval, NSPDKEvaluation
 
 class GenericGraphEvaluator:
     def __init__(self, references_nx_graphs, device):
@@ -21,7 +21,8 @@ class GenericGraphEvaluator:
         metrics['spectral_mmd'] = self.struc_evaluators['spectral'].evaluate(self.references, target_graphs)[0]['spectral_mmd']
         metrics['clustering_mmd'] = self.struc_evaluators['clustering'].evaluate(self.references, target_graphs)[0]['clustering_mmd']
         metrics['orbits_mmd'] = self.struc_evaluators['orbits'].evaluate(self.references, target_graphs)[0]['orbits_mmd']
-        metrics['nspdk_mmd'] = self.struc_evaluators['nspdk'].evaluate(self.references, target_graphs)[0]['nspdk_mmd']
+        # metrics['nspdk_mmd'] = self.struc_evaluators['nspdk'].evaluate(self.references, target_graphs)[0]['nspdk_mmd']
+        metrics['orbits_mmd']=self.struc_evaluators['degree'].evaluate(self.references, target_graphs)[0]['degree_mmd']
         return metrics
 
 class NetworkEvaluator:

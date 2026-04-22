@@ -1,4 +1,5 @@
-from model.BAED.eval_utils.evaluation import gin_evaluation, graph_structure_evaluation
+from model.BAED.eval_utils.evaluation import graph_structure_evaluation
+from model.BAED.eval_utils.evaluation import gin_evaluation
 
 
 class Evaluator():

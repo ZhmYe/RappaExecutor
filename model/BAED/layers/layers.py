@@ -3,9 +3,14 @@ import numpy as np
 import torch_geometric as pyg
 import torch
 import torch_scatter
-from ..diffusion.diffusion_base import index_to_log_onehot
+from model.BAED.diffusion.diffusion_base import index_to_log_onehot
 from torch.nn import functional as F
 from torch import nn
+from torch.nn.parameter import Parameter
+# 引入计算子图embedding的函数
+from model.BAED.gae.encoder import GCNEncoder
+from torch_geometric.nn import GCNConv
+from torch_geometric.nn.models import GAE
 
 norm_dict = {
     'Batch': lambda d: torch.nn.BatchNorm1d(d),
@@ -389,4 +394,232 @@ class TGNN_degree_guided(torch.nn.Module):
         edge_emb = nodes[row] + nodes[col]
         edge_class = self.final_out(edge_emb)
         
+        return pyg_data.log_node_attr, edge_class
+
+
+class TGNN_embedding_guided(torch.nn.Module):
+    def __init__(self, dataset,max_degree, num_node_classes, num_edge_classes, dim, num_steps,embedding_dim=256,num_heads=[4, 4, 4, 1], dropout=0., norm='None', degree=False, augmented_features={}, **kwargs) -> None:
+        super().__init__()
+        self.max_degree = max_degree
+        self.num_classes = num_edge_classes
+        self.num_heads = num_heads
+        self.dim = dim
+        self.num_steps = num_steps
+        self.embedding_t = torch.nn.Linear(1, dim)
+        self.embedding_0 = torch.nn.Linear(1, dim)
+        self.node_in = torch.torch.nn.Sequential(
+            torch.nn.Linear(dim * 2, dim),
+            torch.nn.SiLU()
+        )
+        self.time_pos_emb = SinusoidalPosEmb(dim, num_steps=num_steps)
+        self.layers = torch.nn.ModuleDict()
+        self.norm = norm
+        self.gru = torch.nn.Identity()
+        # self.global_mlp = torch.nn.Sequential(
+        #     torch.nn.Linear(dim, dim * 2),
+        #     torch.nn.SiLU(),
+        #     torch.nn.Linear(dim * 2, dim)
+        #     )
+        self.global_mlp=torch.nn.Linear(1, dim)
+
+        self.context_mlp = torch.nn.Sequential(
+            torch.nn.Linear(dim*2, dim*4),
+            torch.nn.SiLU(),
+            torch.nn.Linear(dim * 4, dim)
+            )  
+
+        self.mlp = torch.nn.Sequential(
+            torch.nn.Linear(dim, dim * 2),
+            torch.nn.SiLU(),
+            torch.nn.Linear(dim * 2, dim)
+            )
+
+        self.dropout = torch.nn.Dropout(p=dropout)
+        if 'gru' in kwargs.keys():
+            if kwargs['gru']:
+                self.gru = torch.nn.GRU(dim, dim)
+
+        self.node_mlp = torch.nn.Sequential(
+            torch.nn.Linear(dim, dim * 2),
+            torch.nn.SiLU(),
+        )
+
+        for i, num_head in enumerate(num_heads):
+            self.layers[f'time{i}'] = TimeEmb(dim, dim, Mish())
+            self.layers[f'conv{i}'] = pyg.nn.TransformerConv(in_channels=dim*2, out_channels=dim, heads=num_head, concat=False)
+            self.layers[f'norm{i}'] = norm_dict[self.norm](dim)
+            self.layers[f'act{i}'] = torch.nn.SiLU()
+
+        self.dummy_edge_feats = torch.nn.parameter.Parameter(torch.randn(dim))
+
+        self.node_out_mlp = torch.nn.Sequential(
+            torch.nn.Linear(dim*3, dim * 2),
+            torch.nn.SiLU(),
+        )
+        
+        self.final_out = torch.nn.Sequential(
+            torch.nn.Linear(dim * 2, dim),
+            torch.nn.SiLU(),
+            torch.nn.Linear(dim, self.num_classes)
+        )
+        if dataset=="elliptic":
+            self.gae= torch.load("/root/rappa/model/gae/weight/elliptic_gae_relu_256.pt")
+        elif dataset=="dgraph":
+            self.gae=torch.load("/root/rappa/model/gae/weight/dgraph_gae_relu_32.pt")
+        elif dataset=="tfinance":
+            self.gae=torch.load("/root/rappa/model/gae/weight/tfinance_gae_sigmoid_32.pt")
+        # self.gae= torch.load("/home/hsy/AGGS/gae/weight/reddit_gae_relu_128.pt")
+        # self.gae= torch.load("/home/hsy/AGGS/gae/weight/photo_gae_relu_896.pt")
+        # self.gae= torch.load("/home/hsy/AGGS/gae/weight/tfinance_gae_sigmoid_32.pt")
+        # 自适应池化
+        self.adapter = torch.nn.AdaptiveAvgPool1d(embedding_dim)
+        # 将context——node降维
+        self.context_node=torch.nn.Linear(dim,1)
+
+        
+    def forward(self, pyg_data, t_node, t_edge,embedding=None):
+        #pyg_data: DataBatch(edge_index=[2, 324], feature=[418, 166], label=[418], num_nodes=418, full_edge_index=[2, 254], full_edge_attr=[254], node_attr=[418], degree=[251], feature0=[418], feature1=[418], feature2=[418], feature3=[418], feature4=[418], feature5=[418], feature6=[418], feature7=[418], feature8=[418], feature9=[418], feature10=[418], feature11=[418], feature12=[418], feature13=[418], feature14=[418], feature15=[418], feature16=[418], feature17=[418], feature18=[418], feature19=[418], feature20=[418], feature21=[418], feature22=[418], feature23=[418], feature24=[418], feature25=[418], feature26=[418], feature27=[418], feature28=[418], feature29=[418], feature30=[418], feature31=[418], feature32=[418], feature33=[418], feature34=[418], feature35=[418], feature36=[418], feature37=[418], feature38=[418], feature39=[418], feature40=[418], feature41=[418], feature42=[418], feature43=[418], feature44=[418], feature45=[418], feature46=[418], feature47=[418], feature48=[418], feature49=[418], feature50=[418], feature51=[418], feature52=[418], feature53=[418], feature54=[418], feature55=[418], feature56=[418], feature57=[418], feature58=[418], feature59=[418], feature60=[418], feature61=[418], feature62=[418], feature63=[418], feature64=[418], feature65=[418], feature66=[418], feature67=[418], feature68=[418], feature69=[418], feature70=[418], feature71=[418], feature72=[418], feature73=[418], feature74=[418], feature75=[418], feature76=[418], feature77=[418], feature78=[418], feature79=[418], feature80=[418], feature81=[418], feature82=[418], feature83=[418], feature84=[418], feature85=[418], feature86=[418], feature87=[418], feature88=[418], feature89=[418], feature90=[418], feature91=[418], feature92=[418], feature93=[418], feature94=[418], feature95=[418], feature96=[418], feature97=[418], feature98=[418], feature99=[418], feature100=[418], feature101=[418], feature102=[418], feature103=[418], feature104=[418], feature105=[418], feature106=[418], feature107=[418], feature108=[418], feature109=[418], feature110=[418], feature111=[418], feature112=[418], feature113=[418], feature114=[418], feature115=[418], feature116=[418], feature117=[418], feature118=[418], feature119=[418], feature120=[418], feature121=[418], feature122=[418], feature123=[418], feature124=[418], feature125=[418], feature126=[418], feature127=[418], feature128=[418], feature129=[418], feature130=[418], feature131=[418], feature132=[418], feature133=[418], feature134=[418], feature135=[418], feature136=[418], feature137=[418], feature138=[418], feature139=[418], feature140=[418], feature141=[418], feature142=[418], feature143=[418], feature144=[418], feature145=[418], feature146=[418], feature147=[418], feature148=[418], feature149=[418], feature150=[418], feature151=[418], feature152=[418], feature153=[418], feature154=[418], feature155=[418], feature156=[418], feature157=[418], feature158=[418], feature159=[418], feature160=[418], feature161=[418], feature162=[418], feature163=[418], feature164=[418], feature165=[418], batch=[418], ptr=[257], nodes_per_graph=[256], edges_per_graph=[256], log_node_attr=[418, 2], log_full_edge_attr=[254, 2], log_node_attr_tmin1=[418, 2], log_full_edge_attr_tmin1=[254, 2], log_node_attr_t=[418, 2], log_full_edge_attr_t=[254, 2], active_node_indices=[2], active_edge_indices=[1], edge_predict_masks=[254])
+        if hasattr(pyg_data, 'edge_index_t'):
+            edge_index = pyg_data.edge_index_t
+        else: 
+            edge_attr_t = pyg_data.log_full_edge_attr_t.argmax(-1)
+            is_edge_indices = edge_attr_t.nonzero(as_tuple=True)[0]
+
+            edge_index = pyg_data.full_edge_index[:, is_edge_indices]
+            edge_index = torch.cat([edge_index, edge_index.flip(0)],dim=-1)
+        
+        # 计算t时刻的子图embedding:[12,256]
+        # nodes_t=self.gae.encode(pyg_data.feature,edge_index)
+        nodes_t = self.gae.encode(
+            pyg_data.feature.to(dtype=torch.float),  # 转换数据类型
+            edge_index
+        )
+
+        # 计算每一维度nodes的max值作为子图embedding：[256]
+        subgraph_t= torch.max(nodes_t, dim=0).values
+        # 展平：subgraph_t: torch.Size([256, 1])
+        subgraph_t = subgraph_t.unsqueeze(1)
+
+        # 获取0时刻的子图embedding[12,256]
+        if embedding is not None:
+            subgraph_0=embedding
+        else:
+            node_0=pyg_data.embedding
+            subgraph_0= torch.max(node_0, dim=0).values
+        # print("subgraph_t:",subgraph_t)
+        # print("subgraph_0:",subgraph_0)
+        # subgraph_0: torch.Size([256, 1])
+        subgraph_0 = subgraph_0.unsqueeze(1)
+        # 处理0和t时刻的子图embedding
+        # embedding_t:[256,64]
+        embedding_t=self.embedding_t(subgraph_t)
+        # embedding_0:[256,64]
+        embedding_0=self.embedding_0(subgraph_0)
+        # 拼接0和t时刻的子图特征:[256,128]
+        nodes = torch.cat([embedding_0,embedding_t], dim=-1)
+        # final-nodes: torch.Size([256, 64])
+        nodes = self.node_in(nodes)
+
+        # 时间编码：t: torch.Size([13, 64])
+        t = self.time_pos_emb(t_node)
+        t = self.mlp(t)
+
+        # 子图全局特征：子图embedding的mean来进行计算
+        contexts=torch.mean(nodes, dim=1)
+        #contexts: torch.Size([256, 1])
+        contexts=contexts.unsqueeze(1)
+        # 映射到维度:contexts: torch.Size([256, 64])
+        contexts = self.global_mlp(contexts)
+        
+        # 展平:h: torch.Size([1, 256, 64])
+        h = nodes.unsqueeze(0)
+        # print("h:",h.shape)
+        # # contexts:
+        # batch_size = 8
+        # num_nodes_per_batch = nodes.size(0) // batch_size
+        # batch = torch.arange(batch_size).repeat_interleave(num_nodes_per_batch).to("cuda:0")
+        # # 计算 contexts
+        # contexts=torch_scatter.scatter(nodes, batch, reduce='mean', dim=0)
+        # print("contexts:",contexts.shape)
+        # contexts = self.global_mlp(contexts)
+        # print("global_mlp:",contexts.shape)
+
+        # contexts = contexts.repeat_interleave(pyg_data.nodes_per_graph,dim=0)
+        # print("contexts:",contexts)
+
+        for i in range(len(self.num_heads)):
+            ### add time embedding ###
+            # [14,64]
+            t_emb = self.layers[f'time{i}'](t)
+            # node-cat: torch.Size([271, 64])
+            nodes = torch.cat([nodes, t_emb], dim=0)
+            # 将其映射到dim*2:[271,128]
+            nodes=self.node_mlp(nodes)
+            
+            ### message passing on graph ###
+            # input-nodes: torch.Size([271, 128])
+            # edge_index: torch.Size([2, 6])
+            # conv: torch.Size([271, 64])
+            # norm: torch.Size([271, 64])
+            # final: torch.Size([271, 64])
+            nodes = self.layers[f'conv{i}'](nodes, edge_index)
+            # print("conv:",nodes.shape)
+            nodes = self.layers[f'norm{i}'](nodes)
+            # print("norm:",nodes.shape)
+            nodes = self.layers[f'act{i}'](nodes)
+            nodes = self.dropout(nodes)
+            # print("final:",nodes.shape)
+
+            ### gru update ###
+            # [1,271,64]
+            nodes = nodes.unsqueeze(0)
+            nodes = torch.transpose(nodes, 1, 2)
+            # torch.Size([1, 64, 256])
+            nodes=self.adapter(nodes)
+            nodes = torch.transpose(nodes, 1, 2)
+            # gru-nodes: torch.Size([1, 256, 64])
+            nodes, h = self.gru(nodes.contiguous(), h.contiguous())
+            # print("gru-nodes:",nodes.shape)
+            h = self.dropout(h)
+            # nodes: torch.Size([256, 64])
+            nodes = nodes.squeeze(0)
+            
+            ### global context aggregation ###
+            # aggregate locals to global
+            # node_contexts: torch.Size([256, 64])
+            node_contexts = self.context_mlp(torch.cat([nodes, contexts], dim=-1))
+            # 将contexts调整为([256, 1])
+            contexts=self.context_node(node_contexts)
+            # contexts = torch_scatter.scatter(contexts + node_contexts, batch, reduce='mean', dim=0)
+            contexts = self.global_mlp(contexts)
+            # contexts = contexts.repeat_interleave(pyg_data.nodes_per_graph,dim=0)
+            # spread global to locals
+            nodes = nodes + contexts
+
+        # mlp add
+        row = pyg_data.full_edge_index[0]
+        col = pyg_data.full_edge_index[1]
+        
+        # print("row:",row)
+        # print("col:",col)
+        # row: tensor([ 0,  0,  1,  4,  4,  5, 11], device='cuda:0')
+        # col: tensor([ 1,  2,  2,  5,  6,  6, 12], device='cuda:0')
+        # output-nodes: torch.Size([256, 64])
+        # embedding_t:[256,64]
+        # embedding_0:[256,64]
+        # nodes: torch.Size([256, 192])
+        nodes = torch.cat([nodes, embedding_t,embedding_0], dim=-1)
+        # print("nodes:",nodes.shape)
+        # embedding_0:[256,64]
+        nodes = self.node_out_mlp(nodes)
+        # 复制nodes
+        max_row = torch.max(row)
+        max_col = torch.max(col)
+        # 返回两个最大值中的较大者
+        max_value = torch.max(max_row, max_col)
+        repeat_num=max_value.item()//nodes.size(0)+1
+        # repeat
+        nodes_repeated = torch.cat([nodes for i in range(repeat_num)], dim=0)
+        edge_emb = nodes_repeated[row] + nodes_repeated[col]
+        edge_class = self.final_out(edge_emb)
         return pyg_data.log_node_attr, edge_class

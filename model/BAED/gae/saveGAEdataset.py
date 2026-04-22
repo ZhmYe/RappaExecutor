@@ -121,6 +121,31 @@ def load_elliptic_data(data_dir, start_ts, end_ts):
 
     return adj_mats, features_labelled_ts, classes_ts
 
+def load_xy_dataset(dataset):
+    if dataset=="transfer":
+        # 读取图数据
+        with open('/home/chao/AGGS/xingye/graphData/graph_normalized.pkl', 'rb') as f:
+            g = pkl.load(f)
+        
+        # 提取节点特征
+        x = g.ndata['feature']  # 节点特征
+        y = g.ndata['label']    # 节点标签
+        
+        # 提取边索引
+        edge_index = torch.stack(g.edges())  # 形状为 [2, num_edges]
+        
+        # 创建PyTorch Geometric的Data对象
+        data = Data(x=x, edge_index=edge_index, y=y)
+        
+        print(f"转换完成！")
+        print(f"节点特征维度: {data.x.shape}")
+        print(f"边索引维度: {data.edge_index.shape}")
+        print(f"节点标签维度: {data.y.shape}")
+        print(f"节点数量: {data.x.shape[0]}")
+        print(f"边数量: {data.edge_index.shape[1]}")
+    else:
+        data=None
+    return data
 
 def load_random_dataset(dataset):
     if dataset=="dgraph":
@@ -299,6 +324,7 @@ def load_random_dataset(dataset):
         # 转换为tensor
         edge_index = torch.tensor([src,dst])
         data = Data(x=graph.ndata["feature"], edge_index=edge_index, y=graph.ndata["label"])
+
     return data   
 
 
@@ -310,9 +336,11 @@ def load_random_dataset(dataset):
 # Amazon:data: Data(x=[11944, 25], edge_index=[2, 8796784], y=[11944])
 
 # dgraph数据集过大，在计算邻接矩阵时会报错，因此随机采样10000个节点作为训练样本进行训练
-print("dgraph train dataset save")
-data=load_random_dataset("dgraph")
-print("data:",data)
+# print("dgraph train dataset save")
+# data=load_random_dataset("dgraph")
+# print("data:",data)
+
+data=load_xy_dataset("transfer")
 data = train_test_split_edges(data)
 print("data:",data)
-torch.save(data, "./data/dgraph_gae.pt")
+torch.save(data, "/home/chao/AGGS/gae/data/xy_transfer_gae.pt")

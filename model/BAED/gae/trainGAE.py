@@ -1,4 +1,3 @@
-# 通过torch_geometry训练GAE
 from torch.utils.data import DataLoader, Dataset, ConcatDataset
 from torch_geometric.data import data
 import torch_geometric as pyg
@@ -44,7 +43,7 @@ def configure_model(data, out_channels=64, num_features=17,activation='relu',gae
     model = model.to(device)
     x = data.x.to(device)
     train_pos_edge_index = data.train_pos_edge_index.to(device)
-    optimizer = torch.optim.Adam(model.parameters(), lr=0.0001)
+    optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
     return model, device, x, train_pos_edge_index, optimizer
 
 def train(model, optimizer, x, train_pos_edge_index):
@@ -74,10 +73,44 @@ def main():
     out_channels = 256
     num_features = 166
     """
-    out_channels = 32
+    out_channels = 64
     num_features =17
-    gae_type="gae"
-    activation= 'sigmoid'
+    gae_type="VGAE"
+    activation= 'relu'
+    epochs = 100
+    model, device, x, train_pos_edge_index, optimizer = configure_model(data, out_channels, num_features,activation,gae_type)
+
+    best_auc = 0.0
+    best_model = None
+    for epoch in range(1, epochs + 1):
+        loss = train(model, optimizer, x, train_pos_edge_index)
+        auc, ap = test(model, x, train_pos_edge_index, data.test_pos_edge_index, data.test_neg_edge_index)
+        print('Epoch: {:03d}, AUC: {:.4f}, AP: {:.4f}'.format(epoch, auc, ap))
+        if auc > best_auc:
+            best_auc = auc
+            best_model = model
+
+    print("Best AUC:", best_auc)
+    torch.save(best_model, f'./weight/{dataset}_{gae_type}_{activation}_{out_channels}.pt')
+    print("x:", x.size())
+    print("train_pos_edge_index:", train_pos_edge_index.size())
+    Z = best_model.encode(x, train_pos_edge_index)
+    print("Z:", Z.size())
+
+def xy_main():
+    dataset="xy_transfer"
+    filepath=f"./data/{dataset}_gae.pt"
+    data = load_data(filepath)
+    # 配置参数
+    """
+    elliptic:
+    out_channels = 256
+    num_features = 166
+    """
+    out_channels = 16
+    num_features =6
+    gae_type="VGAE"
+    activation= 'relu'
     epochs = 100
     model, device, x, train_pos_edge_index, optimizer = configure_model(data, out_channels, num_features,activation,gae_type)
 
@@ -99,4 +132,5 @@ def main():
     print("Z:", Z.size())
 
 if __name__ == "__main__":
-    main()
+    # main()
+    xy_main()
