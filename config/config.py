@@ -40,6 +40,8 @@ class BHExecutionNodeGlobalConfig:
     CERT_PATH=DEFAULT_CERT_PATH
 
     STORAGE_PATH = DEFAULT_STORAGE_PATH
+    ABMStockDataDir = "/root/rappa/stockdata"
+    ABMStockParamDir = "/root/rappa/stockdata/params"
     IS_RECOVERY = DEFAULT_IS_RECOVERY
     LOG_PATH = DEFAULT_LOG_PATH
     STORE_METHOD = STORE_METHOD_ENUM.LOCAL
@@ -86,6 +88,8 @@ class BHExecutionNodeGlobalConfig:
             "NUM_PROCESS_WORKER": cls.NUM_PROCESS_WORKER,
             "REDUNDANCY": cls.REDUNDANCY,
             "STORAGE_PATH": cls.STORAGE_PATH,
+            "ABMStockDataDir": cls.ABMStockDataDir,
+            "ABMStockParamDir": cls.ABMStockParamDir,
             "CERT_PATH": cls.CERT_PATH,
             "LOG_PATH": cls.LOG_PATH
         }
@@ -120,4 +124,3 @@ class BHExecutionNodeGlobalConfig:
         if args.cuda:
             cls.enable_cuda()
         cls.print_config()
-

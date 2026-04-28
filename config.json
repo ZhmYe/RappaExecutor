@@ -8,6 +8,8 @@
   "LAYER_ADDRESS_PORT": 50051,
   "NUM_PROCESS_WORKER": 1,
   "STORAGE_PATH": "meta",
+  "ABMStockDataDir": "/root/rappa/stockdata",
+  "ABMStockParamDir": "/root/rappa/stockdata/params",
   "CERT_PATH": "certs",
   "IS_CUDA":false,
   "IS_RECOVERY":true,

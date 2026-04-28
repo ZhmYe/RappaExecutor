@@ -11,10 +11,12 @@ host_key_script="generate_host_keys.py"
 
 NODES_NUM="${1:-}"
 if [[ -z "$NODES_NUM" ]]; then
-  echo "使用方法: $0 <NODES_NUM> [OUTPUT_DIR]"
+  echo "使用方法: $0 <NODES_NUM> [OUTPUT_DIR] [--stock-data PATH] [--stock-param PATH]"
   echo "参数说明:"
   echo "  NODES_NUM    : 要生成的节点数量（正整数）"
   echo "  OUTPUT_DIR   : 节点输出目录（可选，默认为当前目录）"
+  echo "  --stock-data : ABM 股票真实输入数据目录（可选，默认 /root/rappa/stockdata）"
+  echo "  --stock-param: ABM 离线调参参数目录（可选，默认 <stock-data>/params）"
   exit 1
 fi
 
@@ -33,7 +35,41 @@ if [[ ! -f "$key_script_path" ]]; then
   exit 1
 fi
 
-OUTPUT_DIR="${2:-}"
+OUTPUT_DIR=""
+STOCK_DATA_DIR="/root/rappa/stockdata"
+STOCK_PARAM_DIR=""
+
+shift
+if [[ $# -gt 0 && "${1:-}" != --* ]]; then
+  OUTPUT_DIR="$1"
+  shift
+fi
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --stock-data)
+      if [[ $# -lt 2 || "${2:-}" == --* ]]; then
+        echo "错误: --stock-data 需要路径参数。" >&2
+        exit 1
+      fi
+      STOCK_DATA_DIR="$2"
+      shift 2
+      ;;
+    --stock-param)
+      if [[ $# -lt 2 || "${2:-}" == --* ]]; then
+        echo "错误: --stock-param 需要路径参数。" >&2
+        exit 1
+      fi
+      STOCK_PARAM_DIR="$2"
+      shift 2
+      ;;
+    *)
+      echo "错误: 未知参数 $1" >&2
+      exit 1
+      ;;
+  esac
+done
+
 if [[ -z "$OUTPUT_DIR" ]]; then
   OUTPUT_DIR="$PWD"
 else
@@ -42,8 +78,19 @@ else
   fi
 fi
 
+if [[ "$STOCK_DATA_DIR" != /* ]]; then
+  STOCK_DATA_DIR="$(cd "$STOCK_DATA_DIR" && pwd)"
+fi
+if [[ -z "$STOCK_PARAM_DIR" ]]; then
+  STOCK_PARAM_DIR="${STOCK_DATA_DIR}/params"
+elif [[ "$STOCK_PARAM_DIR" != /* ]]; then
+  STOCK_PARAM_DIR="$(cd "$STOCK_PARAM_DIR" && pwd)"
+fi
+
 echo "节点数量：$NODES_NUM"
 echo "输出路径：$OUTPUT_DIR"
+echo "ABM 股票真实输入目录：$STOCK_DATA_DIR"
+echo "ABM 离线参数目录：$STOCK_PARAM_DIR"
 echo "-----------------------------"
 
 echo "检查主机密钥是否存在..."
@@ -98,6 +145,8 @@ for ((i = 0; i < NODES_NUM; i++)); do
   "LAYER_ADDRESS_PORT": 50051,
   "NUM_PROCESS_WORKER": 1,
   "STORAGE_PATH": "meta",
+  "ABMStockDataDir": "$STOCK_DATA_DIR",
+  "ABMStockParamDir": "$STOCK_PARAM_DIR",
   "IS_CUDA": true,
   "IS_RECOVERY": true,
   "OTHER_NODE_GRPC_ADDRESSES": {

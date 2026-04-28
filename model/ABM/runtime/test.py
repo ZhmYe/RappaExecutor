@@ -199,6 +199,39 @@ def load_structural_params_from_env() -> dict:
     return {}
 
 
+def load_model_params_from_env() -> dict:
+    json_path = os.getenv("ABM_MODEL_PARAMS_FILE", "").strip()
+    if json_path:
+        try:
+            with open(json_path, "r", encoding="utf-8") as f:
+                parsed = json.load(f)
+            if isinstance(parsed, dict):
+                return parsed
+            print("[WARN] ABM_MODEL_PARAMS_FILE 内容不是对象，已忽略")
+        except Exception as exc:
+            print(f"[WARN] ABM_MODEL_PARAMS_FILE 读取失败，已忽略: {exc}")
+
+    raw_json = os.getenv("ABM_MODEL_PARAMS_JSON", "").strip()
+    if raw_json:
+        try:
+            parsed = json.loads(raw_json)
+            if isinstance(parsed, dict):
+                return parsed
+            print("[WARN] ABM_MODEL_PARAMS_JSON 不是对象，已忽略")
+        except Exception as exc:
+            print(f"[WARN] ABM_MODEL_PARAMS_JSON 解析失败，已忽略: {exc}")
+    return {}
+
+
+def apply_model_params(param_config: dict, payload: dict):
+    if not isinstance(payload, dict):
+        return
+    structural = payload.get("structural_params", {}) if isinstance(payload.get("structural_params", {}), dict) else {}
+    calibrated = payload.get("calibrated_params", {}) if isinstance(payload.get("calibrated_params", {}), dict) else {}
+    apply_structural_params_from_dict(param_config, structural)
+    apply_structural_params_from_dict(param_config, calibrated)
+
+
 def infer_code(input_path: str, df: pd.DataFrame) -> str:
     # 优先从 stockid 列推断
     if "stockid" in df.columns:
@@ -663,53 +696,76 @@ def main():
     prompt_structural_params(param_config)
     # 额外支持从参数文件/JSON注入（前端/服务调用）
     apply_structural_params_from_dict(param_config, load_structural_params_from_env())
+    # 若提供离线调参产物，则直接加载参数并跳过在线调参。
+    model_payload = load_model_params_from_env()
+    use_precalibrated = bool(model_payload)
+    if use_precalibrated:
+        apply_model_params(param_config, model_payload)
+        print("[INFO] 已加载离线参数，当前运行模式：直接仿真（跳过调参）")
 
     date_col = "date" if "date" in df.columns else "Time"
+    if date_col not in df.columns:
+        raise ValueError("输入文件必须包含时间列：date 或 Time")
+    if "close" not in df.columns:
+        raise ValueError("输入文件必须包含价格列：close。若原始列名为 Price/price/Close，请先重命名为 close。")
     prices = df["close"].tolist()
     dates = df[date_col].tolist()
 
-    # 十档行情（loss 会用到）
+    # 十档行情仅在在线调参时用于 loss 计算；预加载参数模式只需 Time/date + close。
     market_cols = [
         "buy1", "sale1", "bc1", "sc1", "buy2", "sale2", "bc2", "sc2", "buy3", "sale3", "bc3", "sc3",
         "buy4", "sale4", "bc4", "sc4", "buy5", "sale5", "bc5", "sc5", "buy6", "sale6", "bc6", "sc6",
         "buy7", "sale7", "bc7", "sc7", "buy8", "sale8", "bc8", "sc8", "buy9", "sale9", "bc9", "sc9",
         "buy10", "sale10", "bc10", "sc10",
     ]
-    true_markets = df[market_cols].values.tolist()
+    true_markets = None
+    missing_market_cols = [col for col in market_cols if col not in df.columns]
+    if not use_precalibrated:
+        if missing_market_cols:
+            raise ValueError(
+                "在线调参模式需要十档行情字段；缺失字段: "
+                + ", ".join(missing_market_cols)
+                + "。如果只有时间和价格列，请使用 abm.mode=precalibrated 并提供离线 model_params.json。"
+            )
+        true_markets = df[market_cols].values.tolist()
 
     code = infer_code(input_file, df)
     print(f"股票代码 CODE: {code}")
 
-    bootstrap_samples = parse_int_env("BOOTSTRAP_SAMPLES", 1000)
-    cof_dict = block_bootstrap(prices, 240, bootstrap_samples)
-    print(f"hill: {cof_dict['hill']}, vol: {cof_dict['vol']}, acf: {cof_dict['acf']}, square_acf: {cof_dict['sacf']}")
-
     fundamental_value = calculate_fundamental_value(prices)
+    if use_precalibrated:
+        final_config = param_config.copy()
+        loss_history = []
+        print(f"simulation config -> rows: {len(df)}, mode: preload_params")
+    else:
+        bootstrap_samples = parse_int_env("BOOTSTRAP_SAMPLES", 1000)
+        cof_dict = block_bootstrap(prices, 240, bootstrap_samples)
+        print(f"hill: {cof_dict['hill']}, vol: {cof_dict['vol']}, acf: {cof_dict['acf']}, square_acf: {cof_dict['sacf']}")
 
-    initial = {
-        "true_prices": prices,
-        "true_markets": true_markets,
-        "cof_dict": cof_dict,
-        "fundamental_value": fundamental_value,
-        "dates": dates,
-        "trader_type": trader_type,
-        "params_index": params_index,
-        "config": param_config,
-        "seed_count": parse_int_env("SEED_COUNT", 3),
-        "base_seed": parse_int_env("BASE_SEED", 2026),
-        "param_bounds": param_bounds,
-        "patience": parse_int_env("PATIENCE", 30),
-    }
+        initial = {
+            "true_prices": prices,
+            "true_markets": true_markets,
+            "cof_dict": cof_dict,
+            "fundamental_value": fundamental_value,
+            "dates": dates,
+            "trader_type": trader_type,
+            "params_index": params_index,
+            "config": param_config,
+            "seed_count": parse_int_env("SEED_COUNT", 3),
+            "base_seed": parse_int_env("BASE_SEED", 2026),
+            "param_bounds": param_bounds,
+            "patience": parse_int_env("PATIENCE", 30),
+        }
 
-    learning_rate = float(os.getenv("LEARNING_RATE", "0.01"))
-    epoch = parse_int_env("EPOCH", 100)
-    epsilon = float(os.getenv("EPSILON", "0.001"))
-    print(
-        f"training config -> epoch: {epoch}, lr: {learning_rate}, epsilon: {epsilon}, "
-        f"bootstrap_samples: {bootstrap_samples}, rows: {len(df)}"
-    )
+        learning_rate = float(os.getenv("LEARNING_RATE", "0.01"))
+        epoch = parse_int_env("EPOCH", 100)
+        epsilon = float(os.getenv("EPSILON", "0.001"))
+        print(
+            f"training config -> epoch: {epoch}, lr: {learning_rate}, epsilon: {epsilon}, "
+            f"bootstrap_samples: {bootstrap_samples}, rows: {len(df)}"
+        )
 
-    final_config, loss_history = calibrate_parameters(initial, learning_rate, epsilon, epoch)
+        final_config, loss_history = calibrate_parameters(initial, learning_rate, epsilon, epoch)
 
     output_root = os.getenv("ABM_OUTPUT_ROOT", "simulated_result").strip() or "simulated_result"
     os.makedirs(output_root, exist_ok=True)
@@ -776,11 +832,15 @@ def main():
     struct_keys = ["N_FT", "N_LMT", "N_SMT", "N_NT", "S_FT", "ALPHA_L", "ALPHA_S"]
     with open(log_path, mode="w", encoding="utf-8") as f:
         f.write("Start Simulation and Training\n")
+        f.write(f"Run mode: {'preload_params' if use_precalibrated else 'online_calibration'}\n")
         f.write(f"Input file: {input_file}\n")
-        f.write(
-            f"Epoch: {epoch}, Learning rate: {learning_rate}, Epsilon: {epsilon}, "
-            f"Bootstrap samples: {bootstrap_samples}, Seed count: {initial['seed_count']}\n"
-        )
+        if use_precalibrated:
+            f.write(f"Loaded model params file: {os.getenv('ABM_MODEL_PARAMS_FILE', '')}\n")
+        else:
+            f.write(
+                f"Epoch: {epoch}, Learning rate: {learning_rate}, Epsilon: {epsilon}, "
+                f"Bootstrap samples: {bootstrap_samples}, Seed count: {initial['seed_count']}\n"
+            )
         f.write(f"Rows used: {len(df)}\n")
         f.write("Structural params used:\n")
         for k in struct_keys:

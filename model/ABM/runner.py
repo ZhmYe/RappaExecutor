@@ -21,6 +21,8 @@ PROJECT1_ABM_ROOT = Path(
     os.environ.get("RAPPA_ABM_V2_PROJECT_ROOT", str(DEFAULT_ABM_V2_RUNTIME_ROOT))
 ).resolve()
 
+DEFAULT_ABM_STOCK_DATA_DIR = "/root/rappa/stockdata"
+
 
 def normalize_code(code: str) -> str:
     code = str(code).strip()
@@ -50,12 +52,54 @@ def guess_content_type(path: Path) -> str:
     return "application/octet-stream"
 
 
+def executor_config_value(*keys: str) -> str:
+    config_path = Path(get_project_root()).resolve() / "config.json"
+    try:
+        with open(config_path, "r", encoding="utf-8") as f:
+            config = json.load(f)
+    except Exception:
+        return ""
+    if not isinstance(config, dict):
+        return ""
+
+    for key in keys:
+        value = config.get(key)
+        if value is not None and str(value).strip():
+            return str(value).strip()
+    return ""
+
+
+def configured_stock_data_dir() -> Path:
+    value = os.getenv("ABM_STOCK_DATA_DIR", "").strip()
+    if not value:
+        value = executor_config_value("ABMStockDataDir", "ABM_STOCK_DATA_DIR")
+    if not value:
+        value = DEFAULT_ABM_STOCK_DATA_DIR
+    return Path(value).resolve()
+
+
+def configured_stock_param_dir(stock_data_dir: Path) -> Path:
+    value = os.getenv("ABM_STOCK_PARAM_DIR", "").strip()
+    if not value:
+        value = executor_config_value("ABMStockParamDir", "ABM_STOCK_PARAM_DIR")
+    if not value:
+        value = str(stock_data_dir / "params")
+    return Path(value).resolve()
+
+
 class ABMV2PipelineRunner:
     def __init__(self) -> None:
         self.executor_root = Path(get_project_root()).resolve()
         self.meta_root = self.executor_root / "meta"
         self.meta_root.mkdir(parents=True, exist_ok=True)
-        self.data_root = Path(__file__).resolve().parent / "data"
+        self.local_data_root = Path(__file__).resolve().parent / "data"
+        shared_data_root = configured_stock_data_dir()
+        self.data_roots = self._build_data_roots(shared_data_root, self.local_data_root)
+        self.data_root = self.data_roots[0]
+        self.local_model_params_root = Path(__file__).resolve().parent / "offline_params"
+        shared_model_params_root = configured_stock_param_dir(shared_data_root)
+        self.model_params_roots = self._build_data_roots(shared_model_params_root, self.local_model_params_root)
+        self.model_params_root = self.model_params_roots[0]
         self.runtime_root = PROJECT1_ABM_ROOT
         self.template_path = PROJECT1_ABM_ROOT / "params_quickstart.json"
         self.pipeline_path = PROJECT1_ABM_ROOT / "run_pipeline_with_params.py"
@@ -65,6 +109,14 @@ class ABMV2PipelineRunner:
                 "ABM_V2 runtime files missing under "
                 f"{self.runtime_root}; expected {self.template_path.name} and {self.pipeline_path.name}"
             )
+
+    def _build_data_roots(self, *roots: Path) -> List[Path]:
+        data_roots: List[Path] = []
+        for root in roots:
+            resolved = root.resolve()
+            if resolved not in data_roots:
+                data_roots.append(resolved)
+        return data_roots
 
     def run(self, params: Dict[str, Any], output_size: int = 1) -> pd.DataFrame:
         params = dict(params or {})
@@ -126,10 +178,11 @@ class ABMV2PipelineRunner:
         checked: List[str] = []
 
         for raw_name in self._candidate_input_names(params, input_csv):
-            local_path = (self.data_root / raw_name).resolve()
-            checked.append(str(local_path))
-            if local_path.exists():
-                return local_path
+            for data_root in self.data_roots:
+                local_path = (data_root / raw_name).resolve()
+                checked.append(str(local_path))
+                if local_path.exists():
+                    return local_path
 
         for code in self._candidate_stock_codes(params, input_csv):
             for candidate in self._candidate_csv_paths(code):
@@ -138,7 +191,7 @@ class ABMV2PipelineRunner:
                     return candidate.resolve()
 
         raise FileNotFoundError(
-            "ABM_V2 input csv not found in executor local data directory; checked: "
+            "ABM_V2 input csv not found in ABM data directories; checked: "
             + ", ".join(dict.fromkeys(checked))
         )
 
@@ -171,13 +224,14 @@ class ABMV2PipelineRunner:
     def _candidate_csv_paths(self, code: str) -> List[Path]:
         code = normalize_code(code)
         candidates: List[Path] = []
-        exact = self.data_root / f"{code}.csv"
-        candidates.append(exact)
+        for data_root in self.data_roots:
+            exact = data_root / f"{code}.csv"
+            candidates.append(exact)
 
-        pattern_matches = sorted(self.data_root.glob(f"*_{code}_*.csv"))
-        if not pattern_matches:
-            pattern_matches = sorted(self.data_root.glob(f"*{code}*.csv"))
-        candidates.extend(pattern_matches)
+            pattern_matches = sorted(data_root.glob(f"*_{code}_*.csv"))
+            if not pattern_matches:
+                pattern_matches = sorted(data_root.glob(f"*{code}*.csv"))
+            candidates.extend(pattern_matches)
         return candidates
 
     def _prepare_runtime_input(
@@ -273,7 +327,49 @@ class ABMV2PipelineRunner:
         eval_cfg["stock_root"] = str(stock_root)
         pipeline_params["evaluation"] = eval_cfg
 
+        abm_cfg = dict(pipeline_params.get("abm", {}) or {})
+        if not str(abm_cfg.get("mode", "")).strip():
+            abm_cfg["mode"] = "auto"
+        abm_cfg["model_params_root"] = str(self.model_params_root.resolve())
+        abm_cfg["model_params_json"] = self._resolve_local_model_params_json(
+            abm_cfg.get("model_params_json"),
+            eval_cfg["code"],
+        )
+        pipeline_params["abm"] = abm_cfg
+
         return pipeline_params
+
+    def _resolve_local_model_params_json(self, raw_path: Any, code: str) -> str:
+        raw_text = str(raw_path or "").strip()
+        if raw_text:
+            candidate = Path(raw_text)
+            if not candidate.is_absolute():
+                candidate = (PROJECT1_ABM_ROOT / candidate).resolve()
+            if candidate.exists() and self._is_under(candidate, self.executor_root):
+                return str(candidate)
+
+        for model_params_root in self.model_params_roots:
+            for candidate_code in self._candidate_model_param_codes(code):
+                candidate = model_params_root / candidate_code / "model_params.json"
+                if candidate.exists():
+                    return str(candidate.resolve())
+        return ""
+
+    def _candidate_model_param_codes(self, code: str) -> List[str]:
+        normalized = normalize_code(code)
+        candidates = [normalized]
+        if normalized.isdigit():
+            stripped = str(int(normalized))
+            if stripped not in candidates:
+                candidates.append(stripped)
+        return candidates
+
+    def _is_under(self, path: Path, parent: Path) -> bool:
+        try:
+            path.resolve().relative_to(parent.resolve())
+            return True
+        except ValueError:
+            return False
 
     def _run_pipeline(self, params_path: Path, stdout_path: Path, stderr_path: Path, task_label: str) -> None:
         cmd = [sys.executable, str(self.pipeline_path), "--params", str(params_path)]

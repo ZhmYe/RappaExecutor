@@ -45,6 +45,52 @@ def _load_json(path: Path) -> dict:
     return data
 
 
+def _candidate_codes(raw_code: str) -> list[str]:
+    code = str(raw_code).strip()
+    if not code:
+        return []
+    candidates = [code]
+    if code.isdigit():
+        candidates.append(code.zfill(6))
+        candidates.append(str(int(code)))
+    seen = set()
+    result = []
+    for candidate in candidates:
+        if candidate not in seen:
+            seen.add(candidate)
+            result.append(candidate)
+    return result
+
+
+def _resolve_model_params_path(abm_cfg: dict, code: str, input_csv: Path) -> Path | None:
+    explicit = str(abm_cfg.get("model_params_json", "")).strip()
+    if explicit:
+        path = Path(explicit)
+        if not path.is_absolute():
+            path = (BASE_DIR / path).resolve()
+        return path
+
+    root = str(abm_cfg.get("model_params_root", "")).strip()
+    if not root:
+        return None
+    root_path = Path(root)
+    if not root_path.is_absolute():
+        root_path = (BASE_DIR / root_path).resolve()
+
+    for candidate_code in _candidate_codes(code) + _candidate_codes(input_csv.stem):
+        path = root_path / candidate_code / "model_params.json"
+        if path.exists():
+            return path
+    return root_path / str(code) / "model_params.json"
+
+
+def _resolve_abm_mode(abm_cfg: dict) -> str:
+    mode = str(abm_cfg.get("mode", "auto")).strip().lower()
+    if mode not in {"auto", "precalibrated", "calibrate"}:
+        raise ValueError(f"Invalid abm.mode={mode}, expected one of: auto|precalibrated|calibrate")
+    return mode
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Run ABM pipeline with JSON params")
     parser.add_argument("--params", required=True, help="Path to params JSON file")
@@ -104,10 +150,30 @@ def main() -> None:
     env["ABM_STRUCT_PARAMS_JSON"] = json.dumps(structural_params, ensure_ascii=False)
     stage_log(f"structural params ready: {sorted(structural_params.keys())}")
 
+    code = str(eval_cfg.get("code", input_csv.stem))
+    abm_mode = _resolve_abm_mode(abm_cfg)
+    model_params_path = _resolve_model_params_path(abm_cfg, code, input_csv)
+    if abm_mode == "calibrate":
+        use_precalibrated = False
+    elif abm_mode == "precalibrated":
+        if model_params_path is None or not model_params_path.exists():
+            raise FileNotFoundError(
+                f"abm.mode=precalibrated but model params not found: {model_params_path}"
+            )
+        use_precalibrated = True
+    else:
+        use_precalibrated = bool(model_params_path is not None and model_params_path.exists())
+
+    if use_precalibrated and model_params_path is not None:
+        env["ABM_MODEL_PARAMS_FILE"] = str(model_params_path)
+        stage_log(f"ABM mode=precalibrated, using params: {model_params_path}")
+    else:
+        stage_log("ABM mode=calibrate (online)")
+
     predict_enabled = bool(predict_cfg.get("enabled", True))
     if predict_enabled:
-        predict_method = str(predict_cfg.get("method", "auto"))
-        predict_horizon = int(predict_cfg.get("horizon", 22))
+        predict_method = str(predict_cfg.get("method", "kalman_rw"))
+        predict_horizon = int(predict_cfg.get("horizon", 1))
         predict_cmd = [
             sys.executable,
             str(BASE_DIR / "predict_no_fv" / "predict_no_fv.py"),
@@ -131,15 +197,42 @@ def main() -> None:
                     str(predict_dir / "predict_fv_meta.json"),
                 ]
             )
-        if predict_method == "abm_fv" and "fv_next" in predict_cfg:
-            predict_cmd.extend(["--fv_next", str(predict_cfg["fv_next"])])
+        if "risk_drop_levels" in predict_cfg:
+            levels = predict_cfg.get("risk_drop_levels", [0.05])
+            if isinstance(levels, (list, tuple)):
+                levels_arg = ",".join(str(item) for item in levels)
+            else:
+                levels_arg = str(levels)
+            predict_cmd.extend(["--risk_drop_levels", levels_arg])
+        if predict_method == "abm_fv":
+            abm_fv_cfg = predict_cfg.get("abm_fv_options", {}) or {}
+            fv_file = str(predict_cfg.get("fv_file", abm_fv_cfg.get("fv_file", ""))).strip()
+            if not fv_file:
+                raise ValueError("predict.method=abm_fv requires predict.fv_file")
+            fv_file_path = Path(fv_file)
+            if not fv_file_path.is_absolute():
+                fv_file_path = (BASE_DIR / fv_file_path).resolve()
+            predict_cmd.extend(["--fv_file", str(fv_file_path)])
+            predict_cmd.extend(["--lookback_days", str(int(predict_cfg.get("lookback_days", abm_fv_cfg.get("lookback_days", 7))))])
+            predict_cmd.extend(["--abm_rounds", str(int(predict_cfg.get("abm_rounds", abm_fv_cfg.get("abm_rounds", 100))))])
+            intraday_steps = predict_cfg.get("intraday_steps", abm_fv_cfg.get("intraday_steps"))
+            if intraday_steps is not None:
+                predict_cmd.extend(["--intraday_steps", str(int(intraday_steps))])
+            mp = str(predict_cfg.get("model_params_json", "")).strip()
+            if not mp and model_params_path is not None and model_params_path.exists():
+                mp = str(model_params_path)
+            if mp:
+                mp_path = Path(mp)
+                if not mp_path.is_absolute():
+                    mp_path = (BASE_DIR / mp_path).resolve()
+                predict_cmd.extend(["--model_params_json", str(mp_path)])
         _run(predict_cmd, env, "Predict No-FV")
     else:
         stage_log("Predict No-FV skipped")
 
-    _run([sys.executable, str(BASE_DIR / "test.py"), str(input_csv)], env, "ABM Calibration + Simulation")
+    abm_title = "ABM Simulation (Load Params)" if use_precalibrated else "ABM Calibration + Simulation"
+    _run([sys.executable, str(BASE_DIR / "test.py"), str(input_csv)], env, abm_title)
 
-    code = str(eval_cfg.get("code", input_csv.stem))
     market = str(eval_cfg.get("market", "SM"))
     generate_models = bool(eval_cfg.get("generate_models", True))
     vrnn_epochs = int(eval_cfg.get("vrnn_epochs", 50))

@@ -2,10 +2,14 @@
   "input_csv": "600000.csv",
   "predict": {
     "enabled": true,
-    "method": "auto",
-    "horizon": 5
+    "method": "kalman_rw",
+    "horizon": 1,
+    "risk_drop_levels": [0.05]
   },
   "abm": {
+    "mode": "auto",
+    "model_params_root": "../offline_params",
+    "model_params_json": "",
     "epochs": 3,
     "learning_rate": 0.01,
     "epsilon": 0.001,
