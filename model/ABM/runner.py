@@ -7,11 +7,12 @@ import sys
 import threading
 import time
 from pathlib import Path
-from typing import Any, Dict, Iterable, List
+from typing import Any, Dict, Iterable, List, Optional
 
 import pandas as pd
 
 from logger.logger import logWriter as log
+from model.ABM.stock_data_provider import configured_data_source_mode, materialize_remote_stock_csv
 from utils.function.func import get_project_root
 
 
@@ -134,10 +135,16 @@ class ABMV2PipelineRunner:
         for path in (input_dir, runtime_dir, output_dir, log_dir):
             path.mkdir(parents=True, exist_ok=True)
 
-        input_csv = self._resolve_input_csv(params)
-        raw_code = str(params.get("evaluation", {}).get("code", input_csv.stem))
-        eval_code = normalize_code(raw_code or input_csv.stem)
-        runtime_input, stock_root = self._prepare_runtime_input(input_csv, input_dir, eval_code, task_label)
+        input_hint = str(params.get("input_csv", "")).strip()
+        raw_code = str(
+            params.get("evaluation", {}).get("code")
+            if isinstance(params.get("evaluation"), dict)
+            else ""
+        ).strip()
+        if not raw_code:
+            raw_code = str(params.get("stockCode") or params.get("dataset") or Path(input_hint).stem)
+        eval_code = normalize_code(raw_code)
+        runtime_input, stock_root = self._resolve_runtime_input(params, input_dir, eval_code, task_label)
 
         task_info = {
             "task_hash": task_hash,
@@ -172,6 +179,37 @@ class ABMV2PipelineRunner:
         if task_sign:
             return self.meta_root / task_sign / "0"
         return self.meta_root / task_hash
+
+    def _resolve_runtime_input(
+        self,
+        params: Dict[str, Any],
+        input_dir: Path,
+        eval_code: str,
+        task_label: str,
+    ) -> tuple[Path, Path]:
+        mode = configured_data_source_mode()
+        local_error: Optional[Exception] = None
+        if mode in {"local", "auto"}:
+            try:
+                input_csv = self._resolve_input_csv(params)
+                return self._prepare_runtime_input(input_csv, input_dir, eval_code, task_label)
+            except FileNotFoundError as exc:
+                local_error = exc
+                if mode == "local":
+                    raise
+
+        if mode in {"dolphindb", "auto"}:
+            local_input = input_dir / f"{eval_code}.csv"
+            log.write_log("EXECUTION", f"ABM_V2 {task_label}: materialize task-local input from dolphindb")
+            try:
+                runtime_input = materialize_remote_stock_csv(params, local_input)
+            except Exception as exc:
+                if local_error is not None:
+                    raise RuntimeError(f"{local_error}; dolphindb fallback failed: {exc}") from exc
+                raise
+            return runtime_input.resolve(), runtime_input.parent.resolve()
+
+        raise ValueError(f"Unsupported ABMStockDataSource: {mode}")
 
     def _resolve_input_csv(self, params: Dict[str, Any]) -> Path:
         input_csv = str(params.get("input_csv", "")).strip()

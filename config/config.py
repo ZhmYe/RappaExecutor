@@ -42,6 +42,14 @@ class BHExecutionNodeGlobalConfig:
     STORAGE_PATH = DEFAULT_STORAGE_PATH
     ABMStockDataDir = "/root/rappa/stockdata"
     ABMStockParamDir = "/root/rappa/stockdata/params"
+    ABMStockDataSource = "auto"
+    ABMRemoteDBHost = "192.168.198.76"
+    ABMRemoteDBPort = 8904
+    ABMRemoteDBUser = "maoshuoyu"
+    ABMRemoteDBPassword = "Swhy1234!@#$"
+    ABMRemoteDBName = "dfs://ods_tsdb_d_hash20_csmar"
+    ABMRemoteTableName = "l1_trdmin1_sh"
+    ABMRemoteDefaultEndOffsetDays = 1
     IS_RECOVERY = DEFAULT_IS_RECOVERY
     LOG_PATH = DEFAULT_LOG_PATH
     STORE_METHOD = STORE_METHOD_ENUM.LOCAL
@@ -90,6 +98,13 @@ class BHExecutionNodeGlobalConfig:
             "STORAGE_PATH": cls.STORAGE_PATH,
             "ABMStockDataDir": cls.ABMStockDataDir,
             "ABMStockParamDir": cls.ABMStockParamDir,
+            "ABMStockDataSource": cls.ABMStockDataSource,
+            "ABMRemoteDBHost": cls.ABMRemoteDBHost,
+            "ABMRemoteDBPort": cls.ABMRemoteDBPort,
+            "ABMRemoteDBUser": cls.ABMRemoteDBUser,
+            "ABMRemoteDBName": cls.ABMRemoteDBName,
+            "ABMRemoteTableName": cls.ABMRemoteTableName,
+            "ABMRemoteDefaultEndOffsetDays": cls.ABMRemoteDefaultEndOffsetDays,
             "CERT_PATH": cls.CERT_PATH,
             "LOG_PATH": cls.LOG_PATH
         }
