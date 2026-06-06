@@ -240,7 +240,7 @@ class ABMV2PipelineRunner:
         input_dir: Path,
         eval_code: str,
         task_label: str,
-    ) -> tuple[Path, Path]:
+    ) -> tuple:
         local_input = input_dir / f"{eval_code}.csv"
         if self._can_reuse_input_csv(source_path, eval_code):
             log.write_log("EXECUTION", f"ABM_V2 {task_label}: reuse local input {source_path}")

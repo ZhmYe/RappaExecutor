@@ -35,7 +35,7 @@ def coerce_bool(value: Any) -> bool:
     return text in {"1", "true", "yes", "y", "t"}
 
 
-def average_scores(values: list[float]) -> float:
+def average_scores(values: list) -> float:
     valid_values = [float(value) for value in values if value is not None]
     if not valid_values:
         return 0.0
