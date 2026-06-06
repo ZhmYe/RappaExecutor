@@ -59,7 +59,7 @@ class ABMV2AnalyticsService:
         raise ValueError(f"unsupported analysisType: {analysis_type}")
 
 
-def parse_analysis_request(raw_analysis_type: str) -> tuple[str, Dict[str, str]]:
+def parse_analysis_request(raw_analysis_type: str) -> tuple:
     analysis_type = (raw_analysis_type or "").strip()
     if "?" not in analysis_type:
         return analysis_type, {}

@@ -69,7 +69,7 @@ def pick_model_row(df: pd.DataFrame, model_name: str) -> Dict[str, Any]:
     return df.iloc[0].to_dict()
 
 
-def build_performance_table_data(metrics_row: Dict[str, Any]) -> list[Dict[str, Any]]:
+def build_performance_table_data(metrics_row: Dict[str, Any]) -> list:
     rows = []
     for item in PERFORMANCE_TABLE_ROWS:
         true_value = performance_true_value(metrics_row, item)

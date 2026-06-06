@@ -25,7 +25,7 @@ def stage_log(message: str) -> None:
     print(f"[ABM_V2] {now} {message}", flush=True)
 
 
-def _run(cmd: list[str], env: dict[str, str], title: str) -> None:
+def _run(cmd: list, env: dict, title: str) -> None:
     print(f"\n{'=' * 72}\n[{title}]", flush=True)
     print(" ".join(cmd), flush=True)
     start_time = time.time()
@@ -45,7 +45,7 @@ def _load_json(path: Path) -> dict:
     return data
 
 
-def _candidate_codes(raw_code: str) -> list[str]:
+def _candidate_codes(raw_code: str) -> list:
     code = str(raw_code).strip()
     if not code:
         return []
