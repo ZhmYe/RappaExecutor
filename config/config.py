@@ -48,7 +48,15 @@ class BHExecutionNodeGlobalConfig:
     ABMRemoteDBUser = "maoshuoyu"
     ABMRemoteDBPassword = "Swhy1234!@#$"
     ABMRemoteDBName = "dfs://ods_tsdb_d_hash20_csmar"
+    ABMRemoteSHDBName = "dfs://ods_tsdb_d_hash20_csmar"
+    ABMRemoteSZDBName = "dfs://ods_tsdb_d_hash10_csmar"
     ABMRemoteTableName = "l1_trdmin1_sh"
+    ABMRemoteTableMode = "market"
+    ABMRemoteSHTableName = "l1_trdmin1_sh"
+    ABMRemoteSZTableName = "l1_trdmin1_sz"
+    ABMRemoteQueryMode = "range"
+    ABMRemoteMaxRowsPerDay = 2000
+    ABMRemoteQuerySleepMs = 0
     ABMRemoteDefaultEndOffsetDays = 1
     IS_RECOVERY = DEFAULT_IS_RECOVERY
     LOG_PATH = DEFAULT_LOG_PATH
@@ -103,7 +111,15 @@ class BHExecutionNodeGlobalConfig:
             "ABMRemoteDBPort": cls.ABMRemoteDBPort,
             "ABMRemoteDBUser": cls.ABMRemoteDBUser,
             "ABMRemoteDBName": cls.ABMRemoteDBName,
+            "ABMRemoteSHDBName": cls.ABMRemoteSHDBName,
+            "ABMRemoteSZDBName": cls.ABMRemoteSZDBName,
             "ABMRemoteTableName": cls.ABMRemoteTableName,
+            "ABMRemoteTableMode": cls.ABMRemoteTableMode,
+            "ABMRemoteSHTableName": cls.ABMRemoteSHTableName,
+            "ABMRemoteSZTableName": cls.ABMRemoteSZTableName,
+            "ABMRemoteQueryMode": cls.ABMRemoteQueryMode,
+            "ABMRemoteMaxRowsPerDay": cls.ABMRemoteMaxRowsPerDay,
+            "ABMRemoteQuerySleepMs": cls.ABMRemoteQuerySleepMs,
             "ABMRemoteDefaultEndOffsetDays": cls.ABMRemoteDefaultEndOffsetDays,
             "CERT_PATH": cls.CERT_PATH,
             "LOG_PATH": cls.LOG_PATH

@@ -1,5 +1,6 @@
 import json
 import os
+import time
 from dataclasses import dataclass
 from datetime import date, datetime, timedelta
 from pathlib import Path
@@ -11,7 +12,23 @@ from utils.function.func import get_project_root
 
 
 DEFAULT_REMOTE_DB = "dfs://ods_tsdb_d_hash20_csmar"
+DEFAULT_REMOTE_SH_DB = "dfs://ods_tsdb_d_hash20_csmar"
+DEFAULT_REMOTE_SZ_DB = "dfs://ods_tsdb_d_hash10_csmar"
 DEFAULT_REMOTE_TABLE = "l1_trdmin1_sh"
+DEFAULT_REMOTE_SH_TABLE = "l1_trdmin1_sh"
+DEFAULT_REMOTE_SZ_TABLE = "l1_trdmin1_sz"
+REMOTE_COLUMNS = [
+    "Symbol",
+    "ShortName",
+    "TradingDate",
+    "TradingTime",
+    "OpenPrice",
+    "HighPrice",
+    "LowPrice",
+    "ClosePrice",
+    "Volume",
+    "Amount",
+]
 
 
 @dataclass
@@ -90,6 +107,47 @@ def dolphin_date(value: str) -> str:
     return value.replace("-", ".")
 
 
+def remote_db_for_stock(config: Dict[str, Any], stock_code: str) -> str:
+    default_db = str(config_value(config, "ABMRemoteDBName", DEFAULT_REMOTE_DB))
+    mode = str(config_value(config, "ABMRemoteTableMode", "market")).strip().lower()
+    if mode == "single":
+        return default_db
+
+    code = normalize_code(stock_code)
+    if code.startswith(("0", "3")):
+        return str(config_value(config, "ABMRemoteSZDBName", DEFAULT_REMOTE_SZ_DB))
+    return str(config_value(config, "ABMRemoteSHDBName", default_db or DEFAULT_REMOTE_SH_DB))
+
+
+def remote_table_for_stock(config: Dict[str, Any], stock_code: str) -> str:
+    default_table = str(config_value(config, "ABMRemoteTableName", DEFAULT_REMOTE_TABLE))
+    mode = str(config_value(config, "ABMRemoteTableMode", "market")).strip().lower()
+    if mode == "single":
+        return default_table
+
+    code = normalize_code(stock_code)
+    if code.startswith(("0", "3")):
+        return str(config_value(config, "ABMRemoteSZTableName", DEFAULT_REMOTE_SZ_TABLE))
+    return str(config_value(config, "ABMRemoteSHTableName", default_table or DEFAULT_REMOTE_SH_TABLE))
+
+
+def remote_query_mode(config: Dict[str, Any]) -> str:
+    mode = str(config_value(config, "ABMRemoteQueryMode", "daily")).strip().lower()
+    return mode if mode in {"daily", "range"} else "daily"
+
+
+def iter_dates(start: str, end: str) -> list[str]:
+    start_dt = parse_date(start)
+    end_dt = parse_date(end)
+    days: list[str] = []
+    current = start_dt
+    while current <= end_dt:
+        if current.weekday() < 5:
+            days.append(current.strftime("%Y-%m-%d"))
+        current += timedelta(days=1)
+    return days
+
+
 def normalize_stock_minute_df(df: pd.DataFrame, stock_code: str) -> pd.DataFrame:
     if df is None or df.empty:
         raise ValueError("remote stock data is empty")
@@ -155,21 +213,61 @@ class DolphinDBStockDataProvider:
         port = int(config_value(self.config, "ABMRemoteDBPort", 8904))
         user = str(config_value(self.config, "ABMRemoteDBUser", "maoshuoyu"))
         password = str(config_value(self.config, "ABMRemoteDBPassword", "Swhy1234!@#$"))
-        db_name = str(config_value(self.config, "ABMRemoteDBName", DEFAULT_REMOTE_DB))
-        table_name = str(config_value(self.config, "ABMRemoteTableName", DEFAULT_REMOTE_TABLE))
+        db_name = remote_db_for_stock(self.config, request.stock_code)
+        table_name = remote_table_for_stock(self.config, request.stock_code)
+        query_mode = remote_query_mode(self.config)
+        max_rows_per_day = int(config_value(self.config, "ABMRemoteMaxRowsPerDay", 2000))
+        sleep_ms = int(config_value(self.config, "ABMRemoteQuerySleepMs", 0))
 
         symbol = f"`{normalize_code(request.stock_code)}"
         start = dolphin_date(request.window.start_date)
         end = dolphin_date(request.window.end_date)
-        script = f"""
+        columns = ", ".join(REMOTE_COLUMNS)
+        session = ddb.session()
+        session.connect(host=host, port=port, userid=user, password=password, keepAliveTime=300)
+
+        if query_mode == "range":
+            script = f"""
 inputDBName = "{db_name}"
 inputTBName = "{table_name}"
 quotes = loadTable(inputDBName, inputTBName)
-select * from quotes where Symbol={symbol} and TradingDate between {start}:{end}
+select {columns} from quotes where Symbol={symbol} and TradingDate between {start}:{end}
 """
-        session = ddb.session()
-        session.connect(host=host, port=port, userid=user, password=password, keepAliveTime=300)
-        df = session.run(script)
+            df = session.run(script)
+            return normalize_stock_minute_df(df, request.stock_code)
+
+        frames = []
+        for day in iter_dates(request.window.start_date, request.window.end_date):
+            remote_day = dolphin_date(day)
+            probe_script = f"""
+inputDBName = "{db_name}"
+inputTBName = "{table_name}"
+quotes = loadTable(inputDBName, inputTBName)
+d = select top 1 TradingDate from quotes where Symbol={symbol} and TradingDate={remote_day}
+select * from d
+"""
+            probe_df = session.run(probe_script)
+            if probe_df is None or not hasattr(probe_df, "empty") or probe_df.empty:
+                if sleep_ms > 0:
+                    time.sleep(sleep_ms / 1000.0)
+                continue
+
+            script = f"""
+inputDBName = "{db_name}"
+inputTBName = "{table_name}"
+quotes = loadTable(inputDBName, inputTBName)
+select top {max_rows_per_day} {columns} from quotes where Symbol={symbol} and TradingDate={remote_day}
+"""
+            day_df = session.run(script)
+            if day_df is not None and hasattr(day_df, "empty") and not day_df.empty:
+                frames.append(day_df)
+            if sleep_ms > 0:
+                time.sleep(sleep_ms / 1000.0)
+
+        if frames:
+            df = pd.concat(frames, ignore_index=True)
+        else:
+            df = pd.DataFrame(columns=REMOTE_COLUMNS)
         return normalize_stock_minute_df(df, request.stock_code)
 
 
