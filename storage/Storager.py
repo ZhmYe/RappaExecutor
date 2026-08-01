@@ -223,14 +223,19 @@ class Storager:
     def chunk2json(self, chunk):
         if isinstance(chunk, DataFrame):
             return chunk.to_json()
-        elif isinstance(chunk, list) and len(chunk) > 0 and isinstance(chunk[0], nx.Graph):
-            json_chunk = []
-            for item in chunk:
-                json_chunk.append(nx.node_link_data(item))
-            return json.dumps(json_chunk)
+        elif isinstance(chunk, list):
+            if len(chunk) > 0 and isinstance(chunk[0], nx.Graph):
+                json_chunk = []
+                for item in chunk:
+                    json_chunk.append(nx.node_link_data(item))
+                return json.dumps(json_chunk)
+            else:
+                return json.dumps(chunk)
         else:
-            # 兼容处理 dict 或其他可序列化的 list
-            return json.dumps(chunk)
+            try:
+                return json.dumps(chunk)
+            except:
+                return str(chunk)
 
     def start(self):
         # TODO 这里还有接收其它块的逻辑

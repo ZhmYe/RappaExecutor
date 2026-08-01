@@ -463,11 +463,11 @@ class TGNN_embedding_guided(torch.nn.Module):
             torch.nn.Linear(dim, self.num_classes)
         )
         if dataset=="elliptic":
-            self.gae= torch.load("/root/rappa/model/gae/weight/elliptic_gae_relu_256.pt")
+            self.gae= torch.load("model/BAED/gae/weight/elliptic_gae_relu_256.pt")
         elif dataset=="dgraph":
-            self.gae=torch.load("/root/rappa/model/gae/weight/dgraph_gae_relu_32.pt")
+            self.gae=torch.load("model/BAED/gae/weight/dgraph_gae_relu_32.pt")
         elif dataset=="tfinance":
-            self.gae=torch.load("/root/rappa/model/gae/weight/tfinance_gae_sigmoid_32.pt")
+            self.gae=torch.load("model/BAED/gae/weight/tfinance_gae_sigmoid_32.pt")
         # self.gae= torch.load("/home/hsy/AGGS/gae/weight/reddit_gae_relu_128.pt")
         # self.gae= torch.load("/home/hsy/AGGS/gae/weight/photo_gae_relu_896.pt")
         # self.gae= torch.load("/home/hsy/AGGS/gae/weight/tfinance_gae_sigmoid_32.pt")
@@ -612,12 +612,16 @@ class TGNN_embedding_guided(torch.nn.Module):
         # print("nodes:",nodes.shape)
         # embedding_0:[256,64]
         nodes = self.node_out_mlp(nodes)
+        if row.numel() == 0 or col.numel() == 0:
+            edge_class = torch.empty((0, self.num_classes), device=nodes.device)
+            return pyg_data.log_node_attr, edge_class
+
         # 复制nodes
         max_row = torch.max(row)
         max_col = torch.max(col)
         # 返回两个最大值中的较大者
         max_value = torch.max(max_row, max_col)
-        repeat_num=max_value.item()//nodes.size(0)+1
+        repeat_num = max_value.item() // nodes.size(0) + 1
         # repeat
         nodes_repeated = torch.cat([nodes for i in range(repeat_num)], dim=0)
         edge_emb = nodes_repeated[row] + nodes_repeated[col]

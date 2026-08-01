@@ -2,11 +2,16 @@
     NOTE: Processor 对那些unprocessed的slot进行处理
     可以使用worker来进行并行
 """
+"""
+    NOTE: Processor 对那些unprocessed的slot进行处理
+    可以使用worker来进行并行
+"""
 import torch.cuda
 import time
 import torch  # 确保能识别 Tensor 类型
 import networkx as nx
 import pickle
+from datetime import datetime  # 引入 datetime 模块处理毫秒
 from config.config import BHExecutionNodeGlobalConfig
 from model.loader import ModelLoader
 from paradigm.channel import Channel
@@ -53,25 +58,62 @@ class Processor:
 
                 # TODO @YZM
                 model_instance = self.model_instances[params.name]  # 获取预先加载好的模型
+                
+                # ==================== 修改开始时间为毫秒 ====================
                 start_time = time.time()
+                start_time_str = datetime.fromtimestamp(start_time).strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
+                # 写入日志
+                log.write_log("INFO", f"Slot {slot.hash}, start_time: {start_time_str}")
+                
                 output = model_instance.generate_output(slot.size, params.condition_params)  # 调用模型得到输出
-                duration = time.time() - start_time
-                 # 计算速度 (byte/s)
-                data_size = len(pickle.dumps(output))
-                speed = data_size / duration
-                log.write_log("INFO", f"Slot {slot.hash} synth speed: {speed:.2f} byte/s, total size: {data_size} bytes, time: {duration:.4f}s")
+                
+                 # 计算数据量大小 (byte)
+                data = output.output
+                if params.name == 'BAED':
+                    # 图数据使用 pickle 估算大小
+                    data_size = len(pickle.dumps(output))
+                else:
+                    # 其他数据使用指定的计算方式
+                    if isinstance(data, (bytes, bytearray)):
+                        data_size = len(data)
+                    elif isinstance(data, str):
+                        data_size = len(data.encode('utf-8'))
+                    elif hasattr(data, 'to_json'): # Pandas DataFrame
+                        # 转换成 json 估算大小，这与 Storager 的存储逻辑一致
+                        data_size = len(data.to_json().encode('utf-8'))
+                    elif isinstance(data, list):
+                        try:
+                            import json
+                            data_size = len(json.dumps(data).encode('utf-8'))
+                        except:
+                            data_size = len(str(data))
+                    else:
+                        data_size = len(str(data))
+                        
+                # ==================== 修改结束时间为毫秒 ====================
+                end_time = time.time()
+                end_time_str = datetime.fromtimestamp(end_time).strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
+                
+                log.write_log("INFO", f"Slot {slot.hash} total size: {data_size} bytes, end_time:  {end_time_str}")
+                speed = data_size / (end_time - start_time)
                 self.channel.latest_synth_speed.value = speed
                 slot.upload_size = int(data_size)
                 slot.speed = speed
-                # 适配图数据格式
-                data = output.output
-                if isinstance(data, list) and len(data) > 0 and isinstance(data[0], nx.Graph):
-                    import torch
+
+                # 1. 记录原始合成样本数 (size)，确保 Master 进度条显示正确
+                if isinstance(output.output, list):
+                    slot.process = len(output.output)
+                elif hasattr(output.output, 'shape'): # 兼容 DataFrame
+                    slot.process = len(output.output)
+                else:
+                    slot.process = slot.size
+
+                # 2. 适配图数据格式：合并所有子图并清理 Tensor
+                if params.name == 'BAED' and isinstance(data, list) and len(data) > 0 and isinstance(data[0], nx.Graph):
                     combined_graph = nx.Graph()
                     for graph in data:
                         combined_graph = nx.compose(combined_graph, graph)
-                    
-                    # 1. 深度清理图中的 Tensor，否则后续 JSON 序列化会失败
+                    # 深度清理合并后图中的 Tensor
                     for node, attrs in combined_graph.nodes(data=True):
                         for key, val in list(attrs.items()):
                             if torch.is_tensor(val):
@@ -82,11 +124,10 @@ class Processor:
                             if torch.is_tensor(val):
                                 attrs[key] = val.item() if val.numel() == 1 else val.detach().cpu().tolist()
 
-                    # 2. 使用标准格式：id/source/target 必须为 int，字段名必须为 links
-                    # nx.node_link_data 生成的格式能完美对应 Master 侧的 paradigm.Graph 结构体
+                    # 转换为标准字典格式
                     graph_dict = nx.node_link_data(combined_graph)
                     
-                    # 3. 重要：Master 侧期望 []paradigm.Graph 数组，所以必须包装在 list 中
+                    # 包装为列表输出。注意：虽然此处列表长度为 1，但 slot.process 已经保留了原始样本数。
                     output.output = [graph_dict]
                 # self.storager.handle_slot_output(slot, output)  # 将输出和slot交给storager
                 self.channel.to_storager_slot_channel.put((slot, output))
@@ -97,43 +138,3 @@ class Processor:
     def start(self):
         self.load_model_instance()
         self.process_unprocessed_slot()
-        # processes = [
-        #     Process(target=self.process_unprocessed_slot)
-        # ]
-        # # for i in range(self.num_workers):
-        # #     processes.append(Process(target=self.worker))
-        #     # thread = threading.Thread(target=self.worker)
-        #     # thread.start()
-        # for process in processes:
-        #     process.start()
-        # for process in processes:
-        #     process.join()
-        # with ThreadPoolExecutor(max_workers=self.num_workers) as executor:
-        #     futures = [executor.submit(self.worker) for _ in range(self.num_workers)]
-        #     for future in as_completed(futures):
-        #         try:
-        #             future.result()
-        #         except Exception as e:
-        #             print(f"Worker failed: {e}")
-    # def worker(self):
-    #     while True:
-    #         try:
-    #             # 使用阻塞模式从队列中获取元素
-    #             if self.channel.to_worker_slot_channel.empty():
-    #                 continue
-    #             slot: CommitSlotItem = self.channel.to_worker_slot_channel.get(timeout=1)  # 阻塞直到有可用数据或超时
-    #             params: CommitSlotModelParams = slot.params
-    #             if params.name not in self.model_instances:
-    #                 # 如果不支持这一模型
-    #                 raise ValueError("{} Model is not supported!!!".format(params.name))
-    #
-    #             # TODO @YZM
-    #             model_instance = self.model_instances[params.name]  # 获取预先加载好的模型
-    #             # startTime = time.time()
-    #             output = model_instance.generate_output(slot.size, params.condition_params)  # 调用模型得到输出
-    #             # print(time.time() - startTime)
-    #             # self.storager.handle_slot_output(slot, output)  # 将输出和slot交给storager
-    #             self.channel.to_storager_slot_channel.put((slot, output))
-    #
-    #         except Exception as e:
-    #             log.write_log("ERROR", f"Worker encountered an error: {e}")
